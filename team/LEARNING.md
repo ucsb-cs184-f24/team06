@@ -2,6 +2,7 @@
 Experience with C#, Angular, .NET, C++, SQL, and Python. Familiar with Unity, Java, and React. Hoping to gain experience developing for mobile.
 
 ## Cappillen Lee
+I’m experienced with XCode and Swift. I also like programming in Python and TypeScript. I hope to make an addictive, fun, and creative slime-creature mobile game. 
 
 ## Richard Fang
 A lot of experience with Python and JavaScript/TypeScript. Knowledgeable in React, Next, and other web frameworks.
