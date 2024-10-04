@@ -1,0 +1,1 @@
+I’m a fifth (?) year computer science major from San Diego interested in UI/UX design and post-internet art. This summer, I worked with the Expressive Computation Lab to develop a web interface for 3D printing with clay, and while at UCSB, I’ve worked with GANs/Machine Learning to make my own art.

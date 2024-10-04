@@ -1,0 +1,1 @@
+I’m a 3rd year Computer Science major from Irvine, California. I enjoy exploring new technologies and project based learning. Can do both frontend and backend.

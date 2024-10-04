@@ -1,0 +1,1 @@
+I’m a 4th year CS major from Newark, CA. I like to create projects that people can interact with and that can make people smile, so frontend and user-facing projects are my forte. I interned at Google for the past 3 years, where I worked on mostly frontend-based applications. 

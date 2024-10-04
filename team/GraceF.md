@@ -1,0 +1,1 @@
+I’m a 3rd year CS major from Fremont, California. I’m interested in multimedia software development (like VR) and more traditional software engineering (frontend, backend, infrastructure). This past summer, I interned at West Monroe Partners where Agile was super emphasized, so I’m hoping that’ll be helpful in this project.

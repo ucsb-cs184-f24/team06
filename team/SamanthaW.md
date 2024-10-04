@@ -1,0 +1,1 @@
+I am a 3rd year Computer Science major from Burbank, CA (suburb of LA). I like to work on things that are more data-oriented, which is what I did in my internship with Crowdstrike this past summer, but I am excited for the opportunity to work on something more tangible and creative!

@@ -1,0 +1,1 @@
+I’m a fourth year computer science major in the College of Creative Studies from Moorpark, CA, also minoring in media arts and theater design. I focus on the intersection of art and technology, including interactive experiences, generative art, creativity support tools, and game development.
