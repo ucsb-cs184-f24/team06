@@ -1,6 +1,6 @@
 # Problem Scenario
 ## Target user
-Young adults (college?, gen z, gen alpha)
+- Young adults (college?, gen z, gen alpha)
 - Stressed, wants to relax
 - Wants to connect/make friends in community
 - Not a hardcore gamer
