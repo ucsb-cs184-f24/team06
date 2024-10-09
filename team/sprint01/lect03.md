@@ -7,7 +7,7 @@ Finished personal info. Getting started with React Native. Planning to finish He
 Brainstormed after last meeting. Going through React Native tutorial. Planning to finish Hello World app today.
 ## Grace Feng
 Set up GitHub repository, added teammates, and made first commits. Going through a React Native tutorial with Sam. Planning to finish Hello World app.
-## Elijah Frankie
+## Elijah Frankle
 Wrote personal info and read an article on React Native for game development. Working on Hello World. Planning to work on User Story.
 ## Esme Puzio
 Updated personal info on GitHub repo. Research how to integrate Unity and React. Planning to finish Hello World.
