@@ -1,0 +1,59 @@
+#Generated .gitignore file for React Native
+
+# OSX
+.DS_Store
+
+# node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# React Native
+# Directory for iOS build artifacts
+ios/build/
+# Directory for Android build artifacts
+android/app/build/
+android/.gradle/
+android/.idea/
+android/.vscode/
+android/local.properties
+android/*.keystore
+android/captures/
+
+# BUCK build system
+buck-out/
+\.buckconfig.local
+\.buckconfig.macros
+
+# fastlane
+ios/fastlane/report.xml
+ios/fastlane/Preview.html
+ios/fastlane/screenshots
+ios/fastlane/test_output
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Bundle artifacts
+*.jsbundle
+
+# CocoaPods
+ios/Pods/
+ios/Podfile.lock
+
+# Expo
+.expo/
+.expo-shared/
+
+# TypeScript
+*.tsbuildinfo
+
+# Android/IntelliJ
+.idea
+.gradle
+local.properties
+
+# Xcode
+xcuserdata/
+*.xcscmblueprint
