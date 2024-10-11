@@ -32,3 +32,18 @@ Post commented/liked: https://ucsb-cs184-f24.slack.com/archives/C07QZBBNBU7/p172
 3rd year CS major, experience in Python, C++, Golang. Familiar enough with Javascript/HTML and Java. Interested in backend development more so than frontend because I am not artistically gifted :)
 
 Post commented/liked: https://ucsb-cs184-f24.slack.com/archives/C07QZBBNBU7/p1728667556292959
+
+
+# React Native Comments
+10-11-24 10:30AM
+
+## Benefits
+- Like that it live reloads
+- Most of us have experience with React, so that transition will be easier
+- Helpful to work in something cross platform, as we do not have windows/macs across the board
+- Lots of tutorials/resources online to learn React Native, might make it easier to learn how to use the platform
+
+## Challenges
+- Having challenged with iOS simulator on XCode, but did work with the Expo App
+- We do not have access to all of the features that XCode or Android Studio offer
+- There’s a lot of extra fluff that could potentially cause bugs, coding directly with iOS or Android might be a little cleaner, less complicated
