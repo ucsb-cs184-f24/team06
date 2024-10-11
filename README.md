@@ -22,3 +22,5 @@ To provide a fun and interactive game for people to play with their friends.
 - **Grace Feng** - gracefeng05
 - **Richard Fang** - richardfang888
 - **Esme Puzio** - epuzio
+- **Elijah Frankle** - ekf626
+  
