@@ -1,2 +1,24 @@
-# App Description
+Plants have:
+- Name
+- Nickname
+- Age
+- Sprite (changes over time in a few different stages)
+- Rarity
+- Water timer
+- Happiness metric
 
+Players have:
+- Coins (currency)
+- Stock of plants
+- Stock of seeds
+- Unique friend code
+- Friends
+- XP & Level
+
+Plants to be watered regularly and they will slowly produce coins. The bigger they grow and rarer they are, the more coins they produce.
+
+Main home screen (garden screen) has a grid of spaces for plants. One this screen you can plant seeds, you can water your plants, you can collect coins, and you can interact with your plants.
+
+Shop screen presents some avalible seeds to buy with coins. The shop is different for everyone and avalible seeds and prices change every day.
+
+On the trade screen you can confirm what you're offering and what you're recieving with a friend, then make the trade happen.
