@@ -12,8 +12,8 @@
 ## Optional Takeaways
 * All in-progress items should be completed by Monday standup.
 * Defining MVP: Pages all exist, can buy a plant, plant a plant, and grow a plant. Placeholder graphics/UI are acceptable, but there must be some UI elements associated with this feature.
-
-## Retro Assessment
+* 
+  ## Retro Assessment
 * A brief description of what retro outline or process you used.
 * * I used the outline provided in the First Retrospective page on Canvas.
 * A brief assessment of how it went.
