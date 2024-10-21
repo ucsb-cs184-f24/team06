@@ -4,7 +4,7 @@ Finished HW2, sent a useful tutorial, refactered the starter project with typesc
 ## Sophia Tran
 No progress, going to work on kanban issue.
 ## Samantha West
-Going to start working on stuff.
+Working on HW 2. Planning to begin seed data structure soon.
 ## Grace Feng
 Pushed hello world to the repo as the started code for the group app, will claim an issue for the kanban board.
 ## Elijah Frankle
