@@ -2,6 +2,13 @@ enum Rarity{
     common, rare, unique, legendary
 }
 
+const coinMapping: { [key in Rarity] : number } = {
+    [Rarity.common]: 2,
+    [Rarity.rare]: 3,
+    [Rarity.unique]: 4,
+    [Rarity.legendary]: 5
+}
+
 class Plant {
     private type: string; //type of plant
     private nickname: string; //optional, name your plant
@@ -19,6 +26,7 @@ class Plant {
         rarity: string = "",
         maxWater: number = 5,
         maxHappiness: number = 5
+        
     ){
         this.type = type;
         this.nickname = nickname;
@@ -28,7 +36,6 @@ class Plant {
         this.maxWater = maxWater;
         this.currHappiness = maxHappiness;
         this.maxHappiness = maxHappiness;
-        
     }
 
 
@@ -96,5 +103,14 @@ class Plant {
 
     public setMaxHappiness(maxHappiness: number){
         this.maxHappiness = this.maxHappiness;
+    }
+
+    public produceCoins(){ //coins produced is a function of water level, rarity and happiness
+        if(this.currWater >= (this.maxWater/2)){
+            return Math.floor((this.currWater / this.maxWater)
+                    * (1 + (this.currHappiness / this.maxHappiness)) // multiplier added if plant is happy
+                    * coinMapping[this.rarity]);
+        }
+        return 0;
     }
 }
