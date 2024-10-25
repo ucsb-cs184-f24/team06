@@ -75,3 +75,5 @@ class Player {
         this.coins = coins;
     }
 }
+
+export default Player;
