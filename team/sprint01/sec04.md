@@ -1,6 +1,6 @@
 # Standup 13
 ## Cappillen Lee
-
+Build template for shop item component on populating shop page with mock shop items. Will flush out the full shop page.
 ## Sophia Tran
 Finished HW2 and currently looking at resources to do newest issue. Goal is to finish it tonight or at least before the weekend ends.
 ## Samantha West
