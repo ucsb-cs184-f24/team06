@@ -6,11 +6,11 @@ class Seed {
 
   public constructor(
     type: string = "defaultSeed",
-    rarity: string = "common",
+    rarity: Rarity = Rarity.common,
     growthTime: number = 5 // default growth time
   ) {
     this.type = type;
-    this.rarity = rarity as unknown as Rarity;
+    this.rarity = rarity;
     this.growthTime = growthTime;
     this.age = 0; // seeds start at age 0
   }
