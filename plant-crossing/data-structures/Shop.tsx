@@ -1,3 +1,5 @@
+import Player from "../data-structures/Player";
+
 class Shop {
   private items: ShopItem[]; // list of items available in the shop
 
