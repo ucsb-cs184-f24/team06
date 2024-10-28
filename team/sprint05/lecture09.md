@@ -12,6 +12,8 @@ Put up three pull requests about seeds and shop populating/growing. Planning on 
 
 ## Grace Feng
 
+Working on HW3. Planning to flesh out 'addFriends' function ticket.
+
 ## Elijah Frankle
 
 Finised page navigation, working on fixing merge conficts for the pull request. Planning on finishing pull request and H3.
