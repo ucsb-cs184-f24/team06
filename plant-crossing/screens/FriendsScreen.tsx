@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 
-const Friends = () => {
+export default function FriendsScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Friends List</Text>
@@ -22,5 +22,3 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
-
-export default Friends;
