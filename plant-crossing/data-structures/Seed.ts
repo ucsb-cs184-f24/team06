@@ -5,6 +5,9 @@ class Seed {
   private age: number; // tracks how much time the seed has spent growing
   private isPlanted: boolean; // whether the seed has been planted
   private growthInterval: NodeJS.Timeout | null; // interval ID for growth tracking
+  private currWater: number; // water level of the seed
+  private maxWater: number; // maximum water capacity for the seed
+  private growthBoost: number; // boost factor for reducing growth time
 
   // growth time multipliers based on rarity
   private static rarityGrowthMultipliers: { [key in Rarity]: number } = {
@@ -17,7 +20,8 @@ class Seed {
   public constructor(
     type: string = "defaultSeed",
     rarity: Rarity = Rarity.common,
-    baseGrowthTime: number = 3 // default base growth time in hours
+    baseGrowthTime: number = 3, // default base growth time in hours
+    maxWater: number = 5 // default maximum water level
   ) {
     this.type = type;
     this.rarity = rarity;
@@ -26,6 +30,9 @@ class Seed {
     this.age = 0; // seeds start at age 0
     this.isPlanted = false;
     this.growthInterval = null;
+    this.currWater = maxWater;
+    this.maxWater = maxWater;
+    this.growthBoost = 1; // no boost initially
   }
 
   // start the planting process and initiate growth tracking
@@ -41,15 +48,15 @@ class Seed {
 
   // simulate growth over time using a timer
   private startGrowth() {
-    // convert growth time from hours to milliseconds
-    const growthDurationInMillis = this.growthTime * 3600000;
-    const growthIntervalInMillis = growthDurationInMillis / this.growthTime; // interval updates age once every "hour" equivalent
+    // simulate hourly updates
+    const growthIntervalInMillis = 1000 * 60 * 60;
 
     this.growthInterval = setInterval(() => {
-      if (this.age < this.growthTime) {
-        this.age++;
-        console.log(`${this.type} is growing. Age: ${this.age}/${this.growthTime} hours`);
-      } else {
+      const isFullyGrown = this.grow(1); // grow by 1 hour
+      console.log(
+        `${this.type} is growing. Age: ${this.age.toFixed(2)}/${this.growthTime} hours`
+      );
+      if (isFullyGrown) {
         console.log(`${this.type} has fully grown.`);
         this.stopGrowth();
       }
@@ -62,6 +69,34 @@ class Seed {
       clearInterval(this.growthInterval);
       this.growthInterval = null;
     }
+  }
+
+  // simulate growth over time, considering the growth boost
+  public grow(timePassed: number) {
+    this.age += timePassed * this.growthBoost; // apply growth boost to speed up age increment
+    if (this.age >= this.growthTime) {
+      this.stopGrowth();
+      return true; // seed is ready to become a plant
+    }
+    return false; // seed is still growing
+  }
+
+  // water the seed, refilling water and applying a growth time boost
+  public waterSeed() {
+    this.currWater = this.maxWater; // refill water to max
+    this.growthBoost = 0.9; // apply a 10% growth time reduction
+    console.log(`${this.type} has been watered. Growth boost active!`);
+
+    // set a timer to remove the boost after a period
+    setTimeout(() => {
+      this.resetBoost();
+    }, 300000); // remove the boost after 5 minutes
+  }
+
+  // method to reset the growth boost after the boost period ends
+  private resetBoost() {
+    this.growthBoost = 1; // reset the boost to default
+    console.log(`${this.type}'s growth boost has ended.`);
   }
 
   // convert the seed into a plant once fully grown
@@ -104,15 +139,5 @@ class Seed {
 
   public setAge(age: number) {
     this.age = age;
-  }
-
-  // manually increment the growth time (where growth may be externally triggered)
-  public grow(timePassed: number) {
-    this.age += timePassed;
-    if (this.age >= this.growthTime) {
-      this.stopGrowth();
-      return true; // seed is ready to become a plant
-    }
-    return false; // seed is still growing
   }
 }
