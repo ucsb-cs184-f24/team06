@@ -33,8 +33,6 @@ class Seed {
     this.currWater = maxWater;
     this.maxWater = maxWater;
     this.growthBoost = 1; // no boost initially
-
-    // initialize properties from seedsGrow branch
     this.isPlanted = false;
     this.growthInterval = null;
   }
