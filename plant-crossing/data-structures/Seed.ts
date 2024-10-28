@@ -2,10 +2,15 @@ class Seed {
   private type: string; // type of plant this seed will grow into
   private rarity: Rarity; // seed rarity determines the rarity of the resulting plant
   private growthTime: number; // time in hours it takes for the seed to become a plant
+  private growthTime: number; // time in hours it takes for the seed to become a plant
   private age: number; // tracks how much time the seed has spent growing
+
   private currWater: number; // water level of the seed
   private maxWater: number; // maximum water capacity for the seed
   private growthBoost: number; // boost factor for reducing growth time
+
+  private isPlanted: boolean; // whether the seed has been planted
+  private growthInterval: NodeJS.Timeout | null; // interval ID for growth tracking
 
   // growth time multipliers based on rarity
   private static rarityGrowthMultipliers: { [key in Rarity]: number } = {
@@ -29,7 +34,11 @@ class Seed {
     this.currWater = maxWater;
     this.maxWater = maxWater;
     this.growthBoost = 1; // no boost initially
+    this.isPlanted = false;
+    this.growthInterval = null;
   }
+
+  // existing methods from main
 
   // water the seed, refilling water and applying a growth time boost
   public waterSeed() {
@@ -97,5 +106,43 @@ class Seed {
       return new Plant(this.type, "", this.rarity, 5, 5); // create a new Plant object with default values
     }
     return null; // seed not ready yet
+  }
+
+  // additional methods from seedsGrow
+
+  // start the planting process and initiate growth tracking
+  public plant() {
+    if (!this.isPlanted) {
+      this.isPlanted = true;
+      console.log(`${this.type} has been planted.`);
+      this.startGrowth();
+    } else {
+      console.log(`${this.type} is already planted.`);
+    }
+  }
+
+  // simulate growth over time using a timer
+  private startGrowth() {
+    // simulate hourly updates
+    const growthIntervalInMillis = 1000 * 60 * 60;
+
+    this.growthInterval = setInterval(() => {
+      const isFullyGrown = this.grow(1); // grow by 1 hour
+      console.log(
+        `${this.type} is growing. Age: ${this.age.toFixed(2)}/${this.growthTime} hours`
+      );
+      if (isFullyGrown) {
+        console.log(`${this.type} has fully grown.`);
+        this.stopGrowth();
+      }
+    }, growthIntervalInMillis); // simulates growth "hourly"
+  }
+
+  // stop the growth process
+  private stopGrowth() {
+    if (this.growthInterval) {
+      clearInterval(this.growthInterval);
+      this.growthInterval = null;
+    }
   }
 }
