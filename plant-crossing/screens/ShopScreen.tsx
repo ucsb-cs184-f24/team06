@@ -4,7 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 const Tab = createBottomTabNavigator();
 
-export default function Shop() {
+export default function ShopScreen() {
   return (
     <>
     <View style={styles.container}>
