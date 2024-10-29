@@ -22,11 +22,21 @@ export default class Shop {
   private generateRandomItems(count: number): ShopItem[] {
     const selectedItems: ShopItem[] = [];
 
+    // Filter available items to include only seeds
+    const seedItems = availableItems.filter(
+      (item) => item.getItemType() === "Seed"
+    );
+
+    if (seedItems.length === 0) {
+      console.warn("No seed items available in the shop inventory.");
+      return selectedItems; // Return an empty array if no seeds are available
+    }
+
     for (let i = 0; i < count; i++) {
-      const weights = availableItems.map(
-        (item) => rarityWeights[item.getRarity()]
-      );
-      const randomItem = weightedRandomSelection(availableItems, weights);
+      const weights = seedItems.map((item) => rarityWeights[item.getRarity()]);
+
+      // Select a random item from the filtered seed items
+      const randomItem = weightedRandomSelection(seedItems, weights);
       selectedItems.push(randomItem);
     }
 
