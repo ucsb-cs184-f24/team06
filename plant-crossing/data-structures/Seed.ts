@@ -2,6 +2,7 @@ class Seed {
   private type: string; // type of plant this seed will grow into
   private rarity: Rarity; // seed rarity determines the rarity of the resulting plant
   private growthTime: number; // time in hours it takes for the seed to become a plant
+
   private age: number; // tracks how much time the seed has spent growing
 
   private currWater: number; // water level of the seed
