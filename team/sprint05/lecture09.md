@@ -1,6 +1,7 @@
 # Standup
 
 ## Cappillen Lee
+Completed shop page that will populate with shop items. Put shop page code into code review and find next task.
 
 ## Sophia Tran
 
