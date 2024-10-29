@@ -1,18 +1,18 @@
-enum Rarity {
+export enum Rarity {
   common,
   rare,
   unique,
   legendary,
 }
 
-const coinMapping: { [key in Rarity]: number } = {
+export const coinMapping: { [key in Rarity]: number } = {
   [Rarity.common]: 2,
   [Rarity.rare]: 3,
   [Rarity.unique]: 4,
   [Rarity.legendary]: 5,
 };
 
-class Plant {
+export class Plant {
   private type: string; // type of plant
   private nickname: string; // optional, name your plant
   private age: number;
@@ -69,6 +69,14 @@ class Plant {
 
   public setType(type: string) {
     this.type = type;
+  }
+
+  public getAge(){
+    return this.age;
+  }
+
+  public setAge(age:number){
+    this.age = age;
   }
 
   public getNickname() {
