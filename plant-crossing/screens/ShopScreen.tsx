@@ -38,7 +38,7 @@ const shopItems = [
   },
 ];
 
-export default function Shop() {
+export default function ShopScreen() {
   const renderItem = ({ item }: { item: any }) => (
     <ShopItem item={item}/>
   );

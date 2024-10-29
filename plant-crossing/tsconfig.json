@@ -2,7 +2,6 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
-    "esModuleInterop": true   // allow imports from CommonJS library
   },
   "extends": "expo/tsconfig.base"
 }
