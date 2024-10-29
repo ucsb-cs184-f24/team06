@@ -3,7 +3,7 @@ import { ShopItem } from "../data-structures/Item";
 import { Rarity, availableItems, rarityWeights } from "../data/items";
 import { weightedRandomSelection } from "../utils/weightedRandom";
 
-class Shop {
+export default class Shop {
   private items: ShopItem[]; // list of items available in the shop
   private lastUpdated: Date; // timestamp of the last update
 

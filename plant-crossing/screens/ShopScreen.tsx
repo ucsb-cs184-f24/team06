@@ -1,75 +1,76 @@
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList} from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import ShopItem from '../components/ShopItem';
-const Tab = createBottomTabNavigator();
+import { StatusBar } from "expo-status-bar";
+import React, { useEffect, useState } from "react";
+import { StyleSheet, View, FlatList, Dimensions, Platform } from "react-native";
+import ShopItemComponent from "../components/ShopItem"; // Assuming you have a component for rendering each item
+import Shop from "../data-structures/Shop"; // Import the Shop class
 
-const shopItems = [
-  {
-    id: '1',
-    name: 'Product 1',
-    price: '29.99',
-    image: 'https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png',
-  },
-  {
-    id: '2',
-    name: 'Product 2',
-    price: '39.99',
-    image: 'https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png',
-  },
-  {
-    id: '3',
-    name: 'Product 3',
-    price: '99.99',
-    image: 'https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png',
-  },
-  {
-    id: '4',
-    name: 'Product 4',
-    price: '19.99',
-    image: 'https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png',
-  },
-  {
-    id: '5',
-    name: 'Product 5',
-    price: '69.99',
-    image: 'https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png',
-  },
-];
+// define a type for shop items
+interface ShopItemData {
+  id: string;
+  name: string;
+  price: string;
+  image: string;
+}
 
 export default function ShopScreen() {
-  const renderItem = ({ item }: { item: any }) => (
-    <ShopItem item={item}/>
+  const [shopItems, setShopItems] = useState<ShopItemData[]>([]); // state to store shop items
+  const [numColumns] = useState(1); // Number of columns is set to 1
+  const windowWidth = Dimensions.get("window").width; // Get the device width
+
+  useEffect(() => {
+    // create an instance of the Shop class
+    const shop = new Shop();
+
+    // fetch items from the shop and update state
+    const items = shop.getItems().map((item, index) => ({
+      id: `${index}`, // convert index to a string id
+      name: item.getName(),
+      price: Math.round(item.getPrice()).toString(), // convert the actual price to a whole number string
+      image:
+        "https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png", // placeholder image
+    }));
+
+    console.log(items); // log the items to check their values
+    setShopItems(items); // update state with fetched items
+  }, []); // empty dependency array means this runs once when component mounts
+
+  const renderItem = ({ item }: { item: ShopItemData }) => (
+    <ShopItemComponent item={item} width={windowWidth} /> // Pass the width to the ShopItemComponent
   );
+
   return (
-    <>
     <View style={styles.container}>
       <FlatList
         data={shopItems}
         renderItem={renderItem}
-        keyExtractor={item => item.id}
-        numColumns={3}
+        keyExtractor={(item) => item.id}
+        numColumns={numColumns} // use one column per width
+        key={`shop-list-${numColumns}`} // unique key for the FlatList
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.flatListContent} // additional padding for safe area
       />
       <StatusBar style="auto" />
     </View>
-    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-      alignItems: 'center',
-      flex: 1,
-      justifyContent: 'center'
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    paddingTop: Platform.OS === "ios" ? 40 : 20, // Add extra padding for iOS notch safety
+  },
+  flatListContent: {
+    paddingBottom: 20, // buffer at the bottom
   },
   input: {
-      marginVertical: 4,
-      height: 50,
-      borderWidth: 1,
-      borderRadius: 4,
-      padding: 10,
-      backgroundColor: 'fff'
+    marginVertical: 4,
+    height: 50,
+    borderWidth: 1,
+    borderRadius: 4,
+    padding: 10,
+    backgroundColor: "fff",
   },
 });
