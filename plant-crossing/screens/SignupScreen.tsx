@@ -1,26 +1,29 @@
 // SignupScreen.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from './types';
+import { FIREBASE_AUTH } from '../FirebaseConfig';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { useNavigation } from '@react-navigation/native';
 
-type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Signup'>;
-type SignupScreenRouteProp = RouteProp<RootStackParamList, 'Signup'>;
-
-type Props = {
-  navigation: SignupScreenNavigationProp;
-  route: SignupScreenRouteProp;
-};
-
-const SignupScreen: React.FC<Props> = ({ navigation }) => {
+const SignupScreen = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const handleSignup = () => {
-    // Handle signup logic here
-    console.log('Signup pressed');
+  const auth = FIREBASE_AUTH;
+  const navigation = useNavigation();
+
+  const handleSignup = async () => {
+    setLoading(true);
+    try {
+        const user = await createUserWithEmailAndPassword(FIREBASE_AUTH,email, password);
+        console.log(user);
+    } catch (error) {
+        alert('Signup failed: ' + error);
+        console.log(error);
+    }
+    setLoading(false);
   };
 
   return (

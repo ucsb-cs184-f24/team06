@@ -1,24 +1,27 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
-import { StackNavigationProp } from '@react-navigation/stack';
-import { RouteProp } from '@react-navigation/native';
-import { RootStackParamList } from './types';
+import { FIREBASE_AUTH } from '../FirebaseConfig';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { useNavigation } from '@react-navigation/native';
 
-type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, 'Login'>;
-type LoginScreenRouteProp = RouteProp<RootStackParamList, 'Login'>;
-
-type Props = {
-  navigation: LoginScreenNavigationProp;
-  route: LoginScreenRouteProp;
-};
-
-const LoginScreen: React.FC<Props> = ({ navigation }) => {
+const LoginScreen = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(false);
+  const auth = FIREBASE_AUTH;
+  const navigation = useNavigation();
 
-  const handleLogin = () => {
-    // Handle login logic here
-    console.log('Login pressed');
+  const handleLogin = async() => {
+    setLoading(true);
+    try {
+        const user = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
+        console.log(user);
+        // add navigation to home screen/main screen
+    } catch (error) {
+        alert('Login failed: ' + error);
+        console.log(error);
+    }
+    setLoading(false);
   };
 
   return (
