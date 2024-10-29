@@ -58,7 +58,6 @@ export default function GardenScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Garden Page</Text>
       {/* <Text style={styles.gardenSection}>placeholder</Text> */}
       <GardenGrid></GardenGrid> 
       <FlatList
