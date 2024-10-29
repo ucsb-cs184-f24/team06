@@ -3,7 +3,6 @@
     "name": "plant-crossing",
     "slug": "plant-crossing",
     "version": "1.0.0",
-    "scheme": "plant-crossing",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -13,8 +12,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.team06.plantcrossing"
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
@@ -24,11 +22,6 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    },
-    "extra": {
-      "eas": {
-        "projectId": "5812f345-9776-4567-ba52-7c105ee3be12"
-      }
     }
   }
 }
