@@ -1,5 +1,6 @@
 import { Plot } from "./Plot";
 import { Plant, Rarity } from "./Plant";
+import { Seed } from "./Seed";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
@@ -9,8 +10,8 @@ export class GardenPlot {
     private costsToUnlock: number[];
     public constructor(){ // 4 x 4 grid, last row locked
         this.plots = [];
-        let numUnlocked = 12;
-        let numLocked = 4;
+        let numUnlocked = 7;
+        let numLocked = 9;
         
         for(let i = 0; i < numUnlocked; i++){
             this.plots.push(new Plot(true));
@@ -27,20 +28,33 @@ export class GardenPlot {
     }
 }
 
-const placeholderPlants = [
-    new Plant("Fern Plant", "", Rarity.common, 5, 5),
+const startingSeeds = [ // can change this later or pull randomly from items.ts
+    new Seed("Fern Seed", Rarity.common, 2, 7),
     null,
     null,
     null,
     null,
-    new Plant("Rose Plant", "", Rarity.common, 5, 5),
-    new Plant("Cherry Plant", "cherri", Rarity.rare, 5, 5),
+    new Seed("Rose Seed", Rarity.common, 5, 5),
+    new Seed("Cherry Blossom Seed", Rarity.rare, 5, 5),
     null,
     null,
     null,
     null,
     null
 ];
+const testSeed = new Seed("Test Seed Planted", Rarity.legendary, 10, 10); // to test seed planting
+
+const playerGarden = new GardenPlot();
+const playerPlots = playerGarden.getPlots();
+playerPlots.map((plot, index) => {
+    const seed = startingSeeds[index];
+    if(seed && plot.getUnlocked()){
+        plot.plantSeed(seed);
+    }
+});
+const columns = 4;
+const screenWidth = Dimensions.get('window').width;
+const plotSize = screenWidth / columns;
 
 
 type itemProps = {title: string};
@@ -51,37 +65,48 @@ const Item = ({title}: itemProps) => (
     </View>
 );
 
-const columns = 4;
-const screenWidth = Dimensions.get('window').width;
-const plotSize = screenWidth / columns;
-
-const handlePress = (item:Plot) => {
-    if(item.getUnlocked()){
-        item.getSeed()?.waterSeed;
-    }
-    else{ // unlocks plot, TO ADD: should cost coins to unlock plot
-        item.setUnlocked(true);
-    }
-};
-
 export const GardenGrid = () => {
-    const [selectedId, setSelectedId] = useState([]);
+    const [plots, setPlots] = useState(playerGarden.getPlots()); // Use state to track plots
 
-    
+    const handlePress = (item:Plot, index: number) => {
+        if(item?.getUnlocked()){
+            if(item.getSeed()){ // TO ADD: watering logic goes here
+                item.getSeed()?.waterSeed();
+            } else{ // TO ADD: plant specific plant here
+                item.plantSeed(testSeed);
+            }
+        }
+        else{ // unlocks plot, TO ADD: should cost coins to unlock plot
+            item.setUnlocked(true);
+        }
+        const updatedPlots = [...plots]; // this seems inefficient, (but follows react standards, so keep it?)
+        updatedPlots[index] = item;
+        setPlots(updatedPlots);
+    };
 
     return (
         <SafeAreaView style={styles.container}>
             <FlatList
-                data={placeholderPlants}
-                renderItem={({ item }) => (
-                    <TouchableOpacity onPress={() => handlePress(item)}>
-                        <View>
-                        {item ? <Item title={item.getType()} /> : <View style={styles.emptyItem} />}
-                        </View>
-                    </TouchableOpacity>
-                    // item ? <Item title={item.getType()} /> : <View style={styles.emptyItem} />
-                )}
-                keyExtractor={(item, index) => item ? item.getType() : `empty-${index}`}
+                data={playerGarden.getPlots()}
+                renderItem={({ item }) => {
+                    let content;
+                    if (item.getUnlocked()) {
+                        if (item.getSeed()) {
+                            content = <Item title={item.getSeed().getType()} />;
+                        } else {
+                            content = <View style={styles.emptyItem} />;
+                        }
+                    } else {
+                        content = <Text style={styles.lockedItem}>Locked</Text>;
+                    }
+
+                    return (
+                        <TouchableOpacity onPress={() => handlePress(item)}>
+                            <View>{content}</View>
+                        </TouchableOpacity>
+                    )
+                }}
+                keyExtractor={(item, index) => item.getSeed() ? item.getSeed().getType() : `empty-${index}`}
                 numColumns = {columns}
             />
         </SafeAreaView>
@@ -117,6 +142,14 @@ const styles = StyleSheet.create({
     },
     emptyItem: { // no item exists at that tile
         backgroundColor: '#cceeee',
+        padding: 2,
+        height: plotSize,
+        width: plotSize,
+        marginVertical: 0,
+        marginHorizontal: 0,
+    },
+    lockedItem: {
+        backgroundColor: '#550000',
         padding: 2,
         height: plotSize,
         width: plotSize,
