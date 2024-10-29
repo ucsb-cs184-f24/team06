@@ -116,7 +116,7 @@ export default GardenGrid;
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1,
+        flex: 3,
         justifyContent: 'flex-start'
     },
     unlocked: {
