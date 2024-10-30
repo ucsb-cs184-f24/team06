@@ -1,4 +1,6 @@
-class Seed {
+import { Plant, Rarity } from './Plant';
+
+export class Seed {
   private type: string; // type of plant this seed will grow into
   private rarity: Rarity; // seed rarity determines the rarity of the resulting plant
   private growthTime: number; // time in hours it takes for the seed to become a plant
@@ -38,7 +40,10 @@ class Seed {
     this.growthInterval = null;
   }
 
-  // existing methods from main
+  // make deep copy of seed
+  public copy(){ 
+    return JSON.parse(JSON.stringify(this));
+  }
 
   // water the seed, refilling water and applying a growth time boost
   public waterSeed() {
