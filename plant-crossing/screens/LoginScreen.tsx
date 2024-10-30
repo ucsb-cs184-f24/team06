@@ -3,6 +3,7 @@ import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'rea
 import { FIREBASE_AUTH } from '../FirebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
+import MainScreens from "./MainScreens"
 
 const LoginScreen = () => {
   const [email, setEmail] = useState<string>('');
@@ -16,7 +17,7 @@ const LoginScreen = () => {
     try {
         const user = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
         console.log(user);
-        // add navigation to home screen/main screen
+        navigation.navigate('MainScreens');
     } catch (error) {
         alert('Login failed: ' + error);
         console.log(error);

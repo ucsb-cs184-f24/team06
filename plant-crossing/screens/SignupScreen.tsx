@@ -1,9 +1,9 @@
-// SignupScreen.tsx
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { FIREBASE_AUTH } from '../FirebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
+import MainScreens from "./MainScreens"
 
 const SignupScreen = () => {
   const [email, setEmail] = useState<string>('');
@@ -17,8 +17,9 @@ const SignupScreen = () => {
   const handleSignup = async () => {
     setLoading(true);
     try {
-        const user = await createUserWithEmailAndPassword(FIREBASE_AUTH,email, password);
+        const user = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
         console.log(user);
+        navigation.navigate('MainScreens');
     } catch (error) {
         alert('Signup failed: ' + error);
         console.log(error);

@@ -17,11 +17,11 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      {/* <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
-      </Stack.Navigator> */}
-      <MainScreens />
+        <Stack.Screen name="MainScreens" component={MainScreens} options={{ headerLeft: () => null }} />
+      </Stack.Navigator>
       {showHomeScreen && <HomeScreen onAnimationComplete={handleAnimationComplete} />}
     </NavigationContainer>
   );
