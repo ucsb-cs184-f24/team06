@@ -1,3 +1,4 @@
+import { Rarity } from "./Plant";
 export class Item {
   private name: string; // name of item
   private price: number; // cost of item

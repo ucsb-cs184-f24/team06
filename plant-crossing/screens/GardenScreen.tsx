@@ -1,6 +1,8 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
+import { GardenGrid } from '../data-structures/GardenPlots';
+import Draggable from 'react-draggable'; 
 
   type InvItemProps = {
     item: InvItemData;
@@ -56,8 +58,8 @@ export default function GardenScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Garden Page</Text>
-      <Text style={styles.gardenSection}>placeholder</Text>
+      {/* <Text style={styles.gardenSection}>placeholder</Text> */}
+      <GardenGrid></GardenGrid> 
       <FlatList
           style={styles.inventorySection}
           data={DATA}
@@ -84,6 +86,10 @@ const styles = StyleSheet.create({
   },
   gardenSection: {
     flex: 3,
+  },
+  plotSection: {
+    flex: 1,
+    backgroundColor: '#bd7743',
   },
   inventorySection: {
     flex: 1,
