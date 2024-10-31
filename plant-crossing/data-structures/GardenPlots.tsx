@@ -10,8 +10,8 @@ export class GardenPlot {
     private costsToUnlock: number[];
     public constructor(){ // 4 x 4 grid, last row locked
         this.plots = [];
-        let numUnlocked = 7;
-        let numLocked = 9;
+        let numUnlocked = 12;
+        let numLocked = 4;
         
         for(let i = 0; i < numUnlocked; i++){
             this.plots.push(new Plot(true));
@@ -28,30 +28,31 @@ export class GardenPlot {
     }
 }
 
-const startingSeeds = [ // can change this later or pull randomly from items.ts
+const plantedSeeds = [ // can change this later or pull randomly from items.ts
     new Seed("Fern Seed", Rarity.common, 2, 7),
-    null,
-    null,
-    null,
-    null,
     new Seed("Rose Seed", Rarity.common, 5, 5),
     new Seed("Cherry Blossom Seed", Rarity.rare, 5, 5),
     null,
     null,
     null,
     null,
+    null,
+    null,
+    null,
+    null,
     null
 ];
-const testSeed = new Seed("Test Seed Planted", Rarity.legendary, 10, 10); // to test seed planting
 
+// TO ADD: the player garden should be saved per user 
 const playerGarden = new GardenPlot();
 const playerPlots = playerGarden.getPlots();
 playerPlots.map((plot, index) => {
-    const seed = startingSeeds[index];
+    const seed = plantedSeeds[index];
     if(seed && plot.getUnlocked()){
         plot.plantSeed(seed);
     }
 });
+
 const columns = 4;
 const screenWidth = Dimensions.get('window').width;
 const plotSize = screenWidth / columns;
@@ -65,22 +66,24 @@ const Item = ({title}: itemProps) => (
     </View>
 );
 
-export const GardenGrid = () => {
+export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots()); // Use state to track plots
 
-    const handlePress = (item:Plot, index: number) => {
-        if(item?.getUnlocked()){
-            if(item.getSeed()){ // TO ADD: watering logic goes here
-                item.getSeed()?.waterSeed();
-            } else{ // TO ADD: plant specific plant here
-                item.plantSeed(testSeed);
+    const handlePress = (plot:Plot, index: number) => {
+        if(plot?.getUnlocked()){
+            if(plot.getSeed()){ // TO ADD: watering logic goes here
+                plot.getSeed()?.waterSeed();
+            } else if (selectedItem){
+                plot.plantSeed(selectedItem);
+                onSeedPlanted(selectedItem); // tell GardenScreen to remove from inventory
+                setSelectedItem(null);
             }
         }
         else{ // unlocks plot, TO ADD: should cost coins to unlock plot
-            item.setUnlocked(true);
+            plot.setUnlocked(true);
         }
         const updatedPlots = [...plots]; // this seems inefficient, (but follows react standards, so keep it?)
-        updatedPlots[index] = item;
+        updatedPlots[index] = plot;
         setPlots(updatedPlots);
     };
 
@@ -148,7 +151,15 @@ const styles = StyleSheet.create({
         marginVertical: 0,
         marginHorizontal: 0,
     },
-    lockedItem: {
+    readyToPlantItem: { // highlight tile if something can be planted here
+        backgroundColor: '#ddeeee',
+        padding: 2,
+        height: plotSize,
+        width: plotSize,
+        marginVertical: 0,
+        marginHorizontal: 0,
+    },
+    lockedItem: { // tile is locked
         backgroundColor: '#550000',
         padding: 2,
         height: plotSize,
