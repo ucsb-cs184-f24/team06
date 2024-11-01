@@ -5,6 +5,7 @@ import MainScreens from './screens/MainScreens';
 import HomeScreen from './screens/HomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
+import './global';
 
 const Stack = createStackNavigator();
 
@@ -18,8 +19,8 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Signup" component={SignupScreen} />
+        {/* <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="Signup" component={SignupScreen} /> */}
         <Stack.Screen name="MainScreens" component={MainScreens} options={{ headerLeft: () => null }} />
       </Stack.Navigator>
       {showHomeScreen && <HomeScreen onAnimationComplete={handleAnimationComplete} />}

@@ -2,6 +2,11 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
+    "paths": {
+      "@/*": ["./*"],
+      "@assets/*": ["./assets/*"],
+      "@components/*": ["./components/*"]
+    }
   },
   "extends": "expo/tsconfig.base"
 }
