@@ -1,76 +1,37 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
+import { Seed } from '../data-structures/Seed'
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
 import { GardenGrid } from '../data-structures/GardenPlots';
-import Draggable from 'react-draggable'; 
-
-  type InvItemProps = {
-    item: InvItemData;
-    onPress: () => void;
-    backgroundColor: string;
-    textColor: string;
-  };
-
-  type InvItemData = {
-    id: string;
-    title: string;
-  };
-
-  // TODO: replace this with inventory data structure
-  const DATA: InvItemData[] = [
-    {
-      id: '1',
-      title: 'First Item',
-    },
-    {
-      id: '2',
-      title: 'Second Item',
-    },
-    {
-      id: '3',
-      title: 'Third Item',
-    },
-  ];
-  
-  const InvItem = ({item, onPress, backgroundColor, textColor}: InvItemProps) => (
-    <TouchableOpacity onPress={onPress} style={[styles.invItem, {backgroundColor}]}>
-      <Text style={[styles.invText, {color: textColor}]}>{item.title}</Text>
-    </TouchableOpacity>
-  );
+import { PlayerInventory } from '../data-structures/InventoryBar';
 
 export default function GardenScreen() {
+  const [selectedItem, setSelectedItem] = useState<Seed | null>(null);
+  const [seedToRemove, setSeedToRemove] = useState<Seed | null>(null);
 
-  const [selectedId, setSelectedId] = useState<string>();
-
-  const renderItem = ({item}: {item: InvItemData}) => {
-    const backgroundColor = item.id === selectedId ? '#8ba286' : '#d1dbcd';
-    const color = item.id === selectedId ? 'white' : 'black';
-
-    return (
-      <InvItem
-        item={item}
-        onPress={() => setSelectedId(item.id)}
-        backgroundColor={backgroundColor}
-        textColor={color}
-      />
-    );
+  const handleItemSelected = (item: Seed) => {
+    setSelectedItem(item); // select item from inventory
   };
 
+  const handleSeedPlanted = (item: Seed) => {
+    setSelectedItem(null); 
+    setSeedToRemove(item); // seed is planted, needs to be removed from inventory
+  }
+
   return (
-    <View style={styles.container}>
-      {/* <Text style={styles.gardenSection}>placeholder</Text> */}
-      <GardenGrid></GardenGrid> 
-      <FlatList
-          style={styles.inventorySection}
-          data={DATA}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-          extraData={selectedId}
-          horizontal={true}
+      <View style={styles.container}>
+        <GardenGrid 
+          selectedItem={selectedItem} 
+          setSelectedItem={setSelectedItem}
+          onSeedPlanted={handleSeedPlanted} // tell inventory to delete item once planted
         />
-      <StatusBar style="auto" />
-    </View>
-  );
+        <PlayerInventory 
+          onItemSelected={handleItemSelected} 
+          seedToRemove={seedToRemove} // Pass the item to remove from PlayerInventory
+        />
+        <StatusBar style="auto" />
+      </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -96,7 +57,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#ededed',
   },
   invItem: {
-    backgroundColor: '#d1dbcd', // #d1dbcd
+    backgroundColor: '#d1dbcd',
     padding: 20,
     width: 150,
     marginVertical: 16,
