@@ -1,5 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, Animated, StyleSheet } from 'react-native';
+import Loader from '../components/Loader';
+import LottieLoader from '../components/LottieLoader';
 
 const HomeScreen = ({ onAnimationComplete }) => {
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -25,18 +27,20 @@ const HomeScreen = ({ onAnimationComplete }) => {
   }, [fadeAnim, scaleAnim, onAnimationComplete]);
 
   return (
-    <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
-      <Animated.Text
-        style={{
-          fontSize: 80,
-          transform: [{ scale: scaleAnim }],
-          textAlign: 'center',
-          color: "#39c900",
-        }}
-      >
-        Plant{"\n"}Crossings
-      </Animated.Text>
-    </Animated.View>
+    <Loader />
+    // <LottieLoader />
+    // <Animated.View style={[styles.container, { opacity: fadeAnim }]}>
+    //   <Animated.Text
+    //     style={{
+    //       fontSize: 80,
+    //       transform: [{ scale: scaleAnim }],
+    //       textAlign: 'center',
+    //       color: "#39c900",
+    //     }}
+    //   >
+    //     Plant{"\n"}Crossings
+    //   </Animated.Text>
+    // </Animated.View>
   );
 };
 
