@@ -12,6 +12,9 @@
 
 - I played around with the Shop, only seeds are available now. Planning on finishing HW3.
 
+## Grace Feng
+- I reviewed Cap's PR and started HW03. Planning to finish HW03 by Friday -- idea is to integrate a daily lottery feature into the app with phone-shake interactivity.
+
 ## Elijah Frankle
 
 - Found some UI content for bottom tab and implemented them. Planning on working on an animated related task for HW3.
