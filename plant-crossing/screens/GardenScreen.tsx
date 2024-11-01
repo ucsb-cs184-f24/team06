@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { GardenGrid } from "../data-structures/GardenPlots";
 import { Plant, Rarity } from "../data-structures/Plant"; // Adjust the path as necessary
+import { PlayerInventory } from '../data-structures/InventoryBar';
 
 type InvItemProps = {
   item: InvItemData;
@@ -60,6 +61,8 @@ export default function GardenScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [nickname, setNickname] = useState("");
   const [plants, setPlants] = useState<Plant[]>([]);
+  const [selectedItem, setSelectedItem] = useState<Seed | null>(null);
+  const [seedToRemove, setSeedToRemove] = useState<Seed | null>(null);
 
   const handleSelectSeed = (item: InvItemData) => {
     setSelectedId(item.id);
@@ -87,67 +90,63 @@ export default function GardenScreen() {
     }
   };
 
-  const renderItem = ({ item }: { item: InvItemData }) => {
-    const backgroundColor = item.id === selectedId ? "#8ba286" : "#d1dbcd";
-    const color = item.id === selectedId ? "white" : "black";
 
-    return (
-      <InvItem
-        item={item}
-        onPress={() => handleSelectSeed(item)}
-        backgroundColor={backgroundColor}
-        textColor={color}
-      />
-    );
+  const handleItemSelected = (item: Seed) => {
+    setSelectedItem(item); // select item from inventory
   };
 
-  return (
-    <View style={styles.container}>
-      <GardenGrid plants={plants} />
-      <FlatList
-        style={styles.inventorySection}
-        data={DATA}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        extraData={selectedId}
-        horizontal={true}
-      />
+  const handleSeedPlanted = (item: Seed) => {
+    setSelectedItem(null); 
+    setSeedToRemove(item); // seed is planted, needs to be removed from inventory
+  }
 
-      {/* Modal for entering plant nickname */}
-      <Modal
-        visible={modalVisible}
-        transparent={true}
-        animationType="slide"
-        onRequestClose={() => {
-          setModalVisible(false);
-          setSelectedId(undefined);
-        }}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={{ fontSize: 18, marginBottom: 10 }}>
-              Name Your Plant (Optional):
-            </Text>
-            <TextInput
-              placeholder="Plant Name"
-              value={nickname}
-              onChangeText={setNickname}
-              style={styles.textInput}
-            />
-            <Button title="Plant Seed" onPress={handlePlantSeed} />
-            <Button
-              title="Cancel"
-              onPress={() => {
-                setModalVisible(false);
-                setSelectedId(undefined);
-              }}
-              color="gray"
-            />
+  return (
+      <View style={styles.container}>
+        <GardenGrid 
+          selectedItem={selectedItem} 
+          setSelectedItem={setSelectedItem}
+          onSeedPlanted={handleSeedPlanted} // tell inventory to delete item once planted
+        />
+        <PlayerInventory 
+          onItemSelected={handleItemSelected} 
+          seedToRemove={seedToRemove} // Pass the item to remove from PlayerInventory
+        />
+        {/* Modal for entering plant nickname */}
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => {
+            setModalVisible(false);
+            setSelectedId(undefined);
+          }}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={{ fontSize: 18, marginBottom: 10 }}>
+                Name Your Plant (Optional):
+              </Text>
+              <TextInput
+                placeholder="Plant Name"
+                value={nickname}
+                onChangeText={setNickname}
+                style={styles.textInput}
+              />
+              <Button title="Plant Seed" onPress={handlePlantSeed} />
+              <Button
+                title="Cancel"
+                onPress={() => {
+                  setModalVisible(false);
+                  setSelectedId(undefined);
+                }}
+                color="gray"
+              />
+            </View>
           </View>
-        </View>
-      </Modal>
-    </View>
-  );
+        </Modal>
+        <StatusBar style="auto" />
+      </View>
+    );
 }
 
 const styles = StyleSheet.create({
@@ -158,7 +157,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#ededed",
   },
   invItem: {
-    backgroundColor: "#d1dbcd",
+    backgroundColor: '#d1dbcd',
     padding: 20,
     width: 150,
     marginVertical: 16,
