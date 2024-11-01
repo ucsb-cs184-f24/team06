@@ -19,7 +19,7 @@ export const startingSeeds = [
 
 export function getStartingInventory(){
     let seeds = [];
-    for(let i = 0; i < 5; i++){
+    for(let i = 0; i < 8; i++){
         seeds.push(startingSeeds[Math.floor(Math.random()* startingSeeds.length)])
     }
     console.log(seeds);

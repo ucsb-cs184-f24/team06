@@ -4,6 +4,7 @@ import { Seed } from "./Seed";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import { Box, ThreeJSDefault, ThreeJSDefaultV2} from '../data-structures/ThreeJS'; // Assuming Box is saved in a separate file
 
 export class GardenPlot { 
     private plots: Plot[];
@@ -95,7 +96,17 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                     let content;
                     if (item.getUnlocked()) {
                         if (item.getSeed()) {
-                            content = <Item title={item.getSeed().getType()} />;
+                            // content = <Item title={item.getSeed().getType()} />;
+                            if(item.getSeed().getType() == "Sunflower Seed" || item.getSeed().getType() == "Rose Seed" || item.getSeed().getType() == "Fern Seed"){
+                                content = <View style={styles.canvasContainer}>
+                                    <ThreeJSDefault></ThreeJSDefault>
+                                </View>
+                            } else {
+                                content = <View style={styles.canvasContainer}>
+                                    <ThreeJSDefaultV2></ThreeJSDefaultV2>
+                                </View>
+                            }
+                            
                         } else {
                             content = <View style={styles.emptyItem} />;
                         }
@@ -135,6 +146,11 @@ const styles = StyleSheet.create({
         fontSize: 22,
         color: 'black',
     },
+    canvasContainer: {
+        width: 100,
+        height: 98, // Adjust height based on your layout
+        backgroundColor: 'lightgrey', // Background color for visual separation
+      },
     item: {
         backgroundColor: '#abf333',
         padding: 2,

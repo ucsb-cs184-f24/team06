@@ -5,7 +5,7 @@ import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native
 import { GardenGrid } from '../data-structures/GardenPlots';
 import { PlayerInventory } from '../data-structures/InventoryBar';
 import { Canvas, useFrame } from '@react-three/fiber/native';
-import { Box, ThreeJS } from '../data-structures/ThreeJS'; // Assuming Box is saved in a separate file
+import { Box, ThreeJSDefault } from '../data-structures/ThreeJS'; // Assuming Box is saved in a separate file
 
 export default function GardenScreen() {
   const [selectedItem, setSelectedItem] = useState<Seed | null>(null);
@@ -23,15 +23,6 @@ export default function GardenScreen() {
   return (
       <View style={styles.container}>
         {/* Add the Three.js Canvas */}
-        <View style={styles.canvasContainer}>
-          <Canvas>
-            <ambientLight intensity={Math.PI / 2} />
-            <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} decay={0} intensity={Math.PI} />
-            <pointLight position={[-10, -10, -10]} decay={0} intensity={Math.PI} />
-            <Box position={[-1.2, 0, 0]} />
-            <Box position={[1.2, 0, 0]} />
-          </Canvas>
-        </View>
         <GardenGrid 
           selectedItem={selectedItem} 
           setSelectedItem={setSelectedItem}
