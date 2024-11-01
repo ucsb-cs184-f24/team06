@@ -1,3 +1,5 @@
+import { Plant, Rarity } from './Plant';
+import { Seed } from './Seed';
 
 
 class Player {

@@ -1,7 +1,10 @@
-import Player from "../data-structures/Player";
-import { ShopItem } from "../data-structures/Item";
-import { Rarity, availableItems, rarityWeights } from "../data/items";
+import Player from "./Player";
+import { ShopItem } from "./Item";
+import { availableItems, rarityWeights } from "../data/items";
 import { weightedRandomSelection } from "../utils/weightedRandom";
+import { Plant, Rarity } from './Plant';
+import { Seed } from './Seed';
+
 
 export default class Shop {
   private items: ShopItem[]; // list of items available in the shop
