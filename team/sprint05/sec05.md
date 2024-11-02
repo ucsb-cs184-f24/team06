@@ -4,7 +4,7 @@ Finished HW03 by integrating a 3D model for shop items display. Planning to work
 ## Sophia Tran
 Submitted HW3, talked about different design options for the inventory screen and decided on the bar at the bottom. Planning to look into saving player data in Firebase, or tackling a different issue.
 ## Samantha West
-
+Worked on HW3, working on potential custom naming component for plants. Planning on adding background music to the game.
 ## Grace Feng
 Pitched daily random seed idea for HW03, planning to finish that today. Also added two tasks regarding consolidating plant/seed/shopp item types and building plant/seed registry.
 ## Elijah Frankle
