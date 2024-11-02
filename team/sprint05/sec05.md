@@ -2,7 +2,7 @@
 ## Cappillen Lee
 Finished HW03 by integrating a 3D model for shop items display. Planning to work on adding buy shop items feature.
 ## Sophia Tran
-
+Submitted HW3, talked about different design options for the inventory screen and decided on the bar at the bottom. Planning to look into saving player data in Firebase, or tackling a different issue.
 ## Samantha West
 
 ## Grace Feng
