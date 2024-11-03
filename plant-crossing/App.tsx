@@ -5,6 +5,8 @@ import MainScreens from "./screens/MainScreens";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
 import SignupScreen from "./screens/SignupScreen";
+import ShopScreen from "./screens/ShopScreen";
+import FreeSeed from "./screens/FreeSeed";
 import { Audio } from "expo-av";
 
 const Stack = createStackNavigator();
