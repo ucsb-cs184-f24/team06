@@ -48,7 +48,7 @@ export default function App() {
         <Stack.Screen
           name="MainScreens"
           component={MainScreens}
-          options={{ headerLeft: () => null }}
+          options={{ headerShown: false }}
         />
         <Stack.Screen name="Shop" component={ShopScreen} />
         <Stack.Screen
