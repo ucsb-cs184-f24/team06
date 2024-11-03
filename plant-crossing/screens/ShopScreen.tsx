@@ -11,9 +11,11 @@ import {
   TouchableOpacity,
   SafeAreaView,
   Alert,
+  Button,
 } from "react-native";
 import ShopItem from "../components/ShopItem";
 import Shop from "../data-structures/Shop";
+import { useNavigation } from "@react-navigation/native";
 
 interface ShopItemData {
   id: string;
@@ -28,6 +30,7 @@ export default function ShopScreen() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ShopItemData | null>(null);
   const windowWidth = Dimensions.get("window").width;
+  const navigation = useNavigation();
 
   useEffect(() => {
     const shop = new Shop();
@@ -64,6 +67,10 @@ export default function ShopScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
+      <Button
+        title="Get a Free Seed!"
+        onPress={() => navigation.navigate("FreeSeed")}
+      />
       <FlatList
         data={shopItems}
         renderItem={renderItem}
