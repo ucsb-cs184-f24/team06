@@ -1,15 +1,23 @@
 import { TouchableOpacity, Image, Text, StyleSheet, View } from "react-native";
 
-const ShopItem = ({ item, width }: { item: any; width: number }) => {
+interface ShopItemProps {
+  name: string;
+  price: string;
+  image: string;
+  width: number;
+  onPress: () => void;
+}
+
+const ShopItem = ({ name, price, image, width, onPress }: ShopItemProps) => {
   return (
     <View style={[styles.itemWrapper, { width }]}>
-      <TouchableOpacity style={styles.itemContainer}>
+      <TouchableOpacity style={styles.itemContainer} onPress={onPress}>
         <Image
-          source={{ uri: item.image }}
+          source={{ uri: image }}
           style={[styles.itemImage, { width: width - 20, height: width - 20 }]}
         />
-        <Text style={styles.itemName}>{item.name}</Text>
-        <Text style={styles.itemPrice}>{item.price} coins</Text>
+        <Text style={styles.itemName}>{name}</Text>
+        <Text style={styles.itemPrice}>{price} coins</Text>
       </TouchableOpacity>
     </View>
   );
@@ -19,7 +27,7 @@ export default ShopItem;
 
 const styles = StyleSheet.create({
   itemWrapper: {
-    padding: "1%", // Removed the hardcoded width
+    padding: "1%",
   },
   itemContainer: {
     backgroundColor: "#fff",
@@ -27,6 +35,13 @@ const styles = StyleSheet.create({
     padding: 10,
     marginVertical: 8,
     elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   itemImage: {
     borderRadius: 8,
