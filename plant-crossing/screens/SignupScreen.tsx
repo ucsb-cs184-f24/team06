@@ -4,6 +4,7 @@ import { FIREBASE_AUTH } from '../FirebaseConfig';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import MainScreens from "./MainScreens"
+import { initializeUser } from '../managers/UserServices';
 
 const SignupScreen = () => {
   const [email, setEmail] = useState<string>('');
@@ -19,6 +20,7 @@ const SignupScreen = () => {
     try {
         const user = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
         console.log(user);
+        await initializeUser();
         navigation.navigate('MainScreens');
     } catch (error) {
         alert('Signup failed: ' + error);
