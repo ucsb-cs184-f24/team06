@@ -4,10 +4,10 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import GardenScreen from './GardenScreen';
 import ShopScreen from './ShopScreen';
 import FriendsScreen from './FriendsScreen';
+import Header from '../components/Header';
 import GardenIcon from '../assets/plant-icon.png';
 import ShopIcon from '../assets/shop-icon.png';
 import FriendsIcon from '../assets/friends-icon.png';
-
 
 const Tab = createBottomTabNavigator();
 
@@ -15,7 +15,7 @@ const MainScreens = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        headerShown: false,
+        header: () => <Header />,
         tabBarShowLabel: false,
         tabBarIcon: ({ focused, size }) => {
           let iconSource;
@@ -23,14 +23,14 @@ const MainScreens = () => {
           if (route.name === 'Garden') {
             iconSource = GardenIcon;
           } else if (route.name === 'Shop') {
-            iconSource = focused ? ShopIcon : ShopIcon;
+            iconSource = ShopIcon;
           } else if (route.name === 'Friends') {
-            iconSource = focused ? FriendsIcon : FriendsIcon;
+            iconSource = FriendsIcon;
           }
           return (
             <Image
               source={iconSource}
-              style={{ width: size*iconScale, height: size*iconScale }}
+              style={{ width: size * iconScale, height: size * iconScale }}
               resizeMode="contain"
             />
           );
