@@ -41,3 +41,19 @@ In **"Plant Crossing,"** there are two main types of users with distinct roles a
 - Can moderate in-game trading and interactions to ensure a fair and positive community experience.
 - Can add, edit, or remove items in the shop (e.g., adding limited-time plants).
 - Can ban or restrict users who violate community guidelines or attempt to exploit the game.
+
+## Installing Plant Crossing
+## Prerequisites 
+- **Expo Go App**: Download from the App or Google Play Store, or through https://expo.dev/go.
+- **npm (version 10.9.0)**: Can be downloaded from Node.js: https://nodejs.org/en. 
+
+## Installation
+- Clone the GitHub repository.
+``` git clone https://github.com/ucsb-cs184-f24/team06.git ```
+- Enter the project directory.
+``` cd plant-crossing ```
+- Install dependencies.
+``` npm install ```
+- Start the development server with Expo Go.
+``` npx expo start --tunnel ```
+- Scan the QR code to access Plant Crossing.
