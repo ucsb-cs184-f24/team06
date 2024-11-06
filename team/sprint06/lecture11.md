@@ -25,5 +25,7 @@
 - Work on 2D graphics.
   
 ## Richard Fang
-- Didn't contribute much because of code freeze.
+- Two PRs: User collection data schema in Firebase
+- Modal for buying plant seed items.
+- HW3 submitted.
 - Will continue on working on the next tasks.
