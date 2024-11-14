@@ -1,9 +1,14 @@
-import { Rarity } from "./Plant";
-export class Item {
+import { baseGestureHandlerProps } from "react-native-gesture-handler/lib/typescript/handlers/gestureHandlerCommon";
+import { Seed, Rarity } from "./Seed";
+
+export class Item extends Seed{
   private name: string; // name of item
+  private rarity: Rarity;
+  private baseGrowthTime: number;
   private price: number; // cost of item
 
   public constructor(name: string, price: number) {
+    super(name, rarity, baseGrowthTime, this.maxWater);
     this.name = name;
     this.price = price;
   }
