@@ -14,7 +14,7 @@
 ### Sophia Tran
 - **Role**: Implementation for HW04
 - **Planned Contribution**: Developing functionality for adding friends and displaying them on the friends page.
-- **Assessment Partner**: Esme Puzzio
+- **Assessment Partner**: Richard Fang
 
 ### Samantha West
 - **Role**: Evaluation for HW04
