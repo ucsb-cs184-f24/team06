@@ -1,6 +1,3 @@
-import { coinMapping } from '../data/items';
-import { Plant } from './Plant';
-
 // Types of rarity value for plants
 export enum Rarity {
   common,

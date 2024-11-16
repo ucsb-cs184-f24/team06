@@ -1,42 +1,32 @@
 import { baseGestureHandlerProps } from "react-native-gesture-handler/lib/typescript/handlers/gestureHandlerCommon";
 import { Seed, Rarity } from "./Seed";
 
-export class Item extends Seed{
-  private name: string; // name of item
-  private rarity: Rarity;
-  private baseGrowthTime: number;
+export class ShopItem extends Seed{
+  private seed: Seed;
   private price: number; // cost of item
 
-  public constructor(name: string, price: number) {
-    super(name, rarity, baseGrowthTime, this.maxWater);
-    this.name = name;
+  public constructor(
+    seed: Seed,
+    price: number = 5
+  ) {
+    super(seed.getType(), seed.getRarity(), seed.getGrowthTime(), seed.getMaxWater());
+    this.seed = seed;
     this.price = price;
   }
 
-  public getName() {
-    return this.name;
+  public getSeed() {
+    return this.seed;
   }
 
   public getPrice() {
     return this.price;
   }
-}
 
-export class ShopItem extends Item {
-  private itemType: "Plant" | "Seed"; // type of item sold in shop
-  private rarity: Rarity; // rarity of the item
-
-  public constructor(name: string, price: number, itemType: "Plant" | "Seed", rarity: Rarity) {
-    super(name, price);
-    this.itemType = itemType;
-    this.rarity = rarity;
+  public getName(){
+    return this.seed.getType();
   }
 
-  public getItemType() {
-    return this.itemType;
-  }
-
-  public getRarity() {
-    return this.rarity;
+  public setPrice(price: number){
+    this.price = price;
   }
 }

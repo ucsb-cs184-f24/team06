@@ -4,49 +4,21 @@ export class Plant extends Seed {
   private seed: Seed; //pass in seed when creating plant
   private nickname: string;
 
-  // // private type: string; // type of plant
-  // private nickname: string; // optional, name your plant
-  // // private age: number;
-  // // private currSprite:  // add image links later, store in plant-sprites folder?
-  // // private rarity: Rarity; // enum, types listed above
-  // // private currWater: number; // decreases over time
-  // // private maxWater: number; // scale of 10
-  // private currHappiness: number; // scale of 10
-  // private maxHappiness: number; // scale of 10
-  // private coinBoost: number; // multiplier for boosted coin production
-
   public constructor(
     seed: Seed,
     nickname: string = ""
   ) {
-    super(seed.getType(), seed.getRarity(), seed.getGrowthTime(), seed.getMaxWater());
+    super();
     this.seed = seed;
     this.nickname = nickname;
   }
-
-  // // method to reset the coin boost after the boost period ends
-  // private resetBoost() {
-  //   this.coinBoost = 1; // reset the boost to default
-  //   console.log(`${this.type}'s boost has ended.`);
-  // }
-
-  // Ppaceholder for increasing plant happiness (if needed)
-  public increaseHappiness() {}
-
-  // public getType() {
-  //   return this.type;
-  // }
-
-  // public setType(type: string) {
-  //   this.type = type;
-  // }
 
   public getAge(){
     return this.seed.getAge();
   }
 
-  public setAge(age:number){
-    this.seed.setAge(age);
+  public getRarity() {
+    return this.seed.getRarity();
   }
 
   public getNickname() {
@@ -55,10 +27,6 @@ export class Plant extends Seed {
 
   public setNickname(nickname: string) {
     this.nickname = nickname;
-  }
-
-  public setRarity(rarity: Rarity) {
-    this.seed.setRarity(rarity);
   }
 
   public getCurrWater() {
