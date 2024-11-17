@@ -1,6 +1,6 @@
 import { Plot } from "./Plot";
-import { Plant, Rarity } from "./Plant";
-import { Seed } from "./Seed";
+import { Plant } from "./Plant";
+import { Seed, Rarity } from "./Seed";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
@@ -72,7 +72,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
     const handlePress = (plot:Plot, index: number) => {
         if(plot?.getUnlocked()){
             if(plot.getSeed()){ // TO ADD: watering logic goes here
-                plot.getSeed()?.waterSeed();
+                plot.getSeed()?.water();
             } else if (selectedItem){
                 plot.plantSeed(selectedItem);
                 onSeedPlanted(selectedItem); // tell GardenScreen to remove from inventory

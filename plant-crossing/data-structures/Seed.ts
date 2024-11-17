@@ -1,26 +1,32 @@
-import { Plant, Rarity } from './Plant';
+// Types of rarity value for plants
+export enum Rarity {
+  common,
+  uncommon,
+  rare,
+  unique,
+  legendary,
+}
+
+// Use for shop probabilities and growth boost
+export const rarityValue: { [key in Rarity]: number } = {
+  [Rarity.common]: 1,
+  [Rarity.uncommon]: 2,
+  [Rarity.rare]: 3,
+  [Rarity.unique]: 4,
+  [Rarity.legendary]: 5,
+};
 
 export class Seed {
   private type: string; // type of plant this seed will grow into
   private rarity: Rarity; // seed rarity determines the rarity of the resulting plant
   private growthTime: number; // time in hours it takes for the seed to become a plant
-
   private age: number; // tracks how much time the seed has spent growing
-
   private currWater: number; // water level of the seed
   private maxWater: number; // maximum water capacity for the seed
   private growthBoost: number; // boost factor for reducing growth time
 
   private isPlanted: boolean; // whether the seed has been planted
   private growthInterval: NodeJS.Timeout | null; // interval ID for growth tracking
-
-  // growth time multipliers based on rarity
-  private static rarityGrowthMultipliers: { [key in Rarity]: number } = {
-    [Rarity.common]: 1,
-    [Rarity.rare]: 1.5,
-    [Rarity.unique]: 2,
-    [Rarity.legendary]: 3,
-  };
 
   public constructor(
     type: string = "defaultSeed",
@@ -30,8 +36,7 @@ export class Seed {
   ) {
     this.type = type;
     this.rarity = rarity;
-    // calculate growth time based on rarity multiplier
-    this.growthTime = baseGrowthTime * Seed.rarityGrowthMultipliers[rarity];
+    this.growthTime = baseGrowthTime;
     this.age = 0; // seeds start at age 0
     this.currWater = maxWater;
     this.maxWater = maxWater;
@@ -46,9 +51,9 @@ export class Seed {
   }
 
   // water the seed, refilling water and applying a growth time boost
-  public waterSeed() {
+  public water() {
     this.currWater = this.maxWater; // refill water to max
-    this.growthBoost = 0.9; // apply a 10% growth time reduction
+    this.growthBoost = 1 + (.5 * rarityValue[this.rarity]); // plants get a bigger growth boost if rare
     console.log(`${this.type} has been watered. Growth boost active!`);
 
     // set a timer to remove the boost after a period
@@ -87,12 +92,33 @@ export class Seed {
     this.growthTime = growthTime;
   }
 
-  public getAge() {
+  public getAge(){
     return this.age;
   }
 
   public setAge(age: number) {
     this.age = age;
+  }
+
+  public getCurrWater(){
+    return this.currWater;
+  }
+
+  public setCurrWater(currWater: number){
+    this.currWater = currWater;
+  }
+
+  public getMaxWater(){
+    return this.maxWater;
+  }
+  
+
+  public getGrowthBoost(){
+    return this.growthBoost;
+  }
+
+  public setGrowthBoost(growthBoost: number){
+    this.growthBoost = growthBoost;
   }
 
   // simulate growth over time, considering the growth boost
@@ -108,7 +134,7 @@ export class Seed {
   public toPlant() {
     if (this.age >= this.growthTime) {
       console.log(`${this.type} has been transformed into a plant.`);
-      return new Plant(this.type, "", this.rarity, 5, 5); // create a new Plant object with default values
+      return new Plant(this, ""); // create a new Plant object with default values
     }
     return null; // seed not ready yet
   }

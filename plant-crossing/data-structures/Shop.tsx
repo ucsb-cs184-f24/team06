@@ -1,6 +1,7 @@
 import Player from "../data-structures/Player";
 import { ShopItem } from "../data-structures/Item";
-import { Rarity, availableItems, rarityWeights } from "../data/items";
+import { availableSeeds } from "../data/items";
+import { rarityValue } from "./Seed";
 import { weightedRandomSelection } from "../utils/weightedRandom";
 
 export default class Shop {
@@ -22,24 +23,17 @@ export default class Shop {
   private generateRandomItems(count: number): ShopItem[] {
     const selectedItems: ShopItem[] = [];
 
-    // Filter available items to include only seeds
-    const seedItems = availableItems.filter(
-      (item) => item.getItemType() === "Seed"
-    );
-
-    if (seedItems.length === 0) {
+    if (availableSeeds.length === 0) {
       console.warn("No seed items available in the shop inventory.");
       return selectedItems; // Return an empty array if no seeds are available
     }
 
+    const weights = availableSeeds.map((item) => 50/rarityValue[item.getRarity()]);
     for (let i = 0; i < count; i++) {
-      const weights = seedItems.map((item) => rarityWeights[item.getRarity()]);
-
-      // Select a random item from the filtered seed items
-      const randomItem = weightedRandomSelection(seedItems, weights);
-      selectedItems.push(randomItem);
+      // Select a random seed based on rarity
+      const randomSeed = weightedRandomSelection(availableSeeds, weights);
+      selectedItems.push(new ShopItem(randomSeed, randomSeed.getRarity() * 2));
     }
-
     return selectedItems;
   }
 
@@ -56,7 +50,7 @@ export default class Shop {
 
   // method to buy an item
   public buyItem(player: Player, itemName: string) {
-    const item = this.items.find((shopItem) => shopItem.getName() === itemName);
+    const item = this.items.find((shopItem) => shopItem.getSeed().getType() === itemName);
 
     if (!item) {
       console.log("Item not found.");
@@ -72,15 +66,7 @@ export default class Shop {
     player.setCoins(player.getCoins() - item.getPrice());
 
     // add the item to the player's inventory based on the item type
-    if (item.getItemType() === "Seed") {
-      player
-        .getSeedInventory()
-        .push(new Seed(item.getName(), Rarity.common, 5));
-    } else if (item.getItemType() === "Plant") {
-      player
-        .getPlantInventory()
-        .push(new Plant(item.getName(), "", Rarity.common, 5, 5));
-    }
+    player.getSeedInventory().push(item.getSeed());
 
     console.log(`${itemName} bought successfully!`);
     return true;
