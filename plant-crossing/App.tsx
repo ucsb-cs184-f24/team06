@@ -8,18 +8,25 @@ import SignupScreen from "./screens/SignupScreen";
 import ShopScreen from "./screens/ShopScreen";
 import FreeSeed from "./screens/FreeSeed";
 import { Audio } from "expo-av";
+import { useFonts } from 'expo-font';
 
 const Stack = createStackNavigator();
 
 export default function App() {
   const [showHomeScreen, setShowHomeScreen] = useState(true);
 
+  // Load your custom font
+  const [fontsLoaded] = useFonts({
+    'PressStart2P': require('./assets/fonts/PressStart2P-Regular.ttf'), // Adjust path as needed
+  });
+
+
   const handleAnimationComplete = () => {
     setShowHomeScreen(false);
   };
 
   useEffect(() => {
-    let sound;
+    let sound: Audio.Sound;
 
     // function to load and play background music
     async function playBackgroundMusic() {
@@ -42,7 +49,11 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator initialRouteName="Login">
+      <Stack.Navigator 
+        initialRouteName="Login"
+        screenOptions={{
+          headerShown: false
+        }}>
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="Signup" component={SignupScreen} />
         <Stack.Screen
