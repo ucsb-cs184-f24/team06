@@ -5,6 +5,8 @@ import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
 import MainScreens from "./MainScreens"
 import { initializeUser } from '../managers/UserServices';
+import { globalStyles } from '../styles/globalStyles';
+import { GameButton } from '../components/GameButton';
 
 const SignupScreen = () => {
   const [email, setEmail] = useState<string>('');
@@ -31,10 +33,10 @@ const SignupScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
+      <Text style={[styles.title, globalStyles.text]}>Sign Up</Text>
 
       <TextInput
-        style={styles.input}
+        style={[styles.input, globalStyles.text]}
         placeholder="Email"
         value={email}
         onChangeText={setEmail}
@@ -42,24 +44,29 @@ const SignupScreen = () => {
         autoCapitalize="none"
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, globalStyles.text]}
         placeholder="Password"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
       <TextInput
-        style={styles.input}
+        style={[styles.input, globalStyles.text]}
         placeholder="Confirm Password"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         secureTextEntry
       />
 
-      <Button title="Sign Up" onPress={handleSignup} />
+      <GameButton 
+        title="Sign Up" 
+        onPress={handleSignup}
+        style={{ backgroundColor: 'green' }} // Optional custom styles
+        textStyle={{ fontSize: 16 }} // Optional custom text styles
+      />
 
       <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-        <Text style={styles.link}>Already have an account? Login</Text>
+        <Text style={[styles.link, globalStyles.text]}>Already have an account? Login</Text>
       </TouchableOpacity>
     </View>
   );

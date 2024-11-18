@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Seed } from '../data-structures/Seed'
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
-import { GardenGrid } from '../data-structures/GardenPlots';
+import { GardenGrid} from '../data-structures/GardenPlots';
 import { PlayerInventory } from '../data-structures/InventoryBar';
 
 export default function GardenScreen() {
