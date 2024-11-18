@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import ShopItem from "../components/ShopItem";
 import Shop from "../data-structures/Shop";
+import FreeSeed from "./FreeSeed";
 import { useNavigation } from "@react-navigation/native";
 
 interface ShopItemData {
