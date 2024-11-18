@@ -69,20 +69,20 @@ const Item = ({title}: itemProps) => (
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots()); // Use state to track plots
 
-    const handlePress = (plot:Plot, index: number) => {
-        if(plot?.getUnlocked()){
-            if(plot.getSeed()){ // TO ADD: watering logic goes here
-                plot.getSeed()?.water();
-            } else if (selectedItem){
+    const handlePress = (plot: Plot, index: number) => {
+        if (plot?.getUnlocked()) {
+            if (plot.getSeed()) {
+                plot.getSeed()?.water(); // Simulate watering logic
+            } else if (selectedItem) {
                 plot.plantSeed(selectedItem);
-                onSeedPlanted(selectedItem); // tell GardenScreen to remove from inventory
+                onSeedPlanted(selectedItem); // Notify GardenScreen to remove from inventory
                 setSelectedItem(null);
             }
-        }
-        else{ // unlocks plot, TO ADD: should cost coins to unlock plot
+        } else { // Unlocks plot (assumes cost logic to be added)
             plot.setUnlocked(true);
         }
-        const updatedPlots = [...plots]; // this seems inefficient, (but follows react standards, so keep it?)
+
+        const updatedPlots = [...plots];
         updatedPlots[index] = plot;
         setPlots(updatedPlots);
     };
@@ -91,7 +91,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         <SafeAreaView style={styles.container}>
             <FlatList
                 data={playerGarden.getPlots()}
-                renderItem={({ item }) => {
+                renderItem={({ item, index }) => {
                     let content;
                     if (item.getUnlocked()) {
                         if (item.getSeed()) {
@@ -104,13 +104,16 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                     }
 
                     return (
-                        <TouchableOpacity onPress={() => handlePress(item)}>
+                        <TouchableOpacity
+                            onPress={() => handlePress(item, index)}
+                            testID={`plot-${index}-unlocked-${item.getUnlocked()}-seed-${item.getSeed() ? item.getSeed().getType() : 'none'}`}
+                        >
                             <View>{content}</View>
                         </TouchableOpacity>
-                    )
+                    );
                 }}
                 keyExtractor={(item, index) => item.getSeed() ? item.getSeed().getType() : `empty-${index}`}
-                numColumns = {columns}
+                numColumns={columns}
             />
         </SafeAreaView>
     );
@@ -171,14 +174,3 @@ const styles = StyleSheet.create({
         fontSize: 20
     }
 });
-
-
-
-
-
-
-
-
-
-
-

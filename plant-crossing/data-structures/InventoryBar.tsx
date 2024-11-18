@@ -7,10 +7,10 @@ import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity} from 'r
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
 //five random seeds (weighted for rarity, same as Shop)
-function getStartingInventory(){
+export function getStartingInventory() {
   let seeds = [];
-  const weights = availableSeeds.map((item) => 50/rarityValue[item.getRarity()]);
-  for(let i = 0; i < 5; i++){
+  const weights = availableSeeds.map((item) => 50 / rarityValue[item.getRarity()]);
+  for (let i = 0; i < 5; i++) {
     const randomSeed = weightedRandomSelection(availableSeeds, weights);
     seeds.push(randomSeed);
   }
