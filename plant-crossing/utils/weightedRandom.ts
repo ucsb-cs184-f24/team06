@@ -1,7 +1,8 @@
 import { ShopItem } from '../data-structures/Item';
+import { Seed } from '../data-structures/Seed';
 
 // helper function to randomly pick an item based on weights
-export function weightedRandomSelection(items: ShopItem[], weights: number[]): ShopItem {
+export function weightedRandomSelection(items: Seed[], weights: number[]): ShopItem {
   const cumulativeWeights: number[] = [];
   let sum = 0;
 
