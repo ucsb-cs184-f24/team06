@@ -1,8 +1,20 @@
-import { Seed } from "./Seed";
-import { getStartingInventory } from "../data/startingseeds";
+import { Seed, rarityValue } from "./Seed";
+import { weightedRandomSelection } from "../utils/weightedRandom";
+import { availableSeeds } from "../data/items";
 import { Inventory } from "./Inventory";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+
+//five random seeds (weighted for rarity, same as Shop)
+function getStartingInventory(){
+  let seeds = [];
+  const weights = availableSeeds.map((item) => 50/rarityValue[item.getRarity()]);
+  for(let i = 0; i < 5; i++){
+    const randomSeed = weightedRandomSelection(availableSeeds, weights);
+    seeds.push(randomSeed);
+  }
+  return seeds;
+}
 
 const playerSeeds = getStartingInventory();
 const playerInventory = new Inventory(playerSeeds);
