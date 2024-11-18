@@ -3,24 +3,24 @@ import { StyleSheet } from 'react-native';
 
 export const globalStyles = StyleSheet.create({
   text: {
-    fontFamily: 'PressStart2P',
+    fontFamily: 'LilitaOne',
   },
   textSmall: {
-    fontFamily: 'PressStart2P',
+    fontFamily: 'LilitaOne',
     fontSize: 10,
   },
   heading: {
-    fontFamily: 'PressStart2P',
+    fontFamily: 'LilitaOne',
     fontSize: 20,
   },
   subheading: {
-    fontFamily: 'PressStart2P',
+    fontFamily: 'LilitaOne',
     fontSize: 16,
   },
   button: {
-    fontFamily: 'PressStart2P',
+    fontFamily: 'LilitaOne',
   },
   input: {
-    fontFamily: 'PressStart2P',
+    fontFamily: 'LilitaOne',
   },
 });

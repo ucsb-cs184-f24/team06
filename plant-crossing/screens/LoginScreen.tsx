@@ -68,7 +68,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     paddingHorizontal: 16,
-    ...globalStyles.text,
   },
   title: {
     fontSize: 24,

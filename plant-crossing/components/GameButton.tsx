@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
   },
   buttonText: {
     color: 'white',
-    fontFamily: 'PressStart2P',
     fontSize: 14,
+    fontFamily: globalStyles.text.fontFamily,
   },
 });
