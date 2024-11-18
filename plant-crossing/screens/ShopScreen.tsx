@@ -16,6 +16,9 @@ import {
 import ShopItem from "../components/ShopItem";
 import Shop from "../data-structures/Shop";
 import { useNavigation } from "@react-navigation/native";
+import { getFirestore, doc, onSnapshot, getDoc, updateDoc, arrayUnion } from 'firebase/firestore';
+import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
+
 
 interface ShopItemData {
   id: string;
@@ -49,9 +52,60 @@ export default function ShopScreen() {
     setModalVisible(true);
   };
 
-  const handleBuy = () => {
-    Alert.alert('Success', `Successfully purchased ${selectedItem?.name}!`);
-    setModalVisible(false);
+  const handleBuy = async () => {
+    const db = FIRESTORE_DB;
+    try {
+      const user = FIREBASE_AUTH.currentUser;
+      
+      if (!user) {
+        Alert.alert('Error', 'Please log in to make a purchase.');
+        return;
+      }
+  
+      if (!selectedItem) {
+        Alert.alert('Error', 'No item selected.');
+        return;
+      }
+  
+      const userDocRef = doc(db, 'users', user.uid);
+      
+      // Get the latest user data directly from Firestore
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        Alert.alert('Error', 'User data not found.');
+        return;
+      }
+  
+      const currentCoins = userDoc.data().coins || 0;
+      const itemPrice = selectedItem.price;
+  
+      if (currentCoins < itemPrice) {
+        Alert.alert(
+          'Insufficient Coins',
+          `You need ${itemPrice - currentCoins} more coins to purchase this item.`
+        );
+        return;
+      }
+  
+      // Update the user's coins in Firestore
+      await updateDoc(userDocRef, {
+        coins: currentCoins - itemPrice,
+        seeds: arrayUnion(selectedItem.name)
+      });
+  
+      Alert.alert(
+        'Success',
+        `Successfully purchased ${selectedItem.name}! You have ${currentCoins - itemPrice} coins remaining.`
+      );
+      setModalVisible(false);
+      
+    } catch (error) {
+      console.error('Purchase error:', error);
+      Alert.alert(
+        'Error',
+        'There was an error processing your purchase. Please try again.'
+      );
+    }
   };
 
   const renderItem = ({ item }: { item: ShopItemData }) => (
@@ -190,4 +244,4 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
   },
-}=]]
+});

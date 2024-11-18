@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { getFirestore, doc, onSnapshot } from 'firebase/firestore';
-import { FIREBASE_AUTH } from '../FirebaseConfig';
+import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 
 interface UserData {
   email: string;
@@ -10,7 +10,7 @@ interface UserData {
 
 const Header = () => {
   const [userData, setUserData] = useState<UserData>({ email: '', coins: 0 });
-  const db = getFirestore();
+  const db = FIRESTORE_DB;
 
   useEffect(() => {
     const user = FIREBASE_AUTH.currentUser;
