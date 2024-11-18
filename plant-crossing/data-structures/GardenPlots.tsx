@@ -78,7 +78,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
     const handlePress = (plot: any, index: any) => {
         if (plot?.getUnlocked()) {
             if (plot.getSeed()) {
-                plot.getSeed()?.waterSeed();
+                plot.getSeed()?.water();
             } else if (selectedItem) {
                 plot.plantSeed(selectedItem);
                 onSeedPlanted(selectedItem);

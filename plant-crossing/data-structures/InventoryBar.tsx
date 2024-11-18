@@ -5,7 +5,6 @@ import { Inventory } from "./Inventory";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 
-//five random seeds (weighted for rarity, same as Shop)
 function getStartingInventory(){
   let seeds = [];
   const weights = availableSeeds.map((item) => 50/rarityValue[item.getRarity()]);
@@ -42,19 +41,26 @@ export const PlayerInventory = ({ onItemSelected, seedToRemove }: PlayerInventor
     }
   };
 
-  // Create rows of 4 items
+  // Always maintain at least one row
   const rows = [];
-  for (let i = 0; i < inventoryItems.length; i += 4) {
-    const row = inventoryItems.slice(i, i + 4);
+  const itemsPerRow = 4;
+  const minRows = 3; // Minimum number of rows to show
+  
+  // Fill with actual items
+  for (let i = 0; i < Math.max(inventoryItems.length, minRows * itemsPerRow); i += itemsPerRow) {
+    const row = inventoryItems.slice(i, i + itemsPerRow);
     // Fill empty slots with null to maintain grid structure
-    while (row.length < 4) {
+    while (row.length < itemsPerRow) {
       row.push(null);
     }
     rows.push(row);
   }
 
   return (
-    <ScrollView style={styles.inventoryContainer}>
+    <ScrollView 
+      style={styles.inventoryContainer}
+      contentContainerStyle={styles.scrollContent}
+    >
       <View style={styles.gridContainer}>
         {rows.map((row, rowIndex) => (
           <View key={`row-${rowIndex}`} style={styles.row}>
@@ -93,15 +99,22 @@ const styles = StyleSheet.create({
   inventoryContainer: {
     flex: 1,
     backgroundColor: '#ededed',
+    width: '100%', // Ensure full width
+  },
+  scrollContent: {
+    flexGrow: 1,
     padding: padding,
+    minWidth: '100%', // Ensure minimum width
   },
   gridContainer: {
     width: '100%',
+    flex: 1,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: itemSpacing,
+    width: '100%', // Ensure full width
   },
   inventoryItem: {
     backgroundColor: '#d1dbcd',
