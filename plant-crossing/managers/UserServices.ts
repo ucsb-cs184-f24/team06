@@ -16,6 +16,7 @@ export const initializeUser = async () => {
         coins: 100, 
         seeds: {},
         plants: {}, 
+        friends: {},
       });
       console.log('User document created successfully');
     } else {
