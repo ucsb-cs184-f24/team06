@@ -66,23 +66,35 @@ const Item = ({title}: itemProps) => (
     </View>
 );
 
-export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
+export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted, onPlantHarvested }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots()); // Use state to track plots
 
     const handlePress = (plot:Plot, index: number) => {
-        if(plot?.getUnlocked()){
-            if(plot.getSeed()){ // TO ADD: watering logic goes here
-                plot.getSeed()?.water();
-            } else if (selectedItem){
-                plot.plantSeed(selectedItem);
-                onSeedPlanted(selectedItem); // tell GardenScreen to remove from inventory
-                setSelectedItem(null);
+        if(selectedItem){
+            const itemType = selectedItem.getType(); // type will be name of seed, "Shovel" or "WateringCan"
+            
+            if (itemType == "WateringCan"){ // Water plant
+                if(plot?.getUnlocked() && plot.getSeed()){
+                    plot.getSeed()?.water();
+                }
+            }
+            else if (itemType == "Shovel"){ // Dig up seed
+                if(plot?.getUnlocked() && plot.getSeed()){
+                    console.log("Digging up seed", plot.getSeed()?.getType());
+                    onPlantHarvested(plot.getSeed()); // tell GardenScreen to put the harvested seed back in the inventory
+                    plot.harvestPlant(); // remove plant from garden plot
+                }
+            }
+            else{ // Plant Seed
+                if(plot?.getUnlocked() && !plot.getSeed()){
+                    console.log("Seed", selectedItem.type, "planted!");
+                    plot.plantSeed(selectedItem);
+                    onSeedPlanted(selectedItem); // tell GardenScreen to remove from inventory
+                    setSelectedItem(null);
+                } 
             }
         }
-        else{ // unlocks plot, TO ADD: should cost coins to unlock plot
-            plot.setUnlocked(true);
-        }
-        const updatedPlots = [...plots]; // this seems inefficient, (but follows react standards, so keep it?)
+        const updatedPlots = [...plots];
         updatedPlots[index] = plot;
         setPlots(updatedPlots);
     };

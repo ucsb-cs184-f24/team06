@@ -22,10 +22,11 @@ const playerInventory = new Inventory(playerSeeds);
 
 type PlayerInventoryProps = {
   seedToRemove: Seed | null;
+  seedToAdd: Seed | null;
   onItemSelected: (item:Seed) => void;
 }
 
-export const PlayerInventory = ({onItemSelected, seedToRemove}: PlayerInventoryProps) => {
+export const PlayerInventory = ({onItemSelected, seedToRemove, seedToAdd}: PlayerInventoryProps) => {
     const [selectedType, setSelectedType] = useState<string>();
     const [inventoryItems, setInventoryItems] = useState(Array.from(playerInventory.getSeeds()));
     const [selectedId, setSelectedId] = useState<string>();
@@ -36,6 +37,13 @@ export const PlayerInventory = ({onItemSelected, seedToRemove}: PlayerInventoryP
         setInventoryItems(Array.from(playerInventory.getSeeds()));
       }
     }, [seedToRemove])
+
+    useEffect(() => {
+      if (seedToAdd) {
+        playerInventory.addSeed(seedToAdd);
+        setInventoryItems(Array.from(playerInventory.getSeeds()));
+      }
+    }, [seedToAdd])
 
     const handlePress = (item: Seed, index: number) => {
       if(item){
