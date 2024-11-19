@@ -1,4 +1,5 @@
 import { TouchableOpacity, Image, Text, StyleSheet, View } from "react-native";
+import { globalStyles } from "../styles/globalStyles";
 
 interface ShopItemProps {
   name: string;
@@ -16,8 +17,8 @@ const ShopItem = ({ name, price, image, width, onPress }: ShopItemProps) => {
           source={{ uri: image }}
           style={[styles.itemImage, { width: width - 20, height: width - 20 }]}
         />
-        <Text style={styles.itemName}>{name}</Text>
-        <Text style={styles.itemPrice}>{price} coins</Text>
+        <Text style={[styles.itemName, globalStyles.text]}>{name}</Text>
+        <Text style={[styles.itemPrice, globalStyles.text]}>{price} coins</Text>
       </TouchableOpacity>
     </View>
   );

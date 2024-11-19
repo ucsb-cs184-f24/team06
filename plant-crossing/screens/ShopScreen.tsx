@@ -17,6 +17,8 @@ import ShopItem from "../components/ShopItem";
 import Shop from "../data-structures/Shop";
 import FreeSeed from "./FreeSeed";
 import { useNavigation } from "@react-navigation/native";
+import { globalStyles } from "../styles/globalStyles";
+import { GameButton } from "../components/GameButton";
 
 interface ShopItemData {
   id: string;
@@ -27,11 +29,13 @@ interface ShopItemData {
 
 export default function ShopScreen() {
   const [shopItems, setShopItems] = useState<ShopItemData[]>([]);
-  const [numColumns] = useState(1);
+  const [numColumns] = useState(3);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ShopItemData | null>(null);
   const windowWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
+
+  const itemWidth = (windowWidth - (styles.flatListContent.padding * 2) - (styles.flatListContent.gap * 2)) / 3;
 
   useEffect(() => {
     const shop = new Shop();
@@ -46,7 +50,7 @@ export default function ShopScreen() {
   }, []);
 
   const handleItemPress = (item: ShopItemData) => {
-    console.log("Item pressed:", item); // Add this for debugging
+    console.log("Item pressed:", item);
     setSelectedItem(item);
     setModalVisible(true);
   };
@@ -61,7 +65,7 @@ export default function ShopScreen() {
       name={item.name}
       price={item.price}
       image={item.image}
-      width={windowWidth}
+      width={itemWidth}
       onPress={() => handleItemPress(item)}
     />
   );
@@ -69,9 +73,10 @@ export default function ShopScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style="dark" />
-      <Button
+      <GameButton
         title="Get a Free Seed!"
         onPress={() => navigation.navigate("FreeSeed")}
+        style={styles.buttonStyle}
       />
       <FlatList
         data={shopItems}
@@ -81,6 +86,7 @@ export default function ShopScreen() {
         key={`shop-list-${numColumns}`}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.flatListContent}
+        columnWrapperStyle={styles.row}
       />
 
       <Modal
@@ -94,8 +100,8 @@ export default function ShopScreen() {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>{selectedItem?.name}</Text>
-              <Text style={styles.modalPrice}>{selectedItem?.price} coins</Text>
+              <Text style={[styles.modalTitle, globalStyles.text]}>{selectedItem?.name}</Text>
+              <Text style={[styles.modalPrice, globalStyles.text]}>{selectedItem?.price} coins</Text>
             </View>
 
             <View style={styles.modalButtons}>
@@ -103,14 +109,14 @@ export default function ShopScreen() {
                 style={[styles.button, styles.buyButton]}
                 onPress={handleBuy}
               >
-                <Text style={styles.buttonText}>Buy Now</Text>
+                <Text style={[styles.buttonText, globalStyles.text]}>Buy Now</Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.button, styles.cancelButton]}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={styles.buttonText}>Cancel</Text>
+                <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -126,7 +132,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   flatListContent: {
-    paddingBottom: 20,
+    padding: 12,
+    gap: 12,
+  },
+  row: {
+    flex: 1,
+    justifyContent: "flex-start",
+    gap: 12,
   },
   centeredView: {
     flex: 1,
@@ -178,14 +190,18 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   buyButton: {
-    backgroundColor: "#34C759", // iOS green color
+    backgroundColor: "#34C759",
   },
   cancelButton: {
-    backgroundColor: "#FF3B30", // iOS red color
+    backgroundColor: "#FF3B30",
   },
   buttonText: {
     color: "white",
     fontSize: 18,
     fontWeight: "600",
   },
+  buttonStyle: {
+    padding: 10,
+    marginHorizontal: 10
+  }
 });
