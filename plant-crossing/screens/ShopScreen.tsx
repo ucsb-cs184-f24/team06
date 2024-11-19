@@ -15,6 +15,7 @@ import {
 } from "react-native";
 import ShopItem from "../components/ShopItem";
 import Shop from "../data-structures/Shop";
+import FreeSeed from "./FreeSeed";
 import { useNavigation } from "@react-navigation/native";
 
 interface ShopItemData {
@@ -38,19 +39,20 @@ export default function ShopScreen() {
       id: `${index}`,
       name: item.getName(),
       price: Math.round(item.getPrice()).toString(),
-      image: "https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png",
+      image:
+        "https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png",
     }));
     setShopItems(items);
   }, []);
 
   const handleItemPress = (item: ShopItemData) => {
-    console.log('Item pressed:', item); // Add this for debugging
+    console.log("Item pressed:", item); // Add this for debugging
     setSelectedItem(item);
     setModalVisible(true);
   };
 
   const handleBuy = () => {
-    Alert.alert('Success', `Successfully purchased ${selectedItem?.name}!`);
+    Alert.alert("Success", `Successfully purchased ${selectedItem?.name}!`);
     setModalVisible(false);
   };
 
@@ -92,12 +94,8 @@ export default function ShopScreen() {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {selectedItem?.name}
-              </Text>
-              <Text style={styles.modalPrice}>
-                {selectedItem?.price} coins
-              </Text>
+              <Text style={styles.modalTitle}>{selectedItem?.name}</Text>
+              <Text style={styles.modalPrice}>{selectedItem?.price} coins</Text>
             </View>
 
             <View style={styles.modalButtons}>
@@ -132,18 +130,18 @@ const styles = StyleSheet.create({
   },
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalView: {
     margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: "white",
     borderRadius: 20,
-    width: '85%',
+    width: "85%",
     padding: 25,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
@@ -153,41 +151,41 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalHeader: {
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
     marginBottom: 20,
   },
   modalTitle: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
-    textAlign: 'center',
+    textAlign: "center",
   },
   modalPrice: {
     fontSize: 20,
-    color: '#666',
+    color: "#666",
     marginBottom: 5,
   },
   modalButtons: {
-    flexDirection: 'column',
-    width: '100%',
+    flexDirection: "column",
+    width: "100%",
     gap: 10,
   },
   button: {
     padding: 15,
     borderRadius: 15,
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   buyButton: {
-    backgroundColor: '#34C759', // iOS green color
+    backgroundColor: "#34C759", // iOS green color
   },
   cancelButton: {
-    backgroundColor: '#FF3B30', // iOS red color
+    backgroundColor: "#FF3B30", // iOS red color
   },
   buttonText: {
-    color: 'white',
+    color: "white",
     fontSize: 18,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });
