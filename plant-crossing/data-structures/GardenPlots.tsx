@@ -1,6 +1,7 @@
 import { Plot } from "../types/Plot";
 import { Seed, Rarity } from "../types/Seed";
 import React, { useState, useEffect } from 'react';
+
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { PlantService } from "../managers/PlantService";
@@ -8,10 +9,10 @@ import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { PlotService } from "../managers/PlotService";
 
+
 export class GardenPlot {
     private plots: Plot[];
-    private costsToUnlock: number[];
-    public constructor() { // 4 x 4 grid, last row locked
+    public constructor(){ // 4 x 4 grid, last row locked
         this.plots = [];
         let numUnlocked = 12;
         let numLocked = 4;
@@ -53,6 +54,7 @@ export interface GardenGridProps {
     onSeedPlanted: (seed: Seed) => void;
 }
 
+  
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots());
     const userId = FIREBASE_AUTH.currentUser?.uid;

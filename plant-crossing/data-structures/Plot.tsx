@@ -81,5 +81,21 @@ export class Plot {
       //   return [newSeed, numSeeds, numCoins];
       // }
     }
+
+    public toJSON() {
+        return {
+            unlocked: this.unlocked,
+            costToUnlock: this.costToUnlock,
+            seed: this.seed ? this.seed.toJSON() : null,
+            plant: this.plant ? this.plant.toJSON() : null,
+        };
+    }
+
+    public fromJSON(data: any): Plot {
+      const plot = new Plot(data.unlocked, data.costToUnlock);
+      plot.seed = (data.seed);
+      plot.plant = (data.plant);
+      return plot;
+    }
   }
   

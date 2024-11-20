@@ -27,7 +27,22 @@ interface PlayerInventoryProps {
 export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
   const [inventoryItems, setInventoryItems] = useState<Seed[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [playerInventory, setPlayerInventory] = useState<Inventory | null>(null); // Manage playerInventory here
+  
+  // get player inventory
+  useEffect(() => {
+    const getPlayerInventory = async () => {
+      const userSeeds = await getInventoryFromFirebase();
+      if (userSeeds) {
+        const newInventory = new Inventory(userSeeds);
+        setPlayerInventory(newInventory);
+        setInventoryItems(Array.from(newInventory.getSeeds()));
+      }
+    };
+    getPlayerInventory();
+  }, [])
 
+  // remove seeds
   useEffect(() => {
     console.log('PlayerInventory loaded');
     const userId = FIREBASE_AUTH.currentUser?.uid;
@@ -66,7 +81,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
       onItemSelected(item);
       setSelectedId(item.type);
     }
-  };
+  }
 
   // Always maintain at least one row
   const rows: (Seed | null)[][] = [];
