@@ -1,13 +1,12 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Seed } from '../data-structures/Seed'
+import { Seed } from '../types/Seed';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
 import { GardenGrid} from '../data-structures/GardenPlots';
 import { PlayerInventory } from '../data-structures/InventoryBar';
 
 export default function GardenScreen() {
   const [selectedItem, setSelectedItem] = useState<Seed | null>(null);
-  const [seedToRemove, setSeedToRemove] = useState<Seed | null>(null);
 
   const handleItemSelected = (item: Seed) => {
     setSelectedItem(item); // select item from inventory
@@ -15,7 +14,6 @@ export default function GardenScreen() {
 
   const handleSeedPlanted = (item: Seed) => {
     setSelectedItem(null); 
-    setSeedToRemove(item); // seed is planted, needs to be removed from inventory
   }
 
   return (
@@ -27,7 +25,6 @@ export default function GardenScreen() {
         />
         <PlayerInventory 
           onItemSelected={handleItemSelected} 
-          seedToRemove={seedToRemove} // Pass the item to remove from PlayerInventory
         />
         <StatusBar style="auto" />
       </View>

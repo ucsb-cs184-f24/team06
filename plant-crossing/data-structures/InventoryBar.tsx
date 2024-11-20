@@ -1,43 +1,57 @@
-import { Seed, rarityValue } from "./Seed";
+import { Seed, rarityValue, Rarity } from "../types/Seed";
 import { weightedRandomSelection } from "../utils/weightedRandom";
 import { availableSeeds } from "../data/items";
 import { Inventory } from "./Inventory";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { collection, doc, onSnapshot } from "firebase/firestore";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 
-function getStartingInventory(){
-  let seeds = [];
-  const weights = availableSeeds.map((item) => 50/rarityValue[item.getRarity()]);
-  for(let i = 0; i < 5; i++){
-    const randomSeed = weightedRandomSelection(availableSeeds, weights);
-    seeds.push(randomSeed);
-  }
-  return seeds;
-}
+// function getStartingInventory(){
+//   let seeds = [];
+//   const weights = availableSeeds.map((item) => 50/rarityValue[item.rarity]);
+//   for(let i = 0; i < 5; i++){
+//     const randomSeed = weightedRandomSelection(availableSeeds, weights);
+//     seeds.push(randomSeed);
+//   }
+//   return seeds;
+// }
 
-const playerSeeds = getStartingInventory();
-const playerInventory = new Inventory(playerSeeds);
+// const playerSeeds = getStartingInventory();
+// const playerInventory = new Inventory(playerSeeds);
 
 interface PlayerInventoryProps {
-  seedToRemove: Seed | null;
   onItemSelected: (item: Seed) => void;
 }
 
-export const PlayerInventory = ({ onItemSelected, seedToRemove }: PlayerInventoryProps) => {
-  const [inventoryItems, setInventoryItems] = useState(Array.from(playerInventory.getSeeds()));
+export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
+  const [inventoryItems, setInventoryItems] = useState<Seed[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (seedToRemove) {
-      playerInventory.removeSeed(seedToRemove);
-      setInventoryItems(Array.from(playerInventory.getSeeds()));
-    }
-  }, [seedToRemove]);
+    const seedsCollectionRef = collection(doc(FIRESTORE_DB, 'users', FIREBASE_AUTH.currentUser?.uid || ''),
+      'seeds');
+
+    const unsubscribe = onSnapshot(seedsCollectionRef, (snapshot) => {
+      const seedsList = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return new Seed(
+          data.type,
+          data.rarity as Rarity,
+          data.growthTime,
+          data.maxWater,
+        );
+      });
+      setInventoryItems(seedsList);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   const handlePress = (item: Seed) => {
     if (item) {
       onItemSelected(item);
-      setSelectedId(item.getType());
+      setSelectedId(item.type);
     }
   };
 
@@ -51,7 +65,7 @@ export const PlayerInventory = ({ onItemSelected, seedToRemove }: PlayerInventor
     const row = inventoryItems.slice(i, i + itemsPerRow);
     // Fill empty slots with null to maintain grid structure
     while (row.length < itemsPerRow) {
-      row.push(null);
+      row.push();
     }
     rows.push(row);
   }
@@ -69,7 +83,7 @@ export const PlayerInventory = ({ onItemSelected, seedToRemove }: PlayerInventor
                 key={`item-${rowIndex}-${colIndex}`}
                 style={[
                   styles.inventoryItem,
-                  item && selectedId === item.getType() && styles.selectedItem,
+                  item && selectedId === item.type && styles.selectedItem,
                   !item && styles.emptyItem
                 ]}
                 onPress={() => item && handlePress(item)}
@@ -77,7 +91,7 @@ export const PlayerInventory = ({ onItemSelected, seedToRemove }: PlayerInventor
               >
                 {item && (
                   <Text style={styles.inventoryText}>
-                    {item.getType()}
+                    {item.type}
                   </Text>
                 )}
               </TouchableOpacity>

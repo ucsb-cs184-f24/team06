@@ -1,9 +1,9 @@
 import { Plot } from "./Plot";
-import { Plant } from "./Plant";
-import { Seed, Rarity } from "./Seed";
+import { Seed, Rarity } from "../types/Seed";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { PlantService } from "../managers/PlantService";
 
 export class GardenPlot {
     private plots: Plot[];
@@ -13,14 +13,15 @@ export class GardenPlot {
         let numUnlocked = 12;
         let numLocked = 4;
 
-        for (let i = 0; i < numUnlocked; i++) {
-            this.plots.push(new Plot(true));
+        for (let i = 0; i < numUnlocked + numLocked; i++) {
+            if (i < numUnlocked) {
+                this.plots.push(new Plot(true, i));
+            }
+            else {
+                this.plots.push(new Plot(false, i));
+            }
         }
-        for (let i = 0; i < numLocked; i++) {
-            this.plots.push(new Plot(false));
-        }
-
-        this.costsToUnlock = [100, 150, 200, 250];
+       this.costsToUnlock = [100, 150, 200, 250];
     }
 
     public getPlots() {
@@ -28,30 +29,24 @@ export class GardenPlot {
     }
 }
 
-const plantedSeeds = [ // can change this later or pull randomly from items.ts
-    new Seed("Fern Seed", Rarity.common, 2, 7),
-    new Seed("Rose Seed", Rarity.common, 5, 5),
-    new Seed("Cherry Blossom Seed", Rarity.rare, 5, 5),
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
-];
+// const plantedSeeds = [ // can change this later or pull randomly from items.ts
+//     new Seed("Fern Seed", Rarity.common, 2, 7),
+//     new Seed("Rose Seed", Rarity.common, 5, 5),
+//     new Seed("Cherry Blossom Seed", Rarity.rare, 5, 5),
+//     null,
+//     null,
+//     null,
+//     null,
+//     null,
+//     null,
+//     null,
+//     null,
+//     null
+// ];
 
 // TO ADD: the player garden should be saved per user 
 const playerGarden = new GardenPlot();
 const playerPlots = playerGarden.getPlots();
-playerPlots.map((plot, index) => {
-    const seed = plantedSeeds[index];
-    if (seed && plot.getUnlocked()) {
-        plot.plantSeed(seed);
-    }
-});
 
 const columns = 4;
 const screenWidth = Dimensions.get('window').width;
@@ -74,12 +69,32 @@ export interface GardenGridProps {
 
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots());
+    useEffect(() => {
+        const initializePlots = async () => {
+            try {
+                await Promise.all(
+                    plots.map(async (plot, index) => {
+                        const plantId = await PlantService.findPlantByLocation(index);
+                        const plant = await PlantService.getPlantById(plantId);
+
+                        if (plant && plot.getUnlocked()) {
+                            plot.updatePlot(plant);
+                        }
+                    })
+                );
+                setPlots([...plots]);
+            } catch (error) {
+                console.error('Error initializing plots:', error);
+            }
+        };
+        initializePlots();
+    }, []);
 
     const handlePress = (plot: any, index: any) => {
         if (plot?.getUnlocked()) {
-            if (plot.getSeed()) {
-                plot.getSeed()?.water();
-            } else if (selectedItem) {
+            if (plot.getPlant()) {
+                // handle watering implmentation with PlantService and Firebase
+            } else if (selectedItem) { // if selecting a seed
                 plot.plantSeed(selectedItem);
                 onSeedPlanted(selectedItem);
                 setSelectedItem(null);
@@ -98,10 +113,10 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                 {plots.map((plot, index) => {
                     let content;
                     if (plot.getUnlocked()) {
-                        if (plot.getSeed()) {
+                        if (plot.getPlant()) {
                             content = (
                                 <View style={styles.plotItem}>
-                                    <Text style={styles.plotText}>{plot.getSeed().getType()}</Text>
+                                    <Text style={styles.plotText}>{plot.getPlant()?.type}</Text>
                                 </View>
                             );
                         } else {
