@@ -4,23 +4,25 @@ import { Seed, Rarity } from "./Seed";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
+import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
 
 export class GardenPlot { 
     private plots: Plot[];
-    private costsToUnlock: number[];
     public constructor(){ // 4 x 4 grid, last row locked
         this.plots = [];
         let numUnlocked = 12;
         let numLocked = 4;
         
         for(let i = 0; i < numUnlocked; i++){
-            this.plots.push(new Plot(true));
+            this.plots.push(new Plot(true, 0));
         }
         for(let i = 0; i < numLocked; i++){
-            this.plots.push(new Plot(false));
+            this.plots.push(new Plot(false, 10 * (i+1)));
         }
 
-        this.costsToUnlock = [100, 150, 200, 250];
+        // One plant already in garden for testing purposes
+        this.plots[0].plantSeed(new Seed("Poppy", Rarity.common, 2, 3));
     }
 
     public getPlots (){
@@ -28,30 +30,40 @@ export class GardenPlot {
     }
 }
 
-const plantedSeeds = [ // can change this later or pull randomly from items.ts
-    new Seed("Fern Seed", Rarity.common, 2, 7),
-    new Seed("Rose Seed", Rarity.common, 5, 5),
-    new Seed("Cherry Blossom Seed", Rarity.rare, 5, 5),
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
-];
+var playerGarden = new GardenPlot();
 
-// TO ADD: the player garden should be saved per user 
-const playerGarden = new GardenPlot();
-const playerPlots = playerGarden.getPlots();
-playerPlots.map((plot, index) => {
-    const seed = plantedSeeds[index];
-    if(seed && plot.getUnlocked()){
-        plot.plantSeed(seed);
+const getPlotsFromFirebase = () => {
+    const user = FIREBASE_AUTH.currentUser;
+    if (user) {
+      const userDocRef = doc(FIRESTORE_DB, "plots", user.uid);
+      onSnapshot(userDocRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const plots = snapshot.data().plots || {};
+          playerGarden = plots;
+          console.log('Player garden updated:', playerGarden);
+        } else {
+          console.log('No plots document found for this user.');
+        }
+      }, (error) => {
+        console.error('Error fetching plots:', error);
+      });
+    } else {
+      console.error('No user is logged in');
     }
-});
+  };
+
+// // get plots from user variable
+// const getPlotsFromFirebase = async () => {
+//     const user = FIREBASE_AUTH.currentUser;
+//     if(user){
+//         const userDocRef = doc(FIRESTORE_DB, "plots");
+//         const userDoc = await getDoc(userDocRef);
+//         if(userDoc.exists()){
+//             const plots: GardenPlot = userDoc.data().plots || {};
+//             playerGarden = plots;
+//         }
+//     }
+// }
 
 const columns = 4;
 const screenWidth = Dimensions.get('window').width;
@@ -66,7 +78,7 @@ const Item = ({title}: itemProps) => (
     </View>
 );
 
-export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted, onPlantHarvested }: GardenGridProps) => {
+export const GardenPlots = ({ selectedItem, setSelectedItem, onSeedPlanted, onPlantHarvested }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots()); // Use state to track plots
 
     const handlePress = (plot:Plot, index: number) => {
@@ -127,7 +139,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted, onPla
         </SafeAreaView>
     );
 };
-export default GardenGrid;
+
 
 const styles = StyleSheet.create({
     container: {

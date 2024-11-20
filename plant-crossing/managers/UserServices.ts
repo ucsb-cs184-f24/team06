@@ -1,5 +1,6 @@
 import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
 import { FIREBASE_AUTH } from '../FirebaseConfig';
+import { createUserSeedInventory, createUserPlots } from '../utils/initializeUser'
 
 const db = getFirestore();
 
@@ -16,6 +17,8 @@ export const initializeUser = async () => {
         coins: 100, 
         seeds: {},
         plants: {}, 
+        friends: {},
+        plots: {} 
       });
       console.log('User document created successfully');
     } else {

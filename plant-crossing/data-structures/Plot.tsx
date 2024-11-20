@@ -1,15 +1,18 @@
-import { Plant, Rarity } from './Plant';
-import { Seed } from './Seed';
+import { Plant } from './Plant';
+import { Seed, Rarity } from './Seed';
 
 export class Plot {
     private unlocked: boolean; // users can unlock garden plots as they progress
+    private costToUnlock: number;
     private seed: Seed | null;
     private plant: Plant | null;
 
     public constructor(
       unlocked: boolean,
+      costToUnlock: number
     ) {
       this.unlocked = unlocked;
+      this.costToUnlock = costToUnlock;
       this.seed = null;
       this.plant = null;
     };

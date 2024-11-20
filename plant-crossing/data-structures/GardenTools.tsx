@@ -3,19 +3,10 @@ import React, { useState, useEffect } from 'react';
 import { View, Image, Button, StyleSheet, FlatList, ListRenderItem, Text, Dimensions, TouchableOpacity, ScrollView, Touchable} from 'react-native';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
-export class GardenTool {
+export class GardenTool { // store the name of the tool in "Type" for GardenPlot
     private type: string;
-    // public sprite: string;
-    // public spriteClicked: string;
     constructor(type: string){
         this.type = type;
-        // if(this.type == 'WateringCan'){
-        //     this.sprite = "../assets/tool-sprites/WateringCan.png"
-        //     this.spriteClicked = "../assets/tool-sprites/WateringCan.png" 
-        // } else{
-        //     this.sprite = "../assets/tool-sprites/Shovel.png"
-        //     this.spriteClicked = "../assets/tool-sprites/Shovel.png"
-        // }
     }
     public getType(){
         return this.type;
@@ -28,11 +19,6 @@ const sprites = {
     Shovel: require("../assets/tool-sprites/Shovel.png"),
     ShovelSelect: require("../assets/tool-sprites/ShovelSelect.png"),
 };
-
-// const DATA: GardenTool[] = [
-//     { type: 'WateringCan', sprite: "plant-crossing/assets/tool-sprites/WateringCan.png"},
-//     { type: 'shovel', sprite: "plant-crossing/assets/tool-sprites/Shovel.png"},
-// ];
 
 const DATA = [
     new GardenTool("WateringCan"),
@@ -48,20 +34,38 @@ export const GardenTools = ({selectedItem, setSelectedItem} : GardenToolProps) =
     const [spriteWateringCan, setSpriteWateringCan] = useState(sprites.WateringCan);
     const [spriteShovel, setSpriteShovel] = useState(sprites.Shovel);
 
+    // change the sprite once tool is clicked and set selectedItem to the correct tool
     const handlePress = (tool: GardenTool) => {
-        setSelectedItem(tool);
-        if(selectedItem?.getType() == "WateringCan"){
-            setSpriteWateringCan(sprites.WateringCanSelect);
-            setSpriteShovel(sprites.Shovel);
+        if(tool.getType() == "WateringCan"){
+            setSpriteShovel(sprites.Shovel); // deselect shovel
+            if(selectedItem?.getType() == "WateringCan"){ // watering can is already selected: deselect
+                setSpriteWateringCan(sprites.WateringCan);
+                setSelectedItem(null);
+            } else{
+                setSpriteWateringCan(sprites.WateringCanSelect);
+                setSelectedItem(tool);
+            }
         }
-        else if(selectedItem?.getType() == "Shovel"){
-            setSpriteWateringCan(sprites.WateringCan);
-            setSpriteShovel(sprites.ShovelSelect);
-        }else{
-            setSpriteWateringCan(sprites.WateringCan);
-            setSpriteShovel(sprites.Shovel);
+        else if(tool.getType() == "Shovel"){
+            setSpriteWateringCan(sprites.WateringCan); // deselect can
+            if(selectedItem?.getType() == "Shovel"){ // shovel is already selected: deselect
+                setSpriteShovel(sprites.Shovel);
+                setSelectedItem(null);
+            } else{
+                setSpriteShovel(sprites.ShovelSelect);
+                setSelectedItem(tool);
+            }
         }
     };
+
+    // Change the tool graphics if a seed item is selected in the inventory
+    useEffect(() => {
+        if (selectedItem && (selectedItem.getType() != "WateringCan" && selectedItem.getType() != "Shovel")) {
+            console.log("Selected item changed:", selectedItem.getType());
+            setSpriteShovel(sprites.Shovel);
+            setSpriteWateringCan(sprites.WateringCan);
+        }
+    }, [selectedItem]); 
 
     return (
         <SafeAreaView style={styles.container}>
@@ -82,8 +86,7 @@ export const GardenTools = ({selectedItem, setSelectedItem} : GardenToolProps) =
                         <View style={styles.container}>
                             <Text>{item.getType()}</Text> 
                             <TouchableOpacity style={styles.button} onPress={() => handlePress(item)}>
-                            <Image source={buttonImg} style={styles.itemImage}/>
-                                {/* <Image source={require("../assets/tool-sprites/WateringCan.png")} style={styles.itemImage}/> */}
+                                <Image source={buttonImg} style={styles.itemImage}/>
                             </TouchableOpacity>
                         </View>
                         </View>

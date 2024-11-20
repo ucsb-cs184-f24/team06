@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Seed } from '../data-structures/Seed'
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
-import { GardenGrid } from '../data-structures/GardenPlots';
+import { GardenPlots } from '../data-structures/GardenPlots';
 import { PlayerInventory } from '../data-structures/InventoryBar';
 import { GardenTool, GardenTools } from '../data-structures/GardenTools';
 
@@ -27,7 +27,7 @@ export default function GardenScreen() {
 
   return (
       <View style={styles.container}>
-        <GardenGrid 
+        <GardenPlots 
           selectedItem={selectedItem} 
           setSelectedItem={setSelectedItem}
           onSeedPlanted={handleSeedPlanted} // tell inventory to delete item once planted
