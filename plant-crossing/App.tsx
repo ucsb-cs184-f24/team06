@@ -1,7 +1,8 @@
+// App.tsx
 import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, Animated, Image } from 'react-native';
 import MainScreens from "./screens/MainScreens";
 import HomeScreen from "./screens/HomeScreen";
 import LoginScreen from "./screens/LoginScreen";
@@ -10,17 +11,15 @@ import ShopScreen from "./screens/ShopScreen";
 import FreeSeed from "./screens/FreeSeed";
 import { Audio } from "expo-av";
 import * as Font from 'expo-font';
+import { globalStyles } from "./styles/globalStyles";
 
 const Stack = createStackNavigator();
 
 export default function App() {
-  const [showHomeScreen, setShowHomeScreen] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  const [assetsLoaded, setAssetsLoaded] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const [fontLoaded, setFontLoaded] = useState(false);
-
-  const handleAnimationComplete = () => {
-    setShowHomeScreen(false);
-  };
+  const [imageLoaded, setImageLoaded] = useState(false);
 
   useEffect(() => {
     let sound: Audio.Sound;
@@ -31,9 +30,12 @@ export default function App() {
         await Font.loadAsync({
           'PressStart2P': require('./assets/fonts/PressStart2P-Regular.ttf'),
           'LilitaOne': require('./assets/fonts/LilitaOne-Regular.ttf'),
-          // Add more fonts as needed
         });
         setFontLoaded(true);
+
+        // Preload the splash image
+        await Image.prefetch(Image.resolveAssetSource(require('./assets/pixel-garden.png')).uri);
+        setImageLoaded(true);
 
         // Load and play background music
         const { sound: playbackSound } = await Audio.Sound.createAsync(
@@ -43,16 +45,16 @@ export default function App() {
         sound = playbackSound;
         await sound.playAsync();
 
+        // Set assets as loaded
+        setAssetsLoaded(true);
+
       } catch (error) {
         console.error('Error loading resources:', error);
-      } finally {
-        setIsLoading(false);
       }
     }
 
     loadResourcesAsync();
 
-    // Cleanup function
     return () => {
       if (sound) {
         sound.unloadAsync();
@@ -60,57 +62,58 @@ export default function App() {
     };
   }, []);
 
-  // Show loading screen while resources are loading
-  if (isLoading || !fontLoaded) {
+  // Don't render anything until image is loaded
+  if (!imageLoaded) {
     return (
-      <View style={{ 
-        flex: 1, 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        backgroundColor: '#ffffff' 
-      }}>
-        <ActivityIndicator size="large" color="#4CAF50" />
+      <View style={{ flex: 1, backgroundColor: '#000000', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color="#ffffff" />
       </View>
     );
   }
 
   return (
-    <NavigationContainer>
-      <Stack.Navigator 
-        initialRouteName="Login"
-        screenOptions={{
-          headerShown: false,
-          // Now we can safely use the loaded font
-          headerTitleStyle: {
-            fontFamily: 'PressStart2P',
-            fontSize: 16,
-          }
-        }}
-      >
-        <Stack.Screen name="Login" component={LoginScreen} />
-        <Stack.Screen name="Signup" component={SignupScreen} />
-        <Stack.Screen
-          name="MainScreens"
-          component={MainScreens}
-          options={{ headerShown: false }}
-        />
-        <Stack.Screen name="Shop" component={ShopScreen} />
-        <Stack.Screen
-          name="FreeSeed"
-          component={FreeSeed}
-          options={{ 
-            title: "Get a Free Seed!",
-            headerShown: true,
-            headerTitleStyle: {
-              fontFamily: 'PressStart2P',
-              fontSize: 16,
-            }
-          }}
-        />
-      </Stack.Navigator>
-      {showHomeScreen && (
-        <HomeScreen onAnimationComplete={handleAnimationComplete} />
+    <View style={{ flex: 1, backgroundColor: '#000000' }}>
+      {assetsLoaded && !showSplash && (
+        <NavigationContainer>
+          <Stack.Navigator 
+            initialRouteName="Login"
+            screenOptions={{
+              headerShown: false,
+              headerTitleStyle: {
+                fontFamily: globalStyles.text.fontFamily,
+                fontSize: 16,
+              }
+            }}
+          >
+            <Stack.Screen name="Login" component={LoginScreen} />
+            <Stack.Screen name="Signup" component={SignupScreen} />
+            <Stack.Screen
+              name="MainScreens"
+              component={MainScreens}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="Shop" component={ShopScreen} />
+            <Stack.Screen
+              name="FreeSeed"
+              component={FreeSeed}
+              options={{ 
+                title: "Get a Free Seed!",
+                headerShown: true,
+                headerTitleStyle: {
+                  fontFamily: globalStyles.text.fontFamily,
+                  fontSize: 16,
+                }
+              }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
       )}
-    </NavigationContainer>
+      {showSplash && (
+        <HomeScreen 
+          onAnimationComplete={() => setShowSplash(false)} 
+          startAnimation={assetsLoaded}
+        />
+      )}
+    </View>
   );
 }

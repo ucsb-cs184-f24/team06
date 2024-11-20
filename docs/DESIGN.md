@@ -1,0 +1,10 @@
+# System Architecture Overview
+The app will use Firebase Auth. The login and sign up screens will handle the user authentication flows. The app will also use Firebase Datastore to track a user's friends, garden plants, and inventory.
+![alt text](./sys_arch.png)
+
+# Team Decisions
+The first major team decision we had made was to use React-Native coupled with Expo. This allowed us to work on different operating systems and deploy to iOS devices. The next decision we had made was to figure out how we wanted to build the game and what features were important to us. We wanted to make a satisfying idle game that allowed users to buy plants and trade them with other users. This would create a fun, chill, and social game that users will love to come back to play every often. Another major decision my team made was to decide on using Firebase to store all user data (plants, seeds, friends) and to handle authentication.
+
+# User Experience and Task Flow
+![alt text](./userflow.png)
+When users first launch the app, they're presented with a login screen where they have two options: sign in with existing credentials or create a new account through the sign-up process. After successful authentication, users land on the main garden page, which serves as the central hub of the application. In their garden, users can interact with their plants in several ways: they can select plants from their inventory and place them in available garden plots, water their existing plants to maintain their health, or use a shovel to remove plants if needed. From this main garden view, users can navigate to two other key features. The shop page allows users to browse and purchase new plant seeds, which are automatically added to their inventory for future planting. Additionally, users can access the friends page, where they can view their existing friends list, add new friends to their network, and visit their friends' gardens to see their progress. This design creates a seamless flow between gardening, shopping, and social interactions, with the garden page serving as the primary return point for all activities.
