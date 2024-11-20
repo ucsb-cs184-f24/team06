@@ -24,7 +24,9 @@ export const initializeUser = async () => {
     });
 
     const seedsCollectionRef = collection(userRef, 'seeds');
-    
+    const plantsCollectionRef = collection(userRef, 'plants');
+    const plotsCollectionRef = collection(userRef, 'plots');
+
     startingSeeds.forEach((seed) => {
       const newSeedRef = doc(seedsCollectionRef);
       batch.set(newSeedRef, {
@@ -32,6 +34,29 @@ export const initializeUser = async () => {
         id: newSeedRef.id
       });
     });
+
+    const dummyPlantRef = doc(plantsCollectionRef, 'placeholder');
+    batch.set(dummyPlantRef, {
+        id: 'placeholder',
+        nickname: 'Placeholder Plant',
+        type: 'placeholder',
+        rarity: 'common',
+        growthTime: 1,
+        maxWater: 1,
+        location: -1,
+        age: 0,
+        currWater: 1,
+        growthBoost: 1
+    });
+
+    for (let i = 0; i < 16; i++) {
+      const plotRef = doc(plotsCollectionRef);
+      batch.set(plotRef, {
+        unlocked: i < 12,
+        plant: null,
+        location: i,
+      });
+    }
     
     try {
       await batch.commit();

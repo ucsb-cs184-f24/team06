@@ -1,9 +1,12 @@
-import { Plot } from "./Plot";
+import { Plot } from "../types/Plot";
 import { Seed, Rarity } from "../types/Seed";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { PlantService } from "../managers/PlantService";
+import { doc, getDoc } from "firebase/firestore";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
+import { PlotService } from "../managers/PlotService";
 
 export class GardenPlot {
     private plots: Plot[];
@@ -29,24 +32,7 @@ export class GardenPlot {
     }
 }
 
-// const plantedSeeds = [ // can change this later or pull randomly from items.ts
-//     new Seed("Fern Seed", Rarity.common, 2, 7),
-//     new Seed("Rose Seed", Rarity.common, 5, 5),
-//     new Seed("Cherry Blossom Seed", Rarity.rare, 5, 5),
-//     null,
-//     null,
-//     null,
-//     null,
-//     null,
-//     null,
-//     null,
-//     null,
-//     null
-// ];
-
-// TO ADD: the player garden should be saved per user 
 const playerGarden = new GardenPlot();
-const playerPlots = playerGarden.getPlots();
 
 const columns = 4;
 const screenWidth = Dimensions.get('window').width;
@@ -69,39 +55,35 @@ export interface GardenGridProps {
 
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots());
-    useEffect(() => {
-        const initializePlots = async () => {
-            try {
-                await Promise.all(
-                    plots.map(async (plot, index) => {
-                        const plantId = await PlantService.findPlantByLocation(index);
-                        const plant = await PlantService.getPlantById(plantId);
+    const userId = FIREBASE_AUTH.currentUser?.uid;
 
-                        if (plant && plot.getUnlocked()) {
-                            plot.updatePlot(plant);
-                        }
-                    })
-                );
-                setPlots([...plots]);
-            } catch (error) {
-                console.error('Error initializing plots:', error);
+    useEffect(() => {
+        const fetchPlots = async () => {
+            console.log('Fetching plots for user:', userId);
+            const plotsRef = doc(FIRESTORE_DB, 'users', userId!, 'plots');
+            const plotSnapshot = await getDoc(plotsRef);
+            if (plotSnapshot.exists()) {
+                console.log('Plot data:', plotSnapshot.data());
+                setPlots(plotSnapshot.data().plots);
             }
         };
-        initializePlots();
+        fetchPlots();
     }, []);
 
-    const handlePress = (plot: any, index: any) => {
-        if (plot?.getUnlocked()) {
-            if (plot.getPlant()) {
-                // handle watering implmentation with PlantService and Firebase
-            } else if (selectedItem) { // if selecting a seed
-                plot.plantSeed(selectedItem);
-                onSeedPlanted(selectedItem);
-                setSelectedItem(null);
-            }
+    const handlePress = async (plot: Plot, index: number) => {
+        if (!plot.unlocked) {
+          await PlotService.unlockPlot(userId!, plot.location);
         } else {
-            plot.setUnlocked(true);
+          if (plot.plant) {
+            await PlotService.removePlantFromPlot(userId!, plot.location);
+          } else if (selectedItem) {
+            console.log(selectedItem);
+            await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
+            setSelectedItem(null); 
+          }
         }
+    
+        // Update local plot state
         const updatedPlots = [...plots];
         updatedPlots[index] = plot;
         setPlots(updatedPlots);
@@ -112,11 +94,11 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
             <View style={styles.grid}>
                 {plots.map((plot, index) => {
                     let content;
-                    if (plot.getUnlocked()) {
-                        if (plot.getPlant()) {
+                    if (plot.unlocked) {
+                        if (plot.plant) {
                             content = (
                                 <View style={styles.plotItem}>
-                                    <Text style={styles.plotText}>{plot.getPlant()?.type}</Text>
+                                    <Text style={styles.plotText}>{plot.plant?.type}</Text>
                                 </View>
                             );
                         } else {

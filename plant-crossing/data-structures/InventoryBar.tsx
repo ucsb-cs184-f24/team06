@@ -29,25 +29,39 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   useEffect(() => {
-    const seedsCollectionRef = collection(doc(FIRESTORE_DB, 'users', FIREBASE_AUTH.currentUser?.uid || ''),
-      'seeds');
-
+    console.log('PlayerInventory loaded');
+    const userId = FIREBASE_AUTH.currentUser?.uid;
+    if (!userId) {
+      console.error('No user ID available');
+      return;
+    }
+  
+    const seedsCollectionRef = collection(doc(FIRESTORE_DB, 'users', userId), 'seeds');
+    console.log('Fetching seeds from Firestore:', seedsCollectionRef);
+  
     const unsubscribe = onSnapshot(seedsCollectionRef, (snapshot) => {
-      const seedsList = snapshot.docs.map(doc => {
-        const data = doc.data();
-        return new Seed(
-          data.type,
-          data.rarity as Rarity,
-          data.growthTime,
-          data.maxWater,
-        );
-      });
-      setInventoryItems(seedsList);
+      try {
+        const seedsList = snapshot.docs.map(doc => {
+          console.log('Seed data:', doc.data());
+          const data = doc.data();
+          return new Seed(
+            data.type,
+            data.rarity as Rarity,
+            data.growthTime,
+            data.maxWater,
+            data.id,
+          );
+        });
+        setInventoryItems(seedsList);
+        console.log('Inventory updated:', seedsList);
+      } catch (error) {
+        console.error('Error processing snapshot:', error);
+      }
     });
-
+  
     return () => unsubscribe();
   }, []);
-
+  
   const handlePress = (item: Seed) => {
     if (item) {
       onItemSelected(item);
@@ -56,7 +70,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
   };
 
   // Always maintain at least one row
-  const rows = [];
+  const rows: (Seed | null)[][] = [];
   const itemsPerRow = 4;
   const minRows = 3; // Minimum number of rows to show
   
@@ -65,7 +79,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
     const row = inventoryItems.slice(i, i + itemsPerRow);
     // Fill empty slots with null to maintain grid structure
     while (row.length < itemsPerRow) {
-      row.push();
+      row.push(null);
     }
     rows.push(row);
   }

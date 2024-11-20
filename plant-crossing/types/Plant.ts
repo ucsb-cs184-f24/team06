@@ -11,15 +11,19 @@ export class Plant extends Seed {
         public age: number = 0,
         public currWater: number = maxWater,
         public growthBoost: number = 1,
+        id?: string
     ) {
-        super(type, rarity, growthTime, maxWater);
+        super(type, rarity, growthTime, maxWater, id);
     }
 
     override toFirestore() {
         return {
             ...super.toFirestore(),
             nickname: this.nickname,
-            location: this.location
+            location: this.location,
+            age: this.age,
+            currWater: this.currWater,
+            growthBoost: this.growthBoost,
         };
     }
 
@@ -34,6 +38,7 @@ export class Plant extends Seed {
             data.age,
             data.currWater,
             data.growthBoost,
+            data.id
         );
     }
 }

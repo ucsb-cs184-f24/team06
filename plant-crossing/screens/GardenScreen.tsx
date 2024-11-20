@@ -24,7 +24,7 @@ export default function GardenScreen() {
           onSeedPlanted={handleSeedPlanted} // tell inventory to delete item once planted
         />
         <PlayerInventory 
-          onItemSelected={handleItemSelected} 
+          onItemSelected={handleItemSelected}
         />
         <StatusBar style="auto" />
       </View>
