@@ -19,7 +19,7 @@ export function createUserSeedInventory(){
         }
     }
     for(let n in indexes){
-        seeds.push(startingSeeds[n]);
+        seeds.push(startingSeeds[n].toJSON());
     }
     return seeds;
 }
@@ -27,5 +27,3 @@ export function createUserSeedInventory(){
 export function createUserPlots(){
     return new GardenPlot();
 }
-
-
