@@ -16,15 +16,9 @@ export const initializeUser = async () => {
       await setDoc(userRef, {
         email: user.email,
         coins: 100, 
-<<<<<<< HEAD
-        seeds: {},
-        plants: {}, 
-        friends: {},
-=======
         inventory: userSeeds, // seeds in inventory
         friends: {},
         plots: {} 
->>>>>>> main
       });
       console.log('User document created successfully');
     } else {
