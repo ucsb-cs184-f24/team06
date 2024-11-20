@@ -2,25 +2,27 @@ import { Plot } from "./Plot";
 import { Plant } from "./Plant";
 import { Seed, Rarity } from "./Seed";
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity } from 'react-native';
-import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
+import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
+import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
 
 export class GardenPlot {
     private plots: Plot[];
-    private costsToUnlock: number[];
-    public constructor() { // 4 x 4 grid, last row locked
+    public constructor(){ // 4 x 4 grid, last row locked
         this.plots = [];
         let numUnlocked = 12;
         let numLocked = 4;
-
-        for (let i = 0; i < numUnlocked; i++) {
-            this.plots.push(new Plot(true));
+        
+        for(let i = 0; i < numUnlocked; i++){
+            this.plots.push(new Plot(true, 0));
         }
-        for (let i = 0; i < numLocked; i++) {
-            this.plots.push(new Plot(false));
+        for(let i = 0; i < numLocked; i++){
+            this.plots.push(new Plot(false, 10 * (i+1)));
         }
 
-        this.costsToUnlock = [100, 150, 200, 250];
+        // One plant already in garden for testing purposes
+        this.plots[0].plantSeed(new Seed("Poppy", Rarity.common, 2, 3));
     }
 
     public getPlots() {
@@ -28,30 +30,28 @@ export class GardenPlot {
     }
 }
 
-const plantedSeeds = [ // can change this later or pull randomly from items.ts
-    new Seed("Fern Seed", Rarity.common, 2, 7),
-    new Seed("Rose Seed", Rarity.common, 5, 5),
-    new Seed("Cherry Blossom Seed", Rarity.rare, 5, 5),
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
-];
+var playerGarden = new GardenPlot();
 
-// TO ADD: the player garden should be saved per user 
-const playerGarden = new GardenPlot();
-const playerPlots = playerGarden.getPlots();
-playerPlots.map((plot, index) => {
-    const seed = plantedSeeds[index];
-    if (seed && plot.getUnlocked()) {
-        plot.plantSeed(seed);
+const getPlotsFromFirebase = () => {
+    const user = FIREBASE_AUTH.currentUser;
+    if (user) {
+      const userDocRef = doc(FIRESTORE_DB, "plots", user.uid);
+      onSnapshot(userDocRef, (snapshot) => {
+        if (snapshot.exists()) {
+          const plots = snapshot.data().plots || {};
+          playerGarden = plots;
+          console.log('Player garden updated:', playerGarden);
+        } else {
+          console.log('No plots document found for this user.');
+        }
+      }, (error) => {
+        console.error('Error fetching plots:', error);
+      });
+    } else {
+      console.error('No user is logged in');
     }
-});
+  };
+
 
 const columns = 4;
 const screenWidth = Dimensions.get('window').width;
@@ -72,20 +72,33 @@ export interface GardenGridProps {
     onSeedPlanted: (seed: Seed) => void;
 }
 
-export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
-    const [plots, setPlots] = useState(playerGarden.getPlots());
+export const GardenPlots = ({ selectedItem, setSelectedItem, onSeedPlanted, onPlantHarvested }: GardenGridProps) => {
+    const [plots, setPlots] = useState(playerGarden.getPlots()); // Use state to track plots
 
-    const handlePress = (plot: any, index: any) => {
-        if (plot?.getUnlocked()) {
-            if (plot.getSeed()) {
-                plot.getSeed()?.water();
-            } else if (selectedItem) {
-                plot.plantSeed(selectedItem);
-                onSeedPlanted(selectedItem);
-                setSelectedItem(null);
+    const handlePress = (plot:Plot, index: number) => {
+        if(selectedItem){
+            const itemType = selectedItem.getType(); // type will be name of seed, "Shovel" or "WateringCan"
+            
+            if (itemType == "WateringCan"){ // Water plant
+                if(plot?.getUnlocked() && plot.getSeed()){
+                    plot.getSeed()?.water();
+                }
             }
-        } else {
-            plot.setUnlocked(true);
+            else if (itemType == "Shovel"){ // Dig up seed
+                if(plot?.getUnlocked() && plot.getSeed()){
+                    console.log("Digging up seed", plot.getSeed()?.getType());
+                    onPlantHarvested(plot.getSeed()); // tell GardenScreen to put the harvested seed back in the inventory
+                    plot.harvestPlant(); // remove plant from garden plot
+                }
+            }
+            else{ // Plant Seed
+                if(plot?.getUnlocked() && !plot.getSeed()){
+                    console.log("Seed", selectedItem.type, "planted!");
+                    plot.plantSeed(selectedItem);
+                    onSeedPlanted(selectedItem); // tell GardenScreen to remove from inventory
+                    setSelectedItem(null);
+                } 
+            }
         }
         const updatedPlots = [...plots];
         updatedPlots[index] = plot;

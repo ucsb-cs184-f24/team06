@@ -9,6 +9,7 @@ interface UserData {
 }
 
 const Header = () => {
+  const [selectedItem, setSelectedItem] = useState<Seed | null | GardenTool>(null);
   const [userData, setUserData] = useState<UserData>({ email: '', coins: 0 });
   const db = getFirestore();
 

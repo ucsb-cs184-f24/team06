@@ -1,15 +1,18 @@
-import { Plant, Rarity } from './Plant';
-import { Seed } from './Seed';
+import { Plant } from './Plant';
+import { Seed, Rarity } from './Seed';
 
 export class Plot {
     private unlocked: boolean; // users can unlock garden plots as they progress
+    private costToUnlock: number;
     private seed: Seed | null;
     private plant: Plant | null;
 
     public constructor(
       unlocked: boolean,
+      costToUnlock: number
     ) {
       this.unlocked = unlocked;
+      this.costToUnlock = costToUnlock;
       this.seed = null;
       this.plant = null;
     };
@@ -18,8 +21,16 @@ export class Plot {
       return this.seed;
     }
 
+    public setSeed(seed:Seed){
+      this.seed = seed;
+    }
+
     public getPlant(){
       return this.plant;
+    }
+
+    public setPlant(plant:Plant){
+      this.plant = plant;
     }
 
     public getUnlocked(){
@@ -61,6 +72,22 @@ export class Plot {
         this.plant = null;
         return [newSeed, numSeeds, numCoins];
       }
+    }
+
+    public toJSON() {
+        return {
+            unlocked: this.unlocked,
+            costToUnlock: this.costToUnlock,
+            seed: this.seed ? this.seed.toJSON() : null,
+            plant: this.plant ? this.plant.toJSON() : null,
+        };
+    }
+
+    public fromJSON(data: any): Plot {
+      const plot = new Plot(data.unlocked, data.costToUnlock);
+      plot.seed = (data.seed);
+      plot.plant = (data.plant);
+      return plot;
     }
   }
   

@@ -124,7 +124,7 @@ export default function ShopScreen() {
       </Modal>
     </SafeAreaView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
