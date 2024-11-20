@@ -4,7 +4,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import GardenScreen from './GardenScreen';
 import ShopScreen from './ShopScreen';
 import FriendsScreen from './FriendsScreen';
-import Header from '../components/Header';
+import Header from '../components/GardenScreenHeader';
 import GardenIcon from '../assets/plant-icon.png';
 import ShopIcon from '../assets/shop-icon.png';
 import FriendsIcon from '../assets/friends-icon.png';

@@ -1,9 +1,16 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
+<<<<<<< HEAD
 import { Seed } from '../data-structures/Seed';
 import { StyleSheet, Text, View, ImageBackground } from 'react-native';
 import { GardenGrid } from '../data-structures/GardenPlots';
+=======
+import { Seed } from '../data-structures/Seed'
+import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
+import { GardenPlots } from '../data-structures/GardenPlots';
+>>>>>>> 949dcac052fc38755772d657581cb43efd00ad3b
 import { PlayerInventory } from '../data-structures/InventoryBar';
+import { GardenTool, GardenTools } from '../data-structures/GardenTools';
 
 const GardenGridWrapper: React.FC<{
   selectedItem: Seed | null;
@@ -28,8 +35,9 @@ const GardenGridWrapper: React.FC<{
 };
 
 export default function GardenScreen() {
-  const [selectedItem, setSelectedItem] = useState<Seed | null>(null);
+  const [selectedItem, setSelectedItem] = useState<Seed | null | GardenTool>(null);
   const [seedToRemove, setSeedToRemove] = useState<Seed | null>(null);
+  const [seedToAdd, setSeedToAdd] = useState<Seed | null>(null);
 
   const handleItemSelected = (item: Seed) => {
     setSelectedItem(item);
@@ -40,20 +48,31 @@ export default function GardenScreen() {
     setSeedToRemove(item);
   }
 
+  const handlePlantHarvested = (item: Seed) => {
+    console.log("Handling plant harvest for: ", item);
+    setSeedToAdd(item); // seed has been harvested, needs to be added to inventory
+  }
+
   return (
-    <View style={styles.container}>
-      <GardenGridWrapper
-        selectedItem={selectedItem}
-        setSelectedItem={setSelectedItem}
-        onSeedPlanted={handleSeedPlanted}
-      />
-      <PlayerInventory 
-        onItemSelected={handleItemSelected}
-        seedToRemove={seedToRemove}
-      />
-      <StatusBar style="auto" />
-    </View>
-  );
+      <View style={styles.container}>
+        <GardenPlots 
+          selectedItem={selectedItem} 
+          setSelectedItem={setSelectedItem}
+          onSeedPlanted={handleSeedPlanted} // tell inventory to delete item once planted
+          onPlantHarvested={handlePlantHarvested} // tell inventory to add item once dug up by shovel
+        />
+        <PlayerInventory 
+          onItemSelected={handleItemSelected} 
+          seedToRemove={seedToRemove} // Pass the item to remove from PlayerInventory
+          seedToAdd={seedToAdd}
+        />
+        <GardenTools
+          selectedItem={selectedItem} 
+          setSelectedItem={setSelectedItem}
+        />
+        <StatusBar style="auto" />
+      </View>
+    );
 }
 
 const styles = StyleSheet.create({

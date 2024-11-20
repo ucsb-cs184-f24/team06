@@ -176,4 +176,33 @@ export class Seed {
       this.growthInterval = null;
     }
   }
+
+  // Convert seed to JSON to store in Firebase
+  public toJSON(){
+    return {
+      type: this.type,
+      rarity: (this.rarity),
+      growthTime: this.growthTime,
+      age: this.age,
+      currWater: this.currWater,
+      maxWater: this.maxWater,
+      growthBoost: this.growthBoost,
+      isPlanted: this.isPlanted,
+      growthInterval: this.growthInterval
+    }
+  }
+
+  //set all fields of seed according to JSON
+  public fromJSON(data: any) { 
+    this.type = data.type;
+    this.rarity = Rarity[data.rarity as keyof typeof Rarity];
+    this.growthTime = data.growthTime;
+    this.age = data.age;
+    this.currWater = data.currWater;
+    this.maxWater = data.maxWater;
+    this.growthBoost = data.growthBoost;
+    this.isPlanted = data.isPlanted;
+    this.growthInterval = data.growthInterval;
+  }
 }
+

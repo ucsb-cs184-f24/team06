@@ -4,42 +4,114 @@ import { availableSeeds } from "../data/items";
 import { Inventory } from "./Inventory";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
+import { arrayUnion, collection, onSnapshot, doc, getDoc, setDoc, getDocs, getFirestore, updateDoc, DocumentSnapshot } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
-function getStartingInventory(){
-  let seeds = [];
-  const weights = availableSeeds.map((item) => 50/rarityValue[item.getRarity()]);
-  for(let i = 0; i < 5; i++){
-    const randomSeed = weightedRandomSelection(availableSeeds, weights);
-    seeds.push(randomSeed);
+var userDocRef;
+const db = FIRESTORE_DB;
+
+// get snapshot of seeds from firebase
+const getInventoryFromFirebase = async () => {
+  const user = FIREBASE_AUTH.currentUser;
+  let userSeeds = [];
+  if(!user){
+    console.error('Error: User not found.');
+    return;
   }
-  return seeds;
-}
+  userDocRef = doc(FIRESTORE_DB, 'users', user.uid);
+  
+  // Get seeds from firebase on login
+  const userDoc = await getDoc(userDocRef);
+  if (!userDoc.exists()) {
+    console.error('Error: User data not found.');
+    return;
+  }
+  let inventoryJSON = userDoc.data().inventory || {}; // convert seeds from JSON to list of Seed objects
+  for(let data of inventoryJSON){
+    let seed = new Seed();
+    seed.fromJSON(data);
+    userSeeds.push(seed);
+  }
+  return userSeeds;
+};
 
-const playerSeeds = getStartingInventory();
-const playerInventory = new Inventory(playerSeeds);
+// push updated list of seeds to Firebase
+const updateFirebaseInventory = async (playerInventory: Inventory) => {
+  const user = FIREBASE_AUTH.currentUser;
+  if (!user) {
+    console.error('Error: User not found.');
+    return;
+  }
+
+  // convert playerInventory to JSON format
+  let inventoryJSON = [];
+  for(let seed of playerInventory.getSeeds()){
+    inventoryJSON.push(seed.toJSON());
+  }
+
+  const userDocRef = doc(FIRESTORE_DB, 'users', user.uid);
+  try {
+    await setDoc(
+      userDocRef,
+      {
+        inventory: inventoryJSON,
+      },
+      { merge: true }
+    );
+  } catch{
+    console.error('Error updating firebase inventory.');
+  }
+};
 
 interface PlayerInventoryProps {
   seedToRemove: Seed | null;
+  seedToAdd: Seed | null;
   onItemSelected: (item: Seed) => void;
 }
 
-export const PlayerInventory = ({ onItemSelected, seedToRemove }: PlayerInventoryProps) => {
-  const [inventoryItems, setInventoryItems] = useState(Array.from(playerInventory.getSeeds()));
+export const PlayerInventory = ({ onItemSelected, seedToRemove, seedToAdd }: PlayerInventoryProps) => {
+  const [inventoryItems, setInventoryItems] = useState<Seed[] | null>(new Array(12).fill(null));
   const [selectedId, setSelectedId] = useState<string | null>(null);
-
+  const [playerInventory, setPlayerInventory] = useState<Inventory | null>(null); // Manage playerInventory here
+  
+  // get player inventory
   useEffect(() => {
-    if (seedToRemove) {
+    const getPlayerInventory = async () => {
+      const userSeeds = await getInventoryFromFirebase();
+      if (userSeeds) {
+        const newInventory = new Inventory(userSeeds);
+        setPlayerInventory(newInventory);
+        setInventoryItems(Array.from(newInventory.getSeeds()));
+      }
+    };
+    getPlayerInventory();
+  }, [])
+
+  // remove seeds
+  useEffect(() => {
+    if (seedToRemove && playerInventory) {
       playerInventory.removeSeed(seedToRemove);
       setInventoryItems(Array.from(playerInventory.getSeeds()));
+      updateFirebaseInventory(playerInventory); //push changes to firebase
     }
   }, [seedToRemove]);
 
-  const handlePress = (item: Seed) => {
-    if (item) {
+  // add seeds
+  useEffect(() => {
+      if (seedToAdd && playerInventory) {
+        playerInventory.addSeed(seedToAdd);
+        setInventoryItems(Array.from(playerInventory.getSeeds()));
+        updateFirebaseInventory(playerInventory); //push changes to firebase
+      }
+    }, [seedToAdd])
+
+  const handlePress = (item: Seed, index: number) => {
+    if(item){
       onItemSelected(item);
-      setSelectedId(item.getType());
+      return item;
     }
-  };
+  }
 
   // Always maintain at least one row
   const rows = [];
