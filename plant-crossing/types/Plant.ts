@@ -11,9 +11,8 @@ export class Plant extends Seed {
         public age: number = 0,
         public currWater: number = maxWater,
         public growthBoost: number = 1,
-        id?: string
     ) {
-        super(type, rarity, growthTime, maxWater, id);
+        super(type, rarity, growthTime, maxWater);
     }
 
     override toFirestore() {
@@ -38,7 +37,6 @@ export class Plant extends Seed {
             data.age,
             data.currWater,
             data.growthBoost,
-            data.id
         );
     }
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity } from 'react-native';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { PlantService } from "../managers/PlantService";
-import { doc, getDoc } from "firebase/firestore";
+import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { PlotService } from "../managers/PlotService";
 
@@ -57,16 +57,23 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
     const [plots, setPlots] = useState(playerGarden.getPlots());
     const userId = FIREBASE_AUTH.currentUser?.uid;
 
+    const fetchPlots = async () => {
+        console.log('Fetching plots for user:', userId);
+        const plotsRef = collection(FIRESTORE_DB, 'users', userId!, 'plots');
+
+        // Listen to real-time updates
+        const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
+            const updatedPlots = snapshot.docs.map(doc => ({
+                ...doc.data(),
+                location: doc.data().location,
+            })) as Plot[];
+            setPlots(updatedPlots);
+        });
+
+        return unsubscribe; // Clean up the listener on unmount
+    };
+
     useEffect(() => {
-        const fetchPlots = async () => {
-            console.log('Fetching plots for user:', userId);
-            const plotsRef = doc(FIRESTORE_DB, 'users', userId!, 'plots');
-            const plotSnapshot = await getDoc(plotsRef);
-            if (plotSnapshot.exists()) {
-                console.log('Plot data:', plotSnapshot.data());
-                setPlots(plotSnapshot.data().plots);
-            }
-        };
         fetchPlots();
     }, []);
 
@@ -83,10 +90,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
           }
         }
     
-        // Update local plot state
-        const updatedPlots = [...plots];
-        updatedPlots[index] = plot;
-        setPlots(updatedPlots);
+        fetchPlots();
     };
 
     return (

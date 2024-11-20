@@ -7,7 +7,8 @@ import {
     updateDoc, 
     deleteDoc,
     query,
-    writeBatch
+    writeBatch,
+    where
 } from 'firebase/firestore';
 import { FIRESTORE_DB, FIREBASE_AUTH } from '../FirebaseConfig';
 import { Seed, Rarity } from '../types/Seed';
@@ -81,8 +82,22 @@ export class SeedService {
       
       if (!seedSnap.exists()) return null;
       
-      const data = { ...seedSnap.data(), id: seedSnap.id };
+      const data = seedSnap.data();
       return Seed.fromFirestore(data);
+    }
+
+    static async getSeedIdByDescription(seedType: string, rarity: Rarity): Promise<string | null> {
+        const seedsCollectionRef = this.getSeedsCollectionRef();
+        const q = query(seedsCollectionRef, where('type', '==', seedType), where('rarity', '==', rarity));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) return null;
+        if (querySnapshot.size > 1) {
+            console.warn(`Multiple seeds found for type (${seedType}) and rarity (${rarity})`);
+        }
+
+        const seedDoc = querySnapshot.docs[0];
+        return seedDoc.id;
     }
   
     static async updateSeed(seedId: string, updates: Partial<Seed>) {

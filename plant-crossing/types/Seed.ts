@@ -15,20 +15,16 @@ export const rarityValue: { [key in Rarity]: number } = {
 };
   
 export class Seed {
-    public id?: string;
     constructor(
       public type: string,
       public rarity: Rarity,
       public growthTime: number,
       public maxWater: number,
-      id?: string
     ) {
-      this.id = id;
     }
   
     toFirestore() {
       return {
-        id: this.id,
         type: this.type,
         rarity: this.rarity,
         growthTime: this.growthTime,
@@ -43,7 +39,6 @@ export class Seed {
           data.rarity as Rarity,
           data.growthTime,
           data.maxWater,
-          data.id
         );
     }
 }

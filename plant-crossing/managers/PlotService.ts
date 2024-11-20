@@ -49,9 +49,14 @@ export class PlotService {
     
             if (plotData?.unlocked && !plotData?.plant) {
               console.log(`Plot ${plotLocation} is unlocked and empty`);
-              console.log(seed.id);
-              const plant = await SeedService.plantSeed(seed.id!, plotLocation);   
-              await updateDoc(plotRef, { plant });
+              console.log(seed);
+              const seedId = await SeedService.getSeedIdByDescription(seed.type, seed.rarity);
+              if (!seedId) {
+                console.error(`Error: Seed with description ${seed.type} and rarity ${seed.rarity} not found.`);
+                return;
+              }
+              const plant = await SeedService.plantSeed(seedId, plotLocation);   
+              await updateDoc(plotRef, { plant: plant.toFirestore() });
               console.log(`Plant added to plot ${plotLocation}`);
             } else {
               console.error(`Error: Plot ${plotLocation} is either locked or already has a plant.`);
