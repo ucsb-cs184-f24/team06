@@ -7,7 +7,7 @@ import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
 
-export class GardenPlot { 
+export class GardenPlot {
     private plots: Plot[];
     public constructor(){ // 4 x 4 grid, last row locked
         this.plots = [];
@@ -25,7 +25,7 @@ export class GardenPlot {
         this.plots[0].plantSeed(new Seed("Poppy", Rarity.common, 2, 3));
     }
 
-    public getPlots (){
+    public getPlots() {
         return this.plots;
     }
 }
@@ -52,31 +52,25 @@ const getPlotsFromFirebase = () => {
     }
   };
 
-// // get plots from user variable
-// const getPlotsFromFirebase = async () => {
-//     const user = FIREBASE_AUTH.currentUser;
-//     if(user){
-//         const userDocRef = doc(FIRESTORE_DB, "plots");
-//         const userDoc = await getDoc(userDocRef);
-//         if(userDoc.exists()){
-//             const plots: GardenPlot = userDoc.data().plots || {};
-//             playerGarden = plots;
-//         }
-//     }
-// }
 
 const columns = 4;
 const screenWidth = Dimensions.get('window').width;
 const plotSize = screenWidth / columns;
 
 
-type itemProps = {title: string};
+type itemProps = { title: string };
 
-const Item = ({title}: itemProps) => (
+const Item = ({ title }: itemProps) => (
     <View style={styles.item}>
         <Text style={styles.title}>{title}</Text>
     </View>
 );
+
+export interface GardenGridProps {
+    selectedItem: Seed | null;
+    setSelectedItem: (seed: Seed | null) => void;
+    onSeedPlanted: (seed: Seed) => void;
+}
 
 export const GardenPlots = ({ selectedItem, setSelectedItem, onSeedPlanted, onPlantHarvested }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots()); // Use state to track plots
@@ -112,34 +106,42 @@ export const GardenPlots = ({ selectedItem, setSelectedItem, onSeedPlanted, onPl
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <FlatList
-                data={playerGarden.getPlots()}
-                renderItem={({ item }) => {
+        <View style={styles.gridContainer}>
+            <View style={styles.grid}>
+                {plots.map((plot, index) => {
                     let content;
-                    if (item.getUnlocked()) {
-                        if (item.getSeed()) {
-                            content = <Item title={item.getSeed().getType()} />;
+                    if (plot.getUnlocked()) {
+                        if (plot.getSeed()) {
+                            content = (
+                                <View style={styles.plotItem}>
+                                    <Text style={styles.plotText}>{plot.getSeed().getType()}</Text>
+                                </View>
+                            );
                         } else {
-                            content = <View style={styles.emptyItem} />;
+                            content = <View style={styles.emptyPlot} />;
                         }
                     } else {
-                        content = <Text style={styles.lockedItem}>Locked</Text>;
+                        content = (
+                            <View style={styles.lockedPlot}>
+                                <Text style={styles.lockedText}>Locked</Text>
+                            </View>
+                        );
                     }
 
                     return (
-                        <TouchableOpacity onPress={() => handlePress(item)}>
-                            <View>{content}</View>
+                        <TouchableOpacity
+                            key={`plot-${index}`}
+                            onPress={() => handlePress(plot, index)}
+                            style={styles.plotTouchable}
+                        >
+                            {content}
                         </TouchableOpacity>
-                    )
-                }}
-                keyExtractor={(item, index) => item.getSeed() ? item.getSeed().getType() : `empty-${index}`}
-                numColumns = {columns}
-            />
-        </SafeAreaView>
+                    );
+                })}
+            </View>
+        </View>
     );
 };
-
 
 const styles = StyleSheet.create({
     container: {
@@ -193,7 +195,44 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 20
-    }
+    },
+    gridContainer: {
+        flex: 2,
+        padding: 8,
+        justifyContent: 'center',
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        width: '100%',
+        aspectRatio: 1,
+    },
+    plotTouchable: {
+        width: '25%',
+        aspectRatio: 1,
+        padding: 2,
+    },
+    plotItem: {
+        flex: 1,
+        backgroundColor: '#abf333',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyPlot: {
+        flex: 1,
+        backgroundColor: '#cceeee',
+    },
+    lockedPlot: {
+        flex: 1,
+        backgroundColor: '#550000',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    lockedText: {
+        color: '#fff',
+        fontSize: 12,
+    },
 });
 
 
