@@ -26,66 +26,66 @@ export default function GardenScreen() {
   }
 
   return (
-      <View style={styles.container}>
-        <GardenGrid
-          selectedItem={selectedItem} 
-          setSelectedItem={setSelectedItem}
-          onSeedPlanted={handleSeedPlanted} // tell inventory to delete item once planted
-          onPlantHarvested={handlePlantHarvested} // tell inventory to add item once dug up by shovel
-        />
-        <PlayerInventory 
-          onItemSelected={handleItemSelected} 
-          // seedToRemove={seedToRemove} // Pass the item to remove from PlayerInventory
-          // seedToAdd={seedToAdd}
-        />
-        <GardenTools
-          selectedItem={selectedItem} 
-          setSelectedItem={setSelectedItem}
-        />
-        <StatusBar style="auto" />
-      </View>
-    );
+    <View style={styles.container}>
+      <GardenGrid
+        selectedItem={selectedItem} 
+        setSelectedItem={setSelectedItem}
+        onSeedPlanted={handleSeedPlanted} // tell inventory to delete item once planted
+        onPlantHarvested={handlePlantHarvested} // tell inventory to add item once dug up by shovel
+      />
+      <PlayerInventory 
+        onItemSelected={handleItemSelected} 
+        // seedToRemove={seedToRemove} // Pass the item to remove from PlayerInventory
+        // seedToAdd={seedToAdd}
+      />
+      <GardenTools
+        selectedItem={selectedItem} 
+        setSelectedItem={setSelectedItem}
+      />
+      <StatusBar style="auto" />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  gardenWrapper: {
-    flex: 3,
-    width: "100%",
-  },
-  backgroundImage: {
-    flex: 1,
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-  },
-  plotSection: {
-    flex: 1,
-    backgroundColor: "#bd7743",
-  },
-  inventorySection: {
-    flex: 1,
-    backgroundColor: "#ededed",
-  },
-  invItem: {
-    backgroundColor: "#d1dbcd",
-    padding: 20,
-    width: 150,
-    marginVertical: 16,
-    marginHorizontal: 16,
-  },
-  invText: {
-    fontSize: 14,
-    fontWeight: "bold",
-  },
+container: {
+  flex: 1,
+  backgroundColor: "#fff",
+  alignItems: "center",
+  justifyContent: "center",
+},
+gardenWrapper: {
+  flex: 3,
+  width: "100%",
+},
+backgroundImage: {
+  flex: 1,
+  width: "100%",
+  height: "100%",
+  justifyContent: "center",
+  alignItems: "center",
+},
+title: {
+  fontSize: 24,
+  fontWeight: "bold",
+},
+plotSection: {
+  flex: 1,
+  backgroundColor: "#bd7743",
+},
+inventorySection: {
+  flex: 1,
+  backgroundColor: "#ededed",
+},
+invItem: {
+  backgroundColor: "#d1dbcd",
+  padding: 20,
+  width: 150,
+  marginVertical: 16,
+  marginHorizontal: 16,
+},
+invText: {
+  fontSize: 14,
+  fontWeight: "bold",
+},
 });

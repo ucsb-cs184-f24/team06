@@ -1,7 +1,7 @@
 import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { Plant } from "../types/Plant";
-import { rarityValue } from "../types/Seed";
+import { Rarity, rarityValue } from "../types/Seed";
 
 export class PlantService {
     private static getUserRef() {
@@ -53,6 +53,7 @@ export class PlantService {
     }
 
     static async updatePlant(plantId: string, updates: Partial<Plant>) {
+        console.log("Updating plant ", plantId);
         const plantRef = doc(this.getPlantsCollectionRef(), plantId);
         
         const updateData = {
@@ -69,7 +70,7 @@ export class PlantService {
     
         const newWaterLevel = Math.min(plant.currWater + amount, plant.maxWater);
         await this.updatePlant(plantId, { currWater: newWaterLevel });
-        await this.produceCoins(plantId, amount);
+        console.log("Plant", plantId, "watered, waterLevel:", plant.currWater);
         return newWaterLevel;
     }
 
@@ -117,5 +118,19 @@ export class PlantService {
         const coins = coinsSnap.exists() ? coinsSnap.data() : { value: 0 };
         const newCoins = coins.value + this.getWaterLevel(plant) * plant.growthBoost * rarityValue[plant.rarity] * amount;
         await setDoc(coinsRef, { value: newCoins });
+    }
+
+    static async getPlantIdByDescription(plantType: string, rarity: Rarity): Promise<string | null> {
+        const plantsCollectionRef = this.getPlantsCollectionRef();
+        const q = query(plantsCollectionRef, where('type', '==', plantType), where('rarity', '==', rarity));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) return null;
+        if (querySnapshot.size > 1) {
+            console.warn(`Multiple seeds found for type (${plantType}) and rarity (${rarity})`);
+        }
+
+        const plantDoc = querySnapshot.docs[0];
+        return plantDoc.id;
     }
 }

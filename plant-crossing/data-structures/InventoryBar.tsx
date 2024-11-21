@@ -20,6 +20,7 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 // const playerSeeds = getStartingInventory();
 // const playerInventory = new Inventory(playerSeeds);
 
+
 interface PlayerInventoryProps {
   onItemSelected: (item: Seed) => void;
 }

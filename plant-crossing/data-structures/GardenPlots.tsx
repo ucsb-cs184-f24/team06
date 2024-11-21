@@ -8,6 +8,7 @@ import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity, ImageBa
 import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
 import { GardenTool } from "./GardenTools";
+import { Inventory } from "./Inventory";
 
 const SPRITES = {
     SOIL: require('../assets/Soil_Sprites/Soil_1.png') as ImageSourcePropType,
@@ -87,8 +88,17 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
           await PlotService.unlockPlot(userId!, plot.location);
         } else {
           if (plot.plant) {
-            await PlotService.removePlantFromPlot(userId!, plot.location);
-          } else if (selectedItem) {
+            if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
+                await PlotService.removePlantFromPlot(userId!, plot.location);
+                
+            } else if (selectedItem?.type == "WateringCan") {
+                console.log("selected wc");
+                let plantID = await PlantService.getPlantIdByDescription(plot.plant.type, plot.plant.rarity);
+                if(plantID){
+                    await PlantService.waterPlant(plantID, 1);
+                }
+            }
+          } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
             console.log(selectedItem);
             await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
             setSelectedItem(null); 
@@ -193,6 +203,10 @@ const styles = StyleSheet.create({
     pressed: {
         opacity: 0.7
     },
+    plotText: {
+        fontSize: 22,
+        color: 'black',
+    },
     item: {
         backgroundColor: '#abf333',
         padding: 2,
@@ -228,50 +242,6 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20
     },
-    plotItem: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-    },
-    plantOverlay: {
-        flex: 1,
-        backgroundColor: 'rgba(171, 243, 51, 0.3)',  // semi-transparent green
-        width: '100%',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    emptyPlot: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-    },
-    readyToPlantOverlay: {
-        ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(100, 200, 100, 0.3)', // highlighting when ready to plant
-    },
-    lockedPlot: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        overflow: 'hidden',
-    },
-    plotText: {
-        fontSize: 22,
-        color: 'black',
-        textAlign: 'center',
-        textShadowColor: 'white',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
-    },
-    lockedText: {
-        color: '#fff',
-        fontSize: 12,
-        textShadowColor: 'rgba(0, 0, 0, 0.75)',
-        textShadowOffset: { width: 1, height: 1 },
-        textShadowRadius: 2,
-    },
     gridContainer: {
         flex: 2,
         padding: 8,
@@ -289,15 +259,24 @@ const styles = StyleSheet.create({
         aspectRatio: 1,
         padding: 2,
     },
+    plotItem: {
+        flex: 1,
+        backgroundColor: '#abf333',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyPlot: {
+        flex: 1,
+        backgroundColor: '#cceeee',
+    },
+    lockedPlot: {
+        flex: 1,
+        backgroundColor: '#550000',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    lockedText: {
+        color: '#fff',
+        fontSize: 12,
+    },
 });
-
-
-
-
-
-
-
-
-
-
-
