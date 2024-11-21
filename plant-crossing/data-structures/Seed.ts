@@ -28,11 +28,14 @@ export class Seed {
   private isPlanted: boolean; // whether the seed has been planted
   private growthInterval: NodeJS.Timeout | null; // interval ID for growth tracking
 
+  private spriteNum : number; // Number of corresponding sprite (ex: 1, so Plant1_2 is stage 2 of the plant 1 sprite)
+
   public constructor(
     type: string = "defaultSeed",
     rarity: Rarity = Rarity.common,
     baseGrowthTime: number = 5, // default base growth time in hours
-    maxWater: number = 5 // default maximum water level
+    maxWater: number = 5, // default maximum water level
+    spriteNumber : number = 1
   ) {
     this.type = type;
     this.rarity = rarity;
@@ -43,6 +46,7 @@ export class Seed {
     this.growthBoost = 1; // no boost initially
     this.isPlanted = false;
     this.growthInterval = null;
+    this.spriteNum = spriteNumber;
   }
 
   // make deep copy of seed
@@ -150,6 +154,11 @@ export class Seed {
     } else {
       console.log(`${this.type} is already planted.`);
     }
+  }
+
+  // Gets the current sprite of the plant (after the seed stage)
+  public getSpriteString() {
+    return "Plant" + String(this.spriteNum) + "_" + String(this.age);
   }
 
   // simulate growth over time using a timer
