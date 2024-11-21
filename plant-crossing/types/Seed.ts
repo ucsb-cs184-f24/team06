@@ -22,6 +22,10 @@ export class Seed {
       public maxWater: number,
     ) {
     }
+
+    // public getType(){ // needed for gardentools
+    //   return this.type;
+    // }
   
     toFirestore() {
       return {

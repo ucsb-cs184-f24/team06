@@ -13,4 +13,5 @@ export class Plot {
       this.plant = null;
       this.location = location;
     };
+
 }

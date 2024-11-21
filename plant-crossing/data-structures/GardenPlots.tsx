@@ -7,6 +7,7 @@ import { PlotService } from "../managers/PlotService";
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity, ImageBackground, ImageSourcePropType } from 'react-native';
 import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
+import { GardenTool } from "./GardenTools";
 
 const SPRITES = {
     SOIL: require('../assets/Soil_Sprites/Soil_1.png') as ImageSourcePropType,
@@ -27,7 +28,6 @@ export class GardenPlot {
                 this.plots.push(new Plot(false, i));
             }
         }
-       this.costsToUnlock = [100, 150, 200, 250];
     }
 
     public getPlots() {
@@ -51,9 +51,10 @@ const Item = ({ title }: itemProps) => (
 );
 
 export interface GardenGridProps {
-    selectedItem: Seed | null;
-    setSelectedItem: (seed: Seed | null) => void;
+    selectedItem: Seed | null | GardenTool;
+    setSelectedItem: (seed: Seed | null | GardenTool) => void;
     onSeedPlanted: (seed: Seed) => void;
+    onPlantHarvested: (seed: Seed) => void;
 }
 
   
