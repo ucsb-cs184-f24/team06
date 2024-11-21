@@ -2,14 +2,15 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView, TextInput, FlatList, TouchableOpacity, Alert } from 'react-native';
 import filter from 'lodash.filter';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
-import { arrayUnion, collection, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
+import { arrayUnion, collection, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from 'firebase/firestore';
 
 const API_ENDPOINT = `https://randomuser.me/api/?results=30`; // mocking other user data
 
 var userDocRef;
 var friends = [];
+var usersEmailList = [];
+var userEmail;
 const db = FIRESTORE_DB;
-// const db = getFirestore();
 
 const checkFriends = async () => {
   const user = FIREBASE_AUTH.currentUser;
@@ -27,25 +28,45 @@ const checkFriends = async () => {
     return;
   }
 
-  const friendsList: string[] = userDoc.data().friends || {};
+  userEmail = userDoc.data().email;
+  const friendsList: string[] = userDoc.data().friends;
   friends = friendsList;
-  console.log("friendsList, ", friends);
 }
 
-const getAllUsers = async () => {
-  console.log("hello?");
-  const querySnapshot = await getDocs(collection(db, "users")); // TODO: Find out why this doesn't return anything
-  console.log("hey");
+const updateAllUsers = async () => {
+  const querySnapshot = await getDocs(collection(db, "users"));
   (querySnapshot).forEach((doc) => {
-    // doc.data() is never undefined for query doc snapshots
-    console.log(doc.id, " => ", doc.data());
+    usersEmailList.push(doc.data().email); // in the future, get the names and/or usernames
   });
-  
+}
+
+const addFriend = async (userEmail, friendEmail) => {
+  try {
+    // Query for the document with the specific field value
+    const q = query(collection(db, "users"), where("email", "==", userEmail));
+    const querySnapshot = await getDocs(q);
+
+    // Check if the document exists
+    if (querySnapshot.empty) {
+      console.log("User not found.");
+      return;
+    }
+
+    // Get the document reference
+    const userDoc = querySnapshot.docs[0]; // Assuming there's only one match
+    const userDocRef = doc(db, "users", userDoc.id);
+
+    // Update the desired field
+    await updateDoc(userDocRef, {
+      friends: arrayUnion(friendEmail)
+    });
+  } catch (error) {
+    console.error("Error updating user field:", error.message);
+  }
 }
 
 export default function FriendsScreen() {
   checkFriends();
-  getAllUsers();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [data, setData] = useState([]);
@@ -57,8 +78,8 @@ export default function FriendsScreen() {
     setSearchQuery(query);
     if (query != "") {
       const formattedQuery = query.toLowerCase();
-      const filteredData = filter(fullData, (user: any) => {
-        return contains(user, formattedQuery);
+      const filteredData = filter(fullData, (email: any) => {
+        return contains(email, formattedQuery);
       });
       setData(filteredData);
       setShowSearchResults(true);
@@ -67,25 +88,22 @@ export default function FriendsScreen() {
     }
   };
 
-  const contains = ({name, email}, query) => {
-    const {first, last} = name;
-
-    if (first.includes(query) || last.includes(query) || email.includes(query)) {
+  const contains = (email, query) => {
+    if (email.includes(query)) {
       return true;
     }
     return false;
   }
 
   useEffect(() => {
-    fetchData(API_ENDPOINT);
+    fetchData();
   }, []);
   
-  const fetchData = async(url: string | URL | Request) => { // TODO: rework this after using firebase
+  const fetchData = async() => {
     try {
-      const response = await fetch(url);
-      const json = await response.json();
-      // setData(json.results); 
-      setFullData(json.results);
+      await updateAllUsers();
+      setFullData(usersEmailList);
+
     } catch (error) {
       setError(error);
       console.log(error);
@@ -102,16 +120,11 @@ export default function FriendsScreen() {
 
   const handlePress = async (item) => {
     if(item){
-      console.log(item);
-      const friendUsername = item.login.username;
-      console.log(friendUsername);
+      const friendEmail = item;
 
-      // TODO: add user to friend's friend list as well, probably just need to get their uid from firestore then get doc similar to above
-      await updateDoc(userDocRef, {
-        friends: arrayUnion(friendUsername)
-      });
+      addFriend(userEmail, friendEmail);
+      addFriend(friendEmail, userEmail);
 
-      getAllUsers();
       checkFriends();
       return item;
     }
@@ -131,13 +144,13 @@ export default function FriendsScreen() {
       {showSearchResults ? // only allow searching of users if they are typing, otherwise show existing friends list
         <FlatList
           data={data}
-          keyExtractor={(item) => item.login.username} // TODO: with firebase, will prob be item.user.email
+          keyExtractor={(item) => item}
           renderItem={({item}) => (
             <View>
               <TouchableOpacity onPress={() => handlePress(item)}>
                 <View>
-                  <Text style={styles.textName}>{item.name.first} {item.name.last}</Text>
-                  <Text style={styles.textEmail}>{item.email}</Text>
+                  {/* <Text style={styles.textName}>{item.name.first} {item.name.last}</Text> */}
+                  <Text style={styles.textName}>{item}</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -179,6 +192,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginLeft: 10,
     fontWeight: "500",
+    marginVertical: 5,
   },
   textEmail: {
     fontSize: 14,
