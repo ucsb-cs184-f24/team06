@@ -4,8 +4,6 @@ import filter from 'lodash.filter';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from 'firebase/firestore';
 
-const API_ENDPOINT = `https://randomuser.me/api/?results=30`; // mocking other user data
-
 var userDocRef;
 var friends = [];
 var usersEmailList = [];
