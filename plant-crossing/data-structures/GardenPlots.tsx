@@ -2,10 +2,13 @@ import { Plot } from "./Plot";
 import { Plant } from "./Plant";
 import { Seed, Rarity } from "./Seed";
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
-import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity, ImageBackground, ImageSourcePropType } from 'react-native';
 import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
+
+const SPRITES = {
+    SOIL: require('../assets/Soil_Sprites/Soil_1.png') as ImageSourcePropType,
+  } as const;
 
 export class GardenPlot {
     private plots: Plot[];
@@ -105,39 +108,61 @@ export const GardenPlots = ({ selectedItem, setSelectedItem, onSeedPlanted, onPl
         setPlots(updatedPlots);
     };
 
+    const renderPlotContent = (plot: Plot) => {
+        if (plot.getUnlocked()) {
+            if (plot.getSeed()) {
+                // Planted plot with seed
+                return (
+                    <ImageBackground 
+                        source={SPRITES.SOIL}
+                        style={styles.plotItem}
+                        resizeMode="cover"
+                    >
+                        <View style={styles.plantOverlay}>
+                            <Text style={styles.plotText}>{plot.getSeed().getType()}</Text>
+                        </View>
+                    </ImageBackground>
+                );
+            } else {
+                // Empty plot
+                return (
+                    <ImageBackground 
+                        source={SPRITES.SOIL}
+                        style={styles.emptyPlot}
+                        resizeMode="cover"
+                    >
+                        {selectedItem && (
+                            <View style={styles.readyToPlantOverlay} />
+                        )}
+                    </ImageBackground>
+                );
+            }
+        } else {
+            // Locked plot
+            return (
+                <ImageBackground 
+                    source={SPRITES.SOIL}
+                    style={styles.lockedPlot}
+                    resizeMode="cover"
+                >
+                    <Text style={styles.lockedText}>Locked</Text>
+                </ImageBackground>
+            );
+        }
+    };
+
     return (
         <View style={styles.gridContainer}>
             <View style={styles.grid}>
-                {plots.map((plot, index) => {
-                    let content;
-                    if (plot.getUnlocked()) {
-                        if (plot.getSeed()) {
-                            content = (
-                                <View style={styles.plotItem}>
-                                    <Text style={styles.plotText}>{plot.getSeed().getType()}</Text>
-                                </View>
-                            );
-                        } else {
-                            content = <View style={styles.emptyPlot} />;
-                        }
-                    } else {
-                        content = (
-                            <View style={styles.lockedPlot}>
-                                <Text style={styles.lockedText}>Locked</Text>
-                            </View>
-                        );
-                    }
-
-                    return (
-                        <TouchableOpacity
-                            key={`plot-${index}`}
-                            onPress={() => handlePress(plot, index)}
-                            style={styles.plotTouchable}
-                        >
-                            {content}
-                        </TouchableOpacity>
-                    );
-                })}
+                {plots.map((plot, index) => (
+                    <TouchableOpacity
+                        key={`plot-${index}`}
+                        onPress={() => handlePress(plot, index)}
+                        style={styles.plotTouchable}
+                    >
+                        {renderPlotContent(plot)}
+                    </TouchableOpacity>
+                ))}
             </View>
         </View>
     );
@@ -156,10 +181,6 @@ const styles = StyleSheet.create({
     },
     pressed: {
         opacity: 0.7
-    },
-    plotText: {
-        fontSize: 22,
-        color: 'black',
     },
     item: {
         backgroundColor: '#abf333',
@@ -196,6 +217,50 @@ const styles = StyleSheet.create({
     title: {
         fontSize: 20
     },
+    plotItem: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    plantOverlay: {
+        flex: 1,
+        backgroundColor: 'rgba(171, 243, 51, 0.3)',  // semi-transparent green
+        width: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyPlot: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    readyToPlantOverlay: {
+        ...StyleSheet.absoluteFillObject,
+        backgroundColor: 'rgba(100, 200, 100, 0.3)', // highlighting when ready to plant
+    },
+    lockedPlot: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        overflow: 'hidden',
+    },
+    plotText: {
+        fontSize: 22,
+        color: 'black',
+        textAlign: 'center',
+        textShadowColor: 'white',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
+    },
+    lockedText: {
+        color: '#fff',
+        fontSize: 12,
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
+    },
     gridContainer: {
         flex: 2,
         padding: 8,
@@ -212,26 +277,6 @@ const styles = StyleSheet.create({
         width: '25%',
         aspectRatio: 1,
         padding: 2,
-    },
-    plotItem: {
-        flex: 1,
-        backgroundColor: '#abf333',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    emptyPlot: {
-        flex: 1,
-        backgroundColor: '#cceeee',
-    },
-    lockedPlot: {
-        flex: 1,
-        backgroundColor: '#550000',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    lockedText: {
-        color: '#fff',
-        fontSize: 12,
     },
 });
 
