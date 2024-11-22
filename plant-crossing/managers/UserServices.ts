@@ -19,6 +19,7 @@ export const initializeUser = async () => {
     batch.set(userRef, {
       email: user.email,
       coins: 100,
+      friends: {},
       createdAt: Date.now(),
       lastLogin: Date.now()
     });
