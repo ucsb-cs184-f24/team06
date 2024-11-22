@@ -1,77 +1,32 @@
-import { Seed, rarityValue } from "./Seed";
+import { Seed, rarityValue, Rarity } from "../types/Seed";
 import { weightedRandomSelection } from "../utils/weightedRandom";
 import { availableSeeds } from "../data/items";
 import { Inventory } from "./Inventory";
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
-import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
-import { arrayUnion, collection, onSnapshot, doc, getDoc, setDoc, getDocs, getFirestore, updateDoc, DocumentSnapshot } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
+import { collection, doc, onSnapshot } from "firebase/firestore";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 
-var userDocRef;
-const db = FIRESTORE_DB;
+// function getStartingInventory(){
+//   let seeds = [];
+//   const weights = availableSeeds.map((item) => 50/rarityValue[item.rarity]);
+//   for(let i = 0; i < 5; i++){
+//     const randomSeed = weightedRandomSelection(availableSeeds, weights);
+//     seeds.push(randomSeed);
+//   }
+//   return seeds;
+// }
 
-// get snapshot of seeds from firebase
-const getInventoryFromFirebase = async () => {
-  const user = FIREBASE_AUTH.currentUser;
-  let userSeeds = [];
-  if(!user){
-    console.error('Error: User not found.');
-    return;
-  }
-  userDocRef = doc(FIRESTORE_DB, 'users', user.uid);
-  
-  // Get seeds from firebase on login
-  const userDoc = await getDoc(userDocRef);
-  if (!userDoc.exists()) {
-    console.error('Error: User data not found.');
-    return;
-  }
-  let inventoryJSON = userDoc.data().inventory || {}; // convert seeds from JSON to list of Seed objects
-  for(let data of inventoryJSON){
-    let seed = new Seed();
-    seed.fromJSON(data);
-    userSeeds.push(seed);
-  }
-  return userSeeds;
-};
+// const playerSeeds = getStartingInventory();
+// const playerInventory = new Inventory(playerSeeds);
 
-// push updated list of seeds to Firebase
-const updateFirebaseInventory = async (playerInventory: Inventory) => {
-  const user = FIREBASE_AUTH.currentUser;
-  if (!user) {
-    console.error('Error: User not found.');
-    return;
-  }
-
-  // convert playerInventory to JSON format
-  let inventoryJSON = [];
-  for(let seed of playerInventory.getSeeds()){
-    inventoryJSON.push(seed.toJSON());
-  }
-
-  const userDocRef = doc(FIRESTORE_DB, 'users', user.uid);
-  try {
-    await setDoc(
-      userDocRef,
-      {
-        inventory: inventoryJSON,
-      },
-      { merge: true }
-    );
-  } catch{
-    console.error('Error updating firebase inventory.');
-  }
-};
 
 interface PlayerInventoryProps {
-  seedToRemove: Seed | null;
-  seedToAdd: Seed | null;
   onItemSelected: (item: Seed) => void;
 }
 
-export const PlayerInventory = ({ onItemSelected, seedToRemove, seedToAdd }: PlayerInventoryProps) => {
-  const [inventoryItems, setInventoryItems] = useState<Seed[] | null>(new Array(12).fill(null));
+export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
+  const [inventoryItems, setInventoryItems] = useState<Seed[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [playerInventory, setPlayerInventory] = useState<Inventory | null>(null); // Manage playerInventory here
   
@@ -90,31 +45,47 @@ export const PlayerInventory = ({ onItemSelected, seedToRemove, seedToAdd }: Pla
 
   // remove seeds
   useEffect(() => {
-    if (seedToRemove && playerInventory) {
-      playerInventory.removeSeed(seedToRemove);
-      setInventoryItems(Array.from(playerInventory.getSeeds()));
-      updateFirebaseInventory(playerInventory); //push changes to firebase
+    console.log('PlayerInventory loaded');
+    const userId = FIREBASE_AUTH.currentUser?.uid;
+    if (!userId) {
+      console.error('No user ID available');
+      return;
     }
-  }, [seedToRemove]);
-
-  // add seeds
-  useEffect(() => {
-      if (seedToAdd && playerInventory) {
-        playerInventory.addSeed(seedToAdd);
-        setInventoryItems(Array.from(playerInventory.getSeeds()));
-        updateFirebaseInventory(playerInventory); //push changes to firebase
+  
+    const seedsCollectionRef = collection(doc(FIRESTORE_DB, 'users', userId), 'seeds');
+    console.log('Fetching seeds from Firestore:', seedsCollectionRef);
+  
+    const unsubscribe = onSnapshot(seedsCollectionRef, (snapshot) => {
+      try {
+        const seedsList = snapshot.docs.map(doc => {
+          console.log('Seed data:', doc.data());
+          const data = doc.data();
+          return new Seed(
+            data.type,
+            data.rarity as Rarity,
+            data.growthTime,
+            data.maxWater,
+          );
+        });
+        setInventoryItems(seedsList);
+        console.log('Inventory updated:', seedsList);
+      } catch (error) {
+        console.error('Error processing snapshot:', error);
       }
-    }, [seedToAdd])
-
-  const handlePress = (item: Seed, index: number) => {
-    if(item){
+    });
+  
+    return () => unsubscribe();
+  }, []);
+  
+  const handlePress = (item: Seed) => {
+    if (item) {
       onItemSelected(item);
-      return item;
+      setSelectedId(item.type);
     }
   }
 
   // Always maintain at least one row
-  const rows = [];
+  const rows: (Seed | null)[][] = [];
   const itemsPerRow = 4;
   const minRows = 3; // Minimum number of rows to show
   
@@ -141,7 +112,7 @@ export const PlayerInventory = ({ onItemSelected, seedToRemove, seedToAdd }: Pla
                 key={`item-${rowIndex}-${colIndex}`}
                 style={[
                   styles.inventoryItem,
-                  item && selectedId === item.getType() && styles.selectedItem,
+                  item && selectedId === item.type && styles.selectedItem,
                   !item && styles.emptyItem
                 ]}
                 onPress={() => item && handlePress(item)}
@@ -149,7 +120,7 @@ export const PlayerInventory = ({ onItemSelected, seedToRemove, seedToAdd }: Pla
               >
                 {item && (
                   <Text style={styles.inventoryText}>
-                    {item.getType()}
+                    {item.type}
                   </Text>
                 )}
               </TouchableOpacity>

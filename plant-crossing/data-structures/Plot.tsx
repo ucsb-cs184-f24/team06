@@ -1,36 +1,29 @@
-import { Plant } from './Plant';
-import { Seed, Rarity } from './Seed';
+import { PlantService } from '../managers/PlantService';
+import { SeedService } from '../managers/SeedService';
+import { Plant} from '../types/Plant';
 
 export class Plot {
+    public location: number;
     private unlocked: boolean; // users can unlock garden plots as they progress
-    private costToUnlock: number;
-    private seed: Seed | null;
     private plant: Plant | null;
+
 
     public constructor(
       unlocked: boolean,
-      costToUnlock: number
+      location: number,
     ) {
       this.unlocked = unlocked;
-      this.costToUnlock = costToUnlock;
-      this.seed = null;
       this.plant = null;
+      this.location = location;
     };
-
-    public getSeed(){
-      return this.seed;
-    }
-
-    public setSeed(seed:Seed){
-      this.seed = seed;
-    }
 
     public getPlant(){
       return this.plant;
     }
 
-    public setPlant(plant:Plant){
-      this.plant = plant;
+    public async getPlantId() {
+      const plantId = await PlantService.findPlantByLocation(this.location);
+      return plantId;
     }
 
     public getUnlocked(){
@@ -41,37 +34,52 @@ export class Plot {
       this.unlocked = isUnlocked;
     }
 
-    public plantSeed(seed:Seed){
+    public async clearPlot() {
+      const plantId = await this.getPlantId();
+      await PlantService.deletePlant(plantId);
+      this.plant = null;
+    }
+
+    public async updatePlot(plant:Plant){
       if (this.unlocked == true){
-        if(this.seed){ // clear plot if something is already there
-          this.harvestPlant();
+        if (this.plant) {
+          await this.clearPlot();
         }
-        this.seed = seed;
+        this.plant = plant;
+      }
+    }
+
+    public async plantSeed(seedId:string){
+      if (this.unlocked == true){
+        await this.clearPlot();
+        this.plant = await SeedService.plantSeed(seedId, this.location);
       }
     }
 
     public grow(timePassed:number){
-      if(this.seed){
-        let isPlant = this.seed.grow(timePassed);
-        if(isPlant){
-          this.plant = this.seed.toPlant();
-        }
-      }
+      // TODO: integrate with PlantServices and Firebase
+      // if(this.plant){
+      //   let isPlant = this.plant.grow(timePassed);
+      //   if(isPlant){
+      //     this.plant = this.plant.toPlant();
+      //   }
+      // }
     }
 
     public harvestPlant(){
-      if (this.unlocked == true){
-        let numCoins = 0;
-        let numSeeds = 0;
-        if(this.plant && this.plant.getAge() > 1){ // plants return coins if they've been planted a while
-          numCoins = this.plant.produceCoins() * this.plant.getAge();
-          numSeeds = Math.min(this.plant.getAge(), 3); // plants will return a number of seeds if they've been planted a while
-        } 
-        let newSeed = new Seed(this.seed?.copy());
-        this.seed = null;
-        this.plant = null;
-        return [newSeed, numSeeds, numCoins];
-      }
+      // TODO: integrate with PlantServices and Firebase
+      // if (this.unlocked == true){
+      //   let numCoins = 0;
+      //   let numSeeds = 0;
+      //   if(this.plant && this.plant.getAge() > 1){ // plants return coins if they've been planted a while
+      //     numCoins = this.plant.produceCoins() * this.plant.getAge();
+      //     numSeeds = Math.min(this.plant.getAge(), 3); // plants will return a number of plants if they've been planted a while
+      //   } 
+      //   let newSeed = new Seed(this.plant?.copy());
+      //   this.plant = null;
+      //   this.plant = null;
+      //   return [newSeed, numSeeds, numCoins];
+      // }
     }
 
     public toJSON() {
