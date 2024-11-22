@@ -1,36 +1,30 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-<<<<<<< HEAD
-import { Seed } from '../data-structures/Seed';
-import { StyleSheet, Text, View, ImageBackground } from 'react-native';
-import { GardenGrid } from '../data-structures/GardenPlots';
-=======
 import { Seed } from '../data-structures/Seed'
-import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground } from 'react-native';
 import { GardenPlots } from '../data-structures/GardenPlots';
->>>>>>> 949dcac052fc38755772d657581cb43efd00ad3b
 import { PlayerInventory } from '../data-structures/InventoryBar';
 import { GardenTool, GardenTools } from '../data-structures/GardenTools';
 
 const GardenGridWrapper: React.FC<{
-  selectedItem: Seed | null;
+  selectedItem: Seed | GardenTool | null;
   setSelectedItem: (seed: Seed | null) => void;
   onSeedPlanted: (seed: Seed) => void;
-}> = ({ selectedItem, setSelectedItem, onSeedPlanted }) => {
+  onPlantHarvested: (seed: Seed) => void;
+}> = ({ selectedItem, setSelectedItem, onSeedPlanted, onPlantHarvested }) => {
   return (
-    <View style={styles.gardenWrapper}>
-      <ImageBackground 
-        source={require('../assets/pixel-lawn.png')} 
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      >
-        <GardenGrid
-          selectedItem={selectedItem}
-          setSelectedItem={setSelectedItem}
-          onSeedPlanted={onSeedPlanted}
-        />
-      </ImageBackground>
-    </View>
+    <ImageBackground 
+      source={require('../assets/pixel-lawn.png')} 
+      style={styles.backgroundImage}
+      resizeMode="cover"
+    >
+      <GardenPlots
+        selectedItem={selectedItem}
+        setSelectedItem={setSelectedItem}
+        onSeedPlanted={onSeedPlanted}
+        onPlantHarvested={onPlantHarvested}
+      />
+    </ImageBackground>
   );
 };
 
@@ -50,39 +44,50 @@ export default function GardenScreen() {
 
   const handlePlantHarvested = (item: Seed) => {
     console.log("Handling plant harvest for: ", item);
-    setSeedToAdd(item); // seed has been harvested, needs to be added to inventory
+    setSeedToAdd(item);
   }
 
   return (
-      <View style={styles.container}>
-        <GardenPlots 
+    <View style={styles.container}>
+      {/* Garden Plot Section (3/5 of screen) */}
+      <View style={styles.gardenSection}>
+        <GardenGridWrapper 
           selectedItem={selectedItem} 
           setSelectedItem={setSelectedItem}
-          onSeedPlanted={handleSeedPlanted} // tell inventory to delete item once planted
-          onPlantHarvested={handlePlantHarvested} // tell inventory to add item once dug up by shovel
+          onSeedPlanted={handleSeedPlanted}
+          onPlantHarvested={handlePlantHarvested}
         />
-        <PlayerInventory 
-          onItemSelected={handleItemSelected} 
-          seedToRemove={seedToRemove} // Pass the item to remove from PlayerInventory
-          seedToAdd={seedToAdd}
-        />
-        <GardenTools
-          selectedItem={selectedItem} 
-          setSelectedItem={setSelectedItem}
-        />
-        <StatusBar style="auto" />
       </View>
-    );
+
+      {/* Lower Section (2/5 of screen) */}
+      <View style={styles.lowerSection}>
+        <View style={styles.inventorySection}>
+          <PlayerInventory 
+            onItemSelected={handleItemSelected} 
+            seedToRemove={seedToRemove}
+            seedToAdd={seedToAdd}
+          />
+        </View>
+        <View style={styles.toolsSection}>
+          <GardenTools
+            selectedItem={selectedItem} 
+            setSelectedItem={setSelectedItem}
+          />
+        </View>
+      </View>
+      
+      <StatusBar style="auto" />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
-  gardenWrapper: {
+  // Garden Plot section (3/5 of screen)
+  gardenSection: {
     flex: 3,
     width: '100%',
   },
@@ -93,17 +98,26 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold',
+  // Lower section container (2/5 of screen)
+  lowerSection: {
+    flex: 2,
+    width: '100%',
   },
-  plotSection: {
+  // Tools section (1/5 of screen)
+  toolsSection: {
     flex: 1,
-    backgroundColor: '#bd7743',
+    width: '100%',
+    backgroundColor: '#f5f5f5',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
   },
+  // Inventory section (1/5 of screen)
   inventorySection: {
     flex: 1,
+    width: '100%',
     backgroundColor: '#ededed',
+    borderTopWidth: 1,
+    borderTopColor: '#ddd',
   },
   invItem: {
     backgroundColor: '#d1dbcd',
@@ -115,5 +129,5 @@ const styles = StyleSheet.create({
   invText: {
     fontSize: 14,
     fontWeight: 'bold',
-  }
+  },
 });

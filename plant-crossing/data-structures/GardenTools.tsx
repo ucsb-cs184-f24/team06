@@ -26,7 +26,7 @@ const DATA = [
 ]
 
 type GardenToolProps = {
-    selectedItem: Seed | null | GardenTool;
+    selectedItem: Seed | GardenTool | null;
     setSelectedItem: (item: Seed | GardenTool | null) => void;
 };
 

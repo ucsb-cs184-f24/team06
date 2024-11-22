@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity, ImageBackground, ImageSourcePropType } from 'react-native';
 import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
+import { GardenTool } from "./GardenTools";
 
 const SPRITES = {
     SOIL: require('../assets/Soil_Sprites/Soil_1.png') as ImageSourcePropType,
@@ -70,9 +71,10 @@ const Item = ({ title }: itemProps) => (
 );
 
 export interface GardenGridProps {
-    selectedItem: Seed | null;
+    selectedItem: Seed | GardenTool | null;
     setSelectedItem: (seed: Seed | null) => void;
     onSeedPlanted: (seed: Seed) => void;
+    onPlantHarvested: any;
 }
 
 export const GardenPlots = ({ selectedItem, setSelectedItem, onSeedPlanted, onPlantHarvested }: GardenGridProps) => {
@@ -94,7 +96,7 @@ export const GardenPlots = ({ selectedItem, setSelectedItem, onSeedPlanted, onPl
                     plot.harvestPlant(); // remove plant from garden plot
                 }
             }
-            else{ // Plant Seed
+            else { // Plant Seed
                 if(plot?.getUnlocked() && !plot.getSeed()){
                     console.log("Seed", selectedItem.type, "planted!");
                     plot.plantSeed(selectedItem);
