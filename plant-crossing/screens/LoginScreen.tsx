@@ -19,9 +19,10 @@ const LoginScreen = () => {
     setLoading(true);
     try {
         const user = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
-        console.log(user);
         await initializeUser();
+        console.log("navigating to main screen")
         navigation.navigate('MainScreens');
+        console.log("navigation successful")
     } catch (error) {
         alert('Login failed: ' + error);
         console.log(error);

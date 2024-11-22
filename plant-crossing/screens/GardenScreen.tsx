@@ -2,7 +2,7 @@ import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
 import { Seed } from '../data-structures/Seed'
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground } from 'react-native';
-import { GardenPlots } from '../data-structures/GardenPlots';
+import { GardenGrid } from '../data-structures/GardenPlots';
 import { PlayerInventory } from '../data-structures/InventoryBar';
 import { GardenTool, GardenTools } from '../data-structures/GardenTools';
 
@@ -18,7 +18,7 @@ const GardenGridWrapper: React.FC<{
       style={styles.backgroundImage}
       resizeMode="cover"
     >
-      <GardenPlots
+      <GardenGrid
         selectedItem={selectedItem}
         setSelectedItem={setSelectedItem}
         onSeedPlanted={onSeedPlanted}
@@ -29,17 +29,17 @@ const GardenGridWrapper: React.FC<{
 };
 
 export default function GardenScreen() {
-  const [selectedItem, setSelectedItem] = useState<Seed | null | GardenTool>(null);
+  const [selectedItem, setSelectedItem] = useState<Seed | GardenTool | null>(null);
   const [seedToRemove, setSeedToRemove] = useState<Seed | null>(null);
   const [seedToAdd, setSeedToAdd] = useState<Seed | null>(null);
 
   const handleItemSelected = (item: Seed) => {
-    setSelectedItem(item);
+    setSelectedItem(item); // select item from inventory
   };
 
   const handleSeedPlanted = (item: Seed) => {
-    setSelectedItem(null);
-    setSeedToRemove(item);
+    setSelectedItem(null); 
+    setSeedToRemove(item); // seed is planted, needs to be removed from inventory
   }
 
   const handlePlantHarvested = (item: Seed) => {
@@ -64,8 +64,8 @@ export default function GardenScreen() {
         <View style={styles.inventorySection}>
           <PlayerInventory 
             onItemSelected={handleItemSelected} 
-            seedToRemove={seedToRemove}
-            seedToAdd={seedToAdd}
+            // seedToRemove={seedToRemove}
+            // seedToAdd={seedToAdd}
           />
         </View>
         <View style={styles.toolsSection}>
@@ -85,6 +85,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    alignItems: "center", // del
+    justifyContent: "center",
   },
   // Garden Plot section (3/5 of screen)
   gardenSection: {
@@ -98,6 +100,10 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  title: {
+    fontSize: 24,
+    fontWeight: "bold",
+  },
   // Lower section container (2/5 of screen)
   lowerSection: {
     flex: 2,
@@ -110,6 +116,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#f5f5f5',
     borderTopWidth: 1,
     borderTopColor: '#ddd',
+  },
+  plotSection: {
+    flex: 1,
+    backgroundColor: "#bd7743",
   },
   // Inventory section (1/5 of screen)
   inventorySection: {

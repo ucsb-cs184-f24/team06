@@ -1,10 +1,10 @@
-import { Seed, rarityValue } from "./Seed";
-import React, { useState, useEffect } from 'react';
+import { Seed, rarityValue } from "../types/Seed";
+import React, { useState, useEffect, SetStateAction } from "react";
 import { View, Image, Button, StyleSheet, FlatList, ListRenderItem, Text, Dimensions, TouchableOpacity, ScrollView, Touchable} from 'react-native';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
 
 export class GardenTool { // store the name of the tool in "Type" for GardenPlot
-    private type: string;
+    public type: string;
     constructor(type: string){
         this.type = type;
     }
@@ -30,7 +30,7 @@ type GardenToolProps = {
     setSelectedItem: (item: Seed | GardenTool | null) => void;
 };
 
-export const GardenTools = ({selectedItem, setSelectedItem} : GardenToolProps) =>{
+export const GardenTools: React.FC<GardenToolProps> = ({selectedItem, setSelectedItem}) =>{
     const [spriteWateringCan, setSpriteWateringCan] = useState(sprites.WateringCan);
     const [spriteShovel, setSpriteShovel] = useState(sprites.Shovel);
 
@@ -38,7 +38,7 @@ export const GardenTools = ({selectedItem, setSelectedItem} : GardenToolProps) =
     const handlePress = (tool: GardenTool) => {
         if(tool.getType() == "WateringCan"){
             setSpriteShovel(sprites.Shovel); // deselect shovel
-            if(selectedItem?.getType() == "WateringCan"){ // watering can is already selected: deselect
+            if(selectedItem?.type == "WateringCan"){ // watering can is already selected: deselect
                 setSpriteWateringCan(sprites.WateringCan);
                 setSelectedItem(null);
             } else{
@@ -48,7 +48,7 @@ export const GardenTools = ({selectedItem, setSelectedItem} : GardenToolProps) =
         }
         else if(tool.getType() == "Shovel"){
             setSpriteWateringCan(sprites.WateringCan); // deselect can
-            if(selectedItem?.getType() == "Shovel"){ // shovel is already selected: deselect
+            if(selectedItem?.type == "Shovel"){ // shovel is already selected: deselect
                 setSpriteShovel(sprites.Shovel);
                 setSelectedItem(null);
             } else{
@@ -60,8 +60,8 @@ export const GardenTools = ({selectedItem, setSelectedItem} : GardenToolProps) =
 
     // Change the tool graphics if a seed item is selected in the inventory
     useEffect(() => {
-        if (selectedItem && (selectedItem.getType() != "WateringCan" && selectedItem.getType() != "Shovel")) {
-            console.log("Selected item changed:", selectedItem.getType());
+        if (selectedItem && (selectedItem?.type != "WateringCan" && selectedItem?.type != "Shovel")) {
+            console.log("Selected item changed:", selectedItem?.type);
             setSpriteShovel(sprites.Shovel);
             setSpriteWateringCan(sprites.WateringCan);
         }
@@ -116,4 +116,3 @@ const styles = StyleSheet.create({
         backgroundColor: '#eeeeee'
     }
   });
-  
