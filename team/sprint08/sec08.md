@@ -10,5 +10,6 @@ Been blocked on unit tests, planning to finish HW 4B when merge conflicts are re
 ## Elijah Frankle
 Finished a mini issue; messed with constructor and added a function that associates a plant's sprite with a plant and worked on seciton 7.
 ## Esme Puzio
+Resolved merge conflicts from Richard's PR, added back watering can functionality to PR, will finish HW4B and add back shovel functionality to PR.
 ## Richard Fang
 Almost done updating the buy functionality to be compatible with the Firebase changes; planning to make PR for that soon.
