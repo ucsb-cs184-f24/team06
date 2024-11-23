@@ -41,7 +41,6 @@ export class SeedService {
       );
   
       await setDoc(newSeedRef, newSeed.toFirestore());
-      console.log("add seed:", newSeedRef);
       return newSeed;
     }
   
