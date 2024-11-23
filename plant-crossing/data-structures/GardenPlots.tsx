@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { PlantService } from "../managers/PlantService";
 import { PlotService } from "../managers/PlotService";
+import { SeedService } from "../managers/SeedService";
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity, ImageBackground, ImageSourcePropType } from 'react-native';
 import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
@@ -89,8 +90,8 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         } else {
           if (plot.plant) {
             if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
+                await SeedService.addSeed(new Seed(plot.plant.type, plot.plant.rarity, plot.plant.growthTime, plot.plant.maxWater, plot.plant.spriteNumber));
                 await PlotService.removePlantFromPlot(userId!, plot.location);
-                
             } else if (selectedItem?.type == "WateringCan") {
                 console.log("selected wc");
                 let plantID = await PlantService.getPlantIdByDescription(plot.plant.type, plot.plant.rarity);

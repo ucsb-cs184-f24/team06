@@ -1,5 +1,5 @@
 import { ShopItem } from '../data-structures/Item';
-import { Seed } from '../data-structures/Seed';
+import { Seed } from '../types/Seed';
 
 // helper function to randomly pick an item based on weights
 export function weightedRandomSelection(items: Seed[], weights: number[]): ShopItem {
@@ -18,9 +18,9 @@ export function weightedRandomSelection(items: Seed[], weights: number[]): ShopI
   // find the item that corresponds to this random number
   for (let i = 0; i < cumulativeWeights.length; i++) {
     if (random < cumulativeWeights[i]) {
-      return items[i];
+      return new ShopItem(items[i]);
     }
   }
 
-  return items[items.length - 1]; // fallback to the last item
+  return new ShopItem(items[items.length - 1]); // fallback to the last item
 }

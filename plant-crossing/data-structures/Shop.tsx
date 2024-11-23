@@ -1,7 +1,7 @@
 import Player from "../data-structures/Player";
 import { ShopItem } from "../data-structures/Item";
 import { availableSeeds } from "../data/items";
-import { rarityValue } from "./Seed";
+import { rarityValue } from "../types/Seed";
 import { weightedRandomSelection } from "../utils/weightedRandom";
 
 export default class Shop {
@@ -28,11 +28,11 @@ export default class Shop {
       return selectedItems; // Return an empty array if no seeds are available
     }
 
-    const weights = availableSeeds.map((item) => 50/rarityValue[item.getRarity()]);
+    const weights = availableSeeds.map((item) => 50/rarityValue[item.rarity]);
     for (let i = 0; i < count; i++) {
       // Select a random seed based on rarity
       const randomSeed = weightedRandomSelection(availableSeeds, weights);
-      selectedItems.push(new ShopItem(randomSeed, randomSeed.getRarity() * 2));
+      selectedItems.push(new ShopItem(randomSeed, randomSeed.getPrice()));
     }
     return selectedItems;
   }
@@ -50,7 +50,7 @@ export default class Shop {
 
   // method to buy an item
   public buyItem(player: Player, itemName: string) {
-    const item = this.items.find((shopItem) => shopItem.getSeed().getType() === itemName);
+    const item = this.items.find((shopItem) => shopItem.getSeed().type === itemName);
 
     if (!item) {
       console.log("Item not found.");

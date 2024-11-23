@@ -34,6 +34,7 @@ export const GardenTools: React.FC<GardenToolProps> = ({selectedItem, setSelecte
     const [spriteWateringCan, setSpriteWateringCan] = useState(sprites.WateringCan);
     const [spriteShovel, setSpriteShovel] = useState(sprites.Shovel);
 
+
     // change the sprite once tool is clicked and set selectedItem to the correct tool
     const handlePress = (tool: GardenTool) => {
         if(tool.getType() == "WateringCan"){

@@ -19,11 +19,15 @@ import FreeSeed from "./FreeSeed";
 import { useNavigation } from "@react-navigation/native";
 import { globalStyles } from "../styles/globalStyles";
 import { GameButton } from "../components/GameButton";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { SeedService } from "../managers/SeedService";
 
 interface ShopItemData {
   id: string;
   name: string;
   price: string;
+  item: any;
   image: string;
 }
 
@@ -43,6 +47,7 @@ export default function ShopScreen() {
       id: `${index}`,
       name: item.getName(),
       price: Math.round(item.getPrice()).toString(),
+      item: item,
       image:
         "https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png",
     }));
@@ -55,9 +60,58 @@ export default function ShopScreen() {
     setModalVisible(true);
   };
 
-  const handleBuy = () => {
-    Alert.alert("Success", `Successfully purchased ${selectedItem?.name}!`);
-    setModalVisible(false);
+  const handleBuy = async () => {
+    const db = FIRESTORE_DB;
+    try {
+      const user = FIREBASE_AUTH.currentUser;
+      
+      if (!user) {
+        Alert.alert('Error', 'Please log in to make a purchase.');
+        return;
+      }
+  
+      if (!selectedItem) {
+        Alert.alert('Error', 'No item selected.');
+        return;
+      }
+  
+      const userDocRef = doc(db, 'users', user.uid);
+      const userDoc = await getDoc(userDocRef);
+      if (!userDoc.exists()) {
+        Alert.alert('Error', 'User data not found.');
+        return;
+      }
+  
+      const currentCoins = userDoc.data().coins || 0;
+      const itemPrice = Number(selectedItem.price);
+  
+      if (currentCoins < itemPrice) {
+        Alert.alert(
+          'Insufficient Coins',
+          `You need ${itemPrice - currentCoins} more coins to purchase this item.`
+        );
+        return;
+      }
+  
+      await updateDoc(userDocRef, {
+        coins: currentCoins - itemPrice,
+      });
+
+      await SeedService.addSeed(selectedItem.item.getSeed());
+  
+      Alert.alert(
+        'Success',
+        `Successfully purchased ${selectedItem.name}!`
+      );
+      setModalVisible(false);
+      
+    } catch (error) {
+      console.error('Purchase error:', error);
+      Alert.alert(
+        'Error',
+        'There was an error processing your purchase. Please try again.'
+      );
+    }
   };
 
   const renderItem = ({ item }: { item: ShopItemData }) => (

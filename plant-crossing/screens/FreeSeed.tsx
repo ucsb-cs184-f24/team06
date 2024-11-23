@@ -2,16 +2,18 @@ import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Dimensions } from "react-native";
 import { Accelerometer } from "expo-sensors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { SeedService } from "../managers/SeedService";
+import { Seed } from "../types/Seed";
+import { availableSeeds } from "../data/items";
 
 // BUG
 // currently the shake timer isn't mapped to unique users
 // so if one user shakes their seed, all other users won't be able to shake a seed until the initial user's 5 hours is up :/
 
-const seedTypes = ["Sunflower", "Pumpkin", "Chia", "Flax", "Sesame", "Hemp"]; // replace with seed registry once that's been implemented
 const FIVE_HOURS_MS = 5 * 60 * 60 * 1000; // 5 hour timer
 
 export default function FreeSeed() {
-  const [seed, setSeed] = useState("");
+  const [seed, setSeed] = useState<Seed | null>(null);
   const [lastShakeTime, setLastShakeTime] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<string>("");
 
@@ -41,8 +43,10 @@ export default function FreeSeed() {
       Math.abs(x) > shakeThreshold || Math.abs(y) > shakeThreshold || Math.abs(z) > shakeThreshold;
 
     if (shakeDetected && canShake()) {
-      const randomSeed = seedTypes[Math.floor(Math.random() * seedTypes.length)];
-      setSeed(randomSeed); // still need to add the seed to a player's inventory once it's been shaken out
+      const randomSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length)];
+      console.log("Shake detected! Random seed: ", randomSeed);
+      setSeed(randomSeed);
+      await SeedService.addSeed(randomSeed);
       const currentTime = Date.now();
       setLastShakeTime(currentTime);
 
@@ -80,7 +84,7 @@ export default function FreeSeed() {
         {remainingTime ? `Next shake in: ${remainingTime}` : "Shake for a seed!"}
       </Text>
       <View style={styles.square}>
-        <Text style={styles.seedText}>{seed || "Mystery Seed"}</Text>
+        <Text style={styles.seedText}>{seed !== null ? seed.type : "Mystery Seed"}</Text>
       </View>
     </View>
   );

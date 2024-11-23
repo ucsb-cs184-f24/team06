@@ -1,6 +1,6 @@
 // data/items.ts
 import { ShopItem } from '../data-structures/Item';
-import { Seed, Rarity, rarityValue} from '../data-structures/Seed';
+import { Seed, Rarity, rarityValue} from '../types/Seed';
 
 // base growth time and max water are on scales of 1-10, 5 as default
 export const availableSeeds = [
@@ -32,6 +32,6 @@ export const availableSeeds = [
 
 // Starting seeds: seeds available to the player when they register an account
 export const startingSeeds = availableSeeds.filter(
-  seed => seed.getRarity() === Rarity.common || 
-  seed.getRarity() === Rarity.uncommon
+  seed => seed.rarity === Rarity.common || 
+  seed.rarity === Rarity.uncommon
 );
