@@ -1,7 +1,7 @@
 # HW4 Contribution
 Opening the friends page shows a list of your current friends. You can press the search bar to search for users, and it filters according to the letters you type in. You can tap a user to add them as a friend, and their name will be added to your friend list the next time it refreshes.
 
-# Contribution
+## Contribution
 - Displayed friends on main page
 - Implemented a search bar along with a filtering system
 - Friends show up when not actively searching something
