@@ -2,6 +2,8 @@ import { Seed, rarityValue } from "../types/Seed";
 import React, { useState, useEffect, SetStateAction } from "react";
 import { View, Image, Button, StyleSheet, FlatList, ListRenderItem, Text, Dimensions, TouchableOpacity, ScrollView, Touchable} from 'react-native';
 import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import { collection, doc, onSnapshot } from "firebase/firestore";
+import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 
 export class GardenTool { // store the name of the tool in "Type" for GardenPlot
     public type: string;
@@ -33,6 +35,7 @@ type GardenToolProps = {
 export const GardenTools = ({selectedItem, setSelectedItem} : GardenToolProps) =>{
     const [spriteWateringCan, setSpriteWateringCan] = useState(sprites.WateringCan);
     const [spriteShovel, setSpriteShovel] = useState(sprites.Shovel);
+
 
     // change the sprite once tool is clicked and set selectedItem to the correct tool
     const handlePress = (tool: GardenTool) => {
