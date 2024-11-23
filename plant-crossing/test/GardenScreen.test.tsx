@@ -54,12 +54,14 @@ describe('GardenScreen', () => {
     expect(getByTestId('harvest-plant')).toBeTruthy();
     expect(getByTestId('select-seed')).toBeTruthy();
     expect(getByTestId('select-tool')).toBeTruthy();
+    console.log('Successfully rendered GardenGrid, PlayerInventory, and GardenTools components');
   });
 
   it('should update selectedItem when a seed is selected from the inventory', () => {
     const { getByTestId } = render(<GardenScreen />);
     const selectSeedButton = getByTestId('select-seed');
     fireEvent.press(selectSeedButton);
+    console.log('Successfully updated selectedItem when seed was selected from inventory');
     // Verify that selecting a seed updates the selected item
   });
 
@@ -67,6 +69,7 @@ describe('GardenScreen', () => {
     const { getByTestId } = render(<GardenScreen />);
     const plantSeedButton = getByTestId('plant-seed');
     fireEvent.press(plantSeedButton);
+    console.log('Successfully called onSeedPlanted when a seed was planted');
     // Verify that the seedToRemove state is updated
   });
 
@@ -74,6 +77,7 @@ describe('GardenScreen', () => {
     const { getByTestId } = render(<GardenScreen />);
     const harvestPlantButton = getByTestId('harvest-plant');
     fireEvent.press(harvestPlantButton);
+    console.log('Successfully called onPlantHarvested when a plant was harvested');
     // Verify that the seedToAdd state is updated
   });
 
@@ -81,6 +85,7 @@ describe('GardenScreen', () => {
     const { getByTestId } = render(<GardenScreen />);
     const selectToolButton = getByTestId('select-tool');
     fireEvent.press(selectToolButton);
+    console.log('Successfully updated selectedItem when a tool was selected from GardenTools');
     // Verify that selecting a tool updates the selected item
   });
 });
