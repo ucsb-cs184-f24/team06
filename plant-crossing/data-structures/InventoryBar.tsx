@@ -7,20 +7,6 @@ import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Dimensions } from
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 
-// function getStartingInventory(){
-//   let seeds = [];
-//   const weights = availableSeeds.map((item) => 50/rarityValue[item.rarity]);
-//   for(let i = 0; i < 5; i++){
-//     const randomSeed = weightedRandomSelection(availableSeeds, weights);
-//     seeds.push(randomSeed);
-//   }
-//   return seeds;
-// }
-
-// const playerSeeds = getStartingInventory();
-// const playerInventory = new Inventory(playerSeeds);
-
-
 interface PlayerInventoryProps {
   onItemSelected: (item: Seed) => void;
 }
@@ -30,18 +16,19 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [playerInventory, setPlayerInventory] = useState<Inventory | null>(null); // Manage playerInventory here
   
-  // get player inventory
-  useEffect(() => {
-    const getPlayerInventory = async () => {
-      const userSeeds = await getInventoryFromFirebase();
-      if (userSeeds) {
-        const newInventory = new Inventory(userSeeds);
-        setPlayerInventory(newInventory);
-        setInventoryItems(Array.from(newInventory.getSeeds()));
-      }
-    };
-    getPlayerInventory();
-  }, [])
+  // // get player inventory
+  // useEffect(() => {
+  //   const getPlayerInventory = async () => {
+  //     const userSeeds = await getInventoryFromFirebase();
+  //     console.log("USERSEEDS", userSeeds);
+  //     if (userSeeds) {
+  //       const newInventory = new Inventory(userSeeds);
+  //       setPlayerInventory(newInventory);
+  //       setInventoryItems(Array.from(newInventory.getSeeds()));
+  //     }
+  //   };
+  //   getPlayerInventory();
+  // }, [])
 
   // remove seeds
   useEffect(() => {
