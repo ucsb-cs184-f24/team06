@@ -1,5 +1,5 @@
 import { baseGestureHandlerProps } from "react-native-gesture-handler/lib/typescript/handlers/gestureHandlerCommon";
-import { Seed, Rarity } from "./Seed";
+import { Seed, Rarity } from "../types/Seed";
 
 export class ShopItem extends Seed{
   private seed: Seed;
@@ -9,7 +9,7 @@ export class ShopItem extends Seed{
     seed: Seed,
     price: number = 5
   ) {
-    super(seed.getType(), seed.getRarity(), seed.getGrowthTime(), seed.getMaxWater());
+    super(seed.type, seed.rarity, seed.growthTime, seed.maxWater);
     this.seed = seed;
     this.price = price;
   }
@@ -23,7 +23,7 @@ export class ShopItem extends Seed{
   }
 
   public getName(){
-    return this.seed.getType();
+    return this.seed.type;
   }
 
   public setPrice(price: number){
