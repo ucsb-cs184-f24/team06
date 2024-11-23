@@ -20,12 +20,8 @@ export class Seed {
       public rarity: Rarity,
       public growthTime: number,
       public maxWater: number,
-    ) {
-    }
-
-    // public getType(){ // needed for gardentools
-    //   return this.type;
-    // }
+      public spriteNumber : number = 1
+    ) {}
   
     toFirestore() {
       return {
