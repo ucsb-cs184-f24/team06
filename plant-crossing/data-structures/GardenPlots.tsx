@@ -1,124 +1,193 @@
-import { Plot } from "./Plot";
-import { Plant } from "./Plant";
-import { Seed, Rarity } from "./Seed";
+import { Plot } from "../types/Plot";
+import { Seed, Rarity } from "../types/Seed";
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity} from 'react-native';
-import {SafeAreaView, SafeAreaProvider} from 'react-native-safe-area-context';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import { PlantService } from "../managers/PlantService";
+import { PlotService } from "../managers/PlotService";
+import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity, ImageBackground, ImageSourcePropType } from 'react-native';
+import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
+import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
+import { GardenTool } from "./GardenTools";
+import { Inventory } from "./Inventory";
 
-export class GardenPlot { 
+const SPRITES = {
+    SOIL: require('../assets/Soil_Sprites/Soil_1.png') as ImageSourcePropType,
+  } as const;
+
+export class GardenPlot {
     private plots: Plot[];
-    private costsToUnlock: number[];
     public constructor(){ // 4 x 4 grid, last row locked
         this.plots = [];
         let numUnlocked = 12;
         let numLocked = 4;
-        
-        for(let i = 0; i < numUnlocked; i++){
-            this.plots.push(new Plot(true));
-        }
-        for(let i = 0; i < numLocked; i++){
-            this.plots.push(new Plot(false));
-        }
 
-        this.costsToUnlock = [100, 150, 200, 250];
+        for (let i = 0; i < numUnlocked + numLocked; i++) {
+            if (i < numUnlocked) {
+                this.plots.push(new Plot(true, i));
+            }
+            else {
+                this.plots.push(new Plot(false, i));
+            }
+        }
     }
 
-    public getPlots (){
+    public getPlots() {
         return this.plots;
     }
 }
 
-const plantedSeeds = [ // can change this later or pull randomly from items.ts
-    new Seed("Fern Seed", Rarity.common, 2, 7),
-    new Seed("Rose Seed", Rarity.common, 5, 5),
-    new Seed("Cherry Blossom Seed", Rarity.rare, 5, 5),
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null,
-    null
-];
-
-// TO ADD: the player garden should be saved per user 
 const playerGarden = new GardenPlot();
-const playerPlots = playerGarden.getPlots();
-playerPlots.map((plot, index) => {
-    const seed = plantedSeeds[index];
-    if(seed && plot.getUnlocked()){
-        plot.plantSeed(seed);
-    }
-});
 
 const columns = 4;
 const screenWidth = Dimensions.get('window').width;
 const plotSize = screenWidth / columns;
 
 
-type itemProps = {title: string};
+type itemProps = { title: string };
 
-const Item = ({title}: itemProps) => (
+const Item = ({ title }: itemProps) => (
     <View style={styles.item}>
         <Text style={styles.title}>{title}</Text>
     </View>
 );
 
+export interface GardenGridProps {
+    selectedItem: Seed | null | GardenTool;
+    setSelectedItem: (seed: Seed | null | GardenTool) => void;
+    onSeedPlanted: (seed: Seed) => void;
+    onPlantHarvested: (seed: Seed) => void;
+}
+
+  
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
-    const [plots, setPlots] = useState(playerGarden.getPlots()); // Use state to track plots
+    const [plots, setPlots] = useState(playerGarden.getPlots());
+    const userId = FIREBASE_AUTH.currentUser?.uid;
 
-    const handlePress = (plot: Plot, index: number) => {
-        if (plot?.getUnlocked()) {
-            if (plot.getSeed()) {
-                plot.getSeed()?.water(); // Simulate watering logic
-            } else if (selectedItem) {
-                plot.plantSeed(selectedItem);
-                onSeedPlanted(selectedItem); // Notify GardenScreen to remove from inventory
-                setSelectedItem(null);
+    const fetchPlots = async () => {
+        console.log('Fetching plots for user:', userId);
+        const plotsRef = collection(FIRESTORE_DB, 'users', userId!, 'plots');
+
+        // Listen to real-time updates
+        const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
+            const updatedPlots = snapshot.docs.map(doc => ({
+                ...doc.data(),
+                location: doc.data().location,
+            })) as Plot[];
+            setPlots(updatedPlots);
+        });
+
+        return unsubscribe; // Clean up the listener on unmount
+    };
+
+    useEffect(() => {
+        fetchPlots();
+    }, []);
+
+    const handlePress = async (plot: Plot, index: number) => {
+        if (!plot.unlocked) {
+          await PlotService.unlockPlot(userId!, plot.location);
+        } else {
+          if (plot.plant) {
+            if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
+                await PlotService.removePlantFromPlot(userId!, plot.location);
+                
+            } else if (selectedItem?.type == "WateringCan") {
+                console.log("selected wc");
+                let plantID = await PlantService.getPlantIdByDescription(plot.plant.type, plot.plant.rarity);
+                if(plantID){
+                    await PlantService.waterPlant(plantID, 1);
+                }
             }
-        } else { // Unlocks plot (assumes cost logic to be added)
-            plot.setUnlocked(true);
+          } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
+            console.log(selectedItem);
+            await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
+            setSelectedItem(null); 
+          }
         }
+    
+        fetchPlots();
+    };
 
-        const updatedPlots = [...plots];
-        updatedPlots[index] = plot;
-        setPlots(updatedPlots);
+    const renderPlotContent = (plot: Plot) => {
+        if (plot.getUnlocked()) {
+            if (plot.getSeed()) {
+                // Planted plot with seed
+                return (
+                    <ImageBackground 
+                        source={SPRITES.SOIL}
+                        style={styles.plotItem}
+                        resizeMode="cover"
+                    >
+                        <View style={styles.plantOverlay}>
+                            <Text style={styles.plotText}>{plot.getSeed().getType()}</Text>
+                        </View>
+                    </ImageBackground>
+                );
+            } else {
+                // Empty plot
+                return (
+                    <ImageBackground 
+                        source={SPRITES.SOIL}
+                        style={styles.emptyPlot}
+                        resizeMode="cover"
+                    >
+                        {selectedItem && (
+                            <View style={styles.readyToPlantOverlay} />
+                        )}
+                    </ImageBackground>
+                );
+            }
+        } else {
+            // Locked plot
+            return (
+                <ImageBackground 
+                    source={SPRITES.SOIL}
+                    style={styles.lockedPlot}
+                    resizeMode="cover"
+                >
+                    <Text style={styles.lockedText}>Locked</Text>
+                </ImageBackground>
+            );
+        }
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <FlatList
-                data={playerGarden.getPlots()}
-                renderItem={({ item, index }) => {
+        <View style={styles.gridContainer}>
+            <View style={styles.grid}>
+                {plots.map((plot, index) => {
                     let content;
-                    if (item.getUnlocked()) {
-                        if (item.getSeed()) {
-                            content = <Item title={item.getSeed().getType()} />;
+                    if (plot.unlocked) {
+                        if (plot.plant) {
+                            content = (
+                                <View style={styles.plotItem}>
+                                    <Text style={styles.plotText}>{plot.plant?.type}</Text>
+                                </View>
+                            );
                         } else {
-                            content = <View style={styles.emptyItem} />;
+                            content = <View style={styles.emptyPlot} />;
                         }
                     } else {
-                        content = <Text style={styles.lockedItem}>Locked</Text>;
+                        content = (
+                            <View style={styles.lockedPlot}>
+                                <Text style={styles.lockedText}>Locked</Text>
+                            </View>
+                        );
                     }
 
                     return (
                         <TouchableOpacity
-                            onPress={() => handlePress(item, index)}
-                            testID={`plot-${index}-unlocked-${item.getUnlocked()}-seed-${item.getSeed() ? item.getSeed().getType() : 'none'}`}
+                            key={`plot-${index}`}
+                            onPress={() => handlePress(plot, index)}
+                            style={styles.plotTouchable}
                         >
-                            <View>{content}</View>
+                            {content}
                         </TouchableOpacity>
                     );
-                }}
-                keyExtractor={(item, index) => item.getSeed() ? item.getSeed().getType() : `empty-${index}`}
-                numColumns={columns}
-            />
-        </SafeAreaView>
+                })}
+            </View>
+        </View>
     );
 };
-export default GardenGrid;
 
 const styles = StyleSheet.create({
     container: {
@@ -172,5 +241,42 @@ const styles = StyleSheet.create({
     },
     title: {
         fontSize: 20
-    }
+    },
+    gridContainer: {
+        flex: 2,
+        padding: 8,
+        justifyContent: 'center',
+    },
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        justifyContent: 'center',
+        width: '100%',
+        aspectRatio: 1,
+    },
+    plotTouchable: {
+        width: '25%',
+        aspectRatio: 1,
+        padding: 2,
+    },
+    plotItem: {
+        flex: 1,
+        backgroundColor: '#abf333',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    emptyPlot: {
+        flex: 1,
+        backgroundColor: '#cceeee',
+    },
+    lockedPlot: {
+        flex: 1,
+        backgroundColor: '#550000',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    lockedText: {
+        color: '#fff',
+        fontSize: 12,
+    },
 });
