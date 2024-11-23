@@ -30,7 +30,6 @@ export class SeedService {
     }
   
     static async addSeed(seed: Seed) {
-      console.log("adding seed?");
       const seedsCollectionRef = this.getSeedsCollectionRef();
       const newSeedRef = doc(seedsCollectionRef);
 
