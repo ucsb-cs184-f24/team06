@@ -26,11 +26,11 @@ const DATA = [
 ]
 
 type GardenToolProps = {
-    selectedItem: Seed | null;
-    setSelectedItem: (item: Seed | null) => void;
+    selectedItem: Seed | GardenTool | null;
+    setSelectedItem: (item: Seed | GardenTool | null) => void;
 };
 
-export const GardenTools = ({selectedItem, setSelectedItem} : GardenToolProps) =>{
+export const GardenTools: React.FC<GardenToolProps> = ({selectedItem, setSelectedItem}) =>{
     const [spriteWateringCan, setSpriteWateringCan] = useState(sprites.WateringCan);
     const [spriteShovel, setSpriteShovel] = useState(sprites.Shovel);
 
