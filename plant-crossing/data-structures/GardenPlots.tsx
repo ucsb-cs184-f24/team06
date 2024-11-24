@@ -53,8 +53,8 @@ const Item = ({ title }: itemProps) => (
 );
 
 export interface GardenGridProps {
-    selectedItem: Seed | GardenTool | null;
-    setSelectedItem: (seed: Seed | null) => void;
+    selectedItem: Seed | null | GardenTool;
+    setSelectedItem: (seed: Seed | null | GardenTool) => void;
     onSeedPlanted: (seed: Seed) => void;
     onPlantHarvested: (seed: Seed) => void;
 }
@@ -98,82 +98,67 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                 if(plantID){
                     await PlantService.waterPlant(plantID, 1);
                 }
-            } else if (selectedItem && (selectedItem.type == "Seed")) {
-                console.log(selectedItem);
-                await PlotService.addPlantToPlot(userId!, plot.location, selectedItem as Seed);
-                setSelectedItem(null); 
             }
-        }
+          } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
+            console.log(selectedItem);
+            await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
+            setSelectedItem(null); 
+          }
         }
     
         fetchPlots();
     };
 
-    // const renderPlotContent = (plot: Plot) => {
-    //     if (plot.getUnlocked()) {
-    //         if (plot.getSeed()) {
-    //             // Planted plot with seed
-    //             return (
-    //                 <ImageBackground 
-    //                     source={SPRITES.SOIL}
-    //                     style={styles.plotItem}
-    //                     resizeMode="cover"
-    //                 >
-    //                     <View style={styles.plantOverlay}>
-    //                         <Text style={styles.plotText}>{plot.getSeed().getType()}</Text>
-    //                     </View>
-    //                 </ImageBackground>
-    //             );
-    //         } else {
-    //             // Empty plot
-    //             return (
-    //                 <ImageBackground 
-    //                     source={SPRITES.SOIL}
-    //                     style={styles.emptyPlot}
-    //                     resizeMode="cover"
-    //                 >
-    //                     {selectedItem && (
-    //                         <View style={styles.readyToPlantOverlay} />
-    //                     )}
-    //                 </ImageBackground>
-    //             );
-    //         }
-    //     } else {
-    //         // Locked plot
-    //         return (
-    //             <ImageBackground 
-    //                 source={SPRITES.SOIL}
-    //                 style={styles.lockedPlot}
-    //                 resizeMode="cover"
-    //             >
-    //                 <Text style={styles.lockedText}>Locked</Text>
-    //             </ImageBackground>
-    //         );
-    //     }
-    // };
+    const renderPlotContent = (plot: Plot) => {
+        if (plot.unlocked) {
+            if (plot.plant) {
+                // Planted plot with seed
+                return (
+                    <ImageBackground 
+                        source={SPRITES.SOIL}
+                        style={styles.plotItem}
+                        resizeMode="cover"
+                    >
+                        <View style={styles.plotItem}>
+                            <Text style={styles.plotText}>{plot.plant?.type}</Text>
+                        </View>
+                    </ImageBackground>
+                );
+            } else {
+                // Empty plot
+                return (
+                    <ImageBackground 
+                        source={SPRITES.SOIL}
+                        style={styles.emptyPlot}
+                        resizeMode="cover"
+                    >
+                        {selectedItem && (
+                            <View style={styles.emptyPlot} />
+                        )}
+                    </ImageBackground>
+                );
+            }
+        } else {
+            // Locked plot
+            return (
+                <ImageBackground 
+                    source={SPRITES.SOIL}
+                    style={styles.lockedPlot}
+                    resizeMode="cover"
+                >
+                    <View style={styles.darkOverlay}>
+                        <Text style={styles.lockedText}>Locked</Text>
+                    </View>
+                </ImageBackground>
+            );
+        }
+    };
 
     return (
         <View style={styles.gridContainer}>
             <View style={styles.grid}>
                 {plots.map((plot, index) => {
-                    let content;
-                    if (plot.unlocked) {
-                        if (plot.plant) {
-                            content = (
-                                <View style={styles.plotItem}>
-                                    <Text style={styles.plotText}>{plot.plant?.type}</Text>
-                                </View>
-                            );
-                        } else {
-                            content = <View style={styles.emptyPlot} />;
-                        }
-                    } else {
-                        content = (
-                            <View style={styles.lockedPlot}>
-                                <Text style={styles.lockedText}>Locked</Text>
-                            </View>
-                        );
-                    }
+                    let content = renderPlotContent(plot);
 
                     return (
                         <TouchableOpacity
@@ -197,9 +182,6 @@ const styles = StyleSheet.create({
     },
     unlocked: {
         backgroundColor: 'lightgreen',
-    },
-    locked: {
-        backgroundColor: 'gray',
     },
     pressed: {
         opacity: 0.7
@@ -225,7 +207,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 0,
     },
     readyToPlantItem: { // highlight tile if something can be planted here
-        backgroundColor: '#ddeeee',
         padding: 2,
         height: plotSize,
         width: plotSize,
@@ -262,22 +243,35 @@ const styles = StyleSheet.create({
     },
     plotItem: {
         flex: 1,
-        backgroundColor: '#abf333',
         justifyContent: 'center',
         alignItems: 'center',
     },
     emptyPlot: {
         flex: 1,
-        backgroundColor: '#cceeee',
+        backgroundColor: 'rgba(255, 255, 255, 0.13)',
     },
     lockedPlot: {
         flex: 1,
-        backgroundColor: '#550000',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
     },
+    darkOverlay: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Darker overlay
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    // Update lockedText for better visibility
     lockedText: {
         color: '#fff',
         fontSize: 12,
+        fontWeight: 'bold',
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
 });
