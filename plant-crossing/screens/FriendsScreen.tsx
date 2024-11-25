@@ -4,6 +4,8 @@ import filter from 'lodash.filter';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from 'firebase/firestore';
 import { globalStyles } from '../styles/globalStyles';
+import DropDownPicker from 'react-native-dropdown-picker';
+import { SeedService } from '../managers/SeedService';
 
 const db = FIRESTORE_DB;
 
@@ -18,6 +20,13 @@ export default function FriendsScreen() {
   const [selectedFriend, setSelectedFriend] = useState<string | null>(null);
   const [friends, setFriends] = useState<string[]>([]);
   const [userEmail, setUserEmail] = useState<string>("");
+  const [tradeModalVisible, setTradeModalVisible] = useState(false);
+  const [userSeeds, setUserSeeds] = useState<string[]>([]);
+  const [friendSeeds, setFriendSeeds] = useState<string[]>([]);
+  const [selectedUserSeed, setSelectedUserSeed] = useState<string | null>(null);
+  const [selectedFriendSeed, setSelectedFriendSeed] = useState<string | null>(null);
+  const [userSeedDropdownOpen, setUserSeedDropdownOpen] = useState(false);
+  const [friendSeedDropdownOpen, setFriendSeedDropdownOpen] = useState(false);
 
   const checkFriends = async () => {
     const user = FIREBASE_AUTH.currentUser;
@@ -89,6 +98,35 @@ export default function FriendsScreen() {
     }
   };
 
+  const fetchTradeSeeds = async (friendEmail: string) => {
+    try {
+      const userSeedsList = await SeedService.getUserSeeds();
+      const userSeeds = userSeedsList.map(doc => doc.type);
+      setUserSeeds(userSeeds);
+      
+      const friendQuery = query(
+        collection(db, "users"),
+        where("email", "==", friendEmail)
+      );
+      const friendSnaphot = await getDocs(friendQuery);
+  
+      if (friendSnaphot.empty) {
+        console.log('Friend not found');
+        return;
+      }
+      const friendDoc = friendSnaphot.docs[0];
+      const friendId = friendDoc.id;
+      const friendSeedsSnapshot = await getDocs(
+        collection(db, "users", friendId, "seeds")
+      );
+      const friendSeeds = friendSeedsSnapshot.docs.map(doc => doc.data().type);
+      setFriendSeeds(friendSeeds);
+    } catch (error) {
+      console.error("Error fetching seeds:", error);
+    }
+  };
+  
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
     if (query !== "") {
@@ -106,11 +144,6 @@ export default function FriendsScreen() {
   const contains = (email: string, query: string) => {
     return email.toLowerCase().includes(query);
   };
-
-  useEffect(() => {
-    checkFriends();
-    updateAllUsers();
-  }, []);
 
   if (error) {
     return(
@@ -140,6 +173,8 @@ export default function FriendsScreen() {
         'Success',
         `Successfully added ${selectedFriend} as a friend!`
       );
+      setSearchQuery('');
+      setShowSearchResults(false);
       setAddFriendModalVisible(false);
       setSelectedFriend(null);
     }
@@ -160,10 +195,35 @@ export default function FriendsScreen() {
     }
   };
 
-  const handleTrade = () => {
-    Alert.alert('Coming Soon', 'Trading feature is not yet implemented');
-    setFriendActionsModalVisible(false);
+  const handleTrade = async () => {
+    if (selectedFriend) {
+      await fetchTradeSeeds(selectedFriend);
+      setFriendActionsModalVisible(false);
+      setTimeout(() => {
+        setTradeModalVisible(true);
+      }, 1000);
+    }
   };
+
+  const handleTradeRequest = async () => {
+    if (!selectedUserSeed || !selectedFriendSeed || !selectedFriend) {
+      console.error("Trade request missing required fields.");
+      return;
+    }
+    await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
+    setTradeModalVisible(false);
+    Alert.alert(
+      "Trade Successful",
+      `You traded ${selectedUserSeed} for ${selectedFriendSeed}.`
+    );
+    setSelectedFriendSeed(null);
+    setSelectedUserSeed(null);
+  }
+
+  useEffect(() => {
+    checkFriends();
+    updateAllUsers();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -264,6 +324,67 @@ export default function FriendsScreen() {
               <TouchableOpacity
                 style={[styles.button, styles.cancelButton]}
                 onPress={() => setFriendActionsModalVisible(false)}
+              >
+                <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Trade Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={tradeModalVisible}
+        onRequestClose={() => setTradeModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={[styles.modalTitle, globalStyles.text]}>Trade Request</Text>
+            <Text style={[styles.modalEmail, globalStyles.text]}>
+              Trading with {selectedFriend}
+            </Text>
+
+            <Text style={styles.modalTitle}>Your Seeds</Text>
+            <DropDownPicker
+              open={userSeedDropdownOpen}
+              setOpen={setUserSeedDropdownOpen}
+              value={selectedUserSeed}
+              setValue={setSelectedUserSeed}
+              items={userSeeds.map((seed) => ({ label: seed, value: seed }))}
+              placeholder="Select a seed"
+              containerStyle={{ marginBottom: 20 }}
+            />
+
+            <Text style={styles.modalTitle}>Friend's Seeds</Text>
+            <DropDownPicker
+              open={friendSeedDropdownOpen}
+              setOpen={setFriendSeedDropdownOpen}
+              value={selectedFriendSeed}
+              setValue={setSelectedFriendSeed}
+              items={friendSeeds.map((seed) => ({ label: seed, value: seed }))}
+              placeholder="Select a friend's seed"
+              containerStyle={{ marginBottom: 20 }}
+            />
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.tradeButton]}
+                onPress={handleTradeRequest}
+              >
+                <Text style={[styles.buttonText, globalStyles.text]}>
+                  Send Request
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => {
+                  setTradeModalVisible(false);
+                  setSelectedFriendSeed(null);
+                  setSelectedUserSeed(null);
+                }}
               >
                 <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
               </TouchableOpacity>
