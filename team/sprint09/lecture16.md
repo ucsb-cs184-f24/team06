@@ -11,6 +11,8 @@
 - Planning on checking on harvesting PR.
 
 ## Grace Feng
+- Finished unit tests for garden screen pages.
+- Planning to add a sprite to random seed shake garden bag.
 
 ## Elijah Frankle
 
