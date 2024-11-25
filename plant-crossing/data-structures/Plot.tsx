@@ -1,6 +1,8 @@
 import { PlantService } from '../managers/PlantService';
 import { SeedService } from '../managers/SeedService';
 import { Plant} from '../types/Plant';
+import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 
 export class Plot {
     public location: number;
@@ -66,20 +68,26 @@ export class Plot {
       // }
     }
 
-    public harvestPlant(){
-      // TODO: integrate with PlantServices and Firebase
-      // if (this.unlocked == true){
-      //   let numCoins = 0;
-      //   let numSeeds = 0;
-      //   if(this.plant && this.plant.getAge() > 1){ // plants return coins if they've been planted a while
-      //     numCoins = this.plant.produceCoins() * this.plant.getAge();
-      //     numSeeds = Math.min(this.plant.getAge(), 3); // plants will return a number of plants if they've been planted a while
-      //   } 
-      //   let newSeed = new Seed(this.plant?.copy());
-      //   this.plant = null;
-      //   this.plant = null;
-      //   return [newSeed, numSeeds, numCoins];
-      // }
+    public harvestPlant = async () => {
+      const db = FIRESTORE_DB;
+      try {
+        const user = FIREBASE_AUTH.currentUser;
+        if (!user) {
+          return;
+        }
+        const userDocRef = doc(db, 'users', user.id);
+        const userDoc = await getDoc(userDocRef);
+        if (this.unlocked && this.plant) {
+          let age = this.plant.age;
+          let rarity = this.plant.getRarityValue();
+          let coinsBack = age * rarity;
+          const currentCoins = userDoc.data().coins || 0;
+          await updateDoc(userDocRef, {
+            coins: currentCoins + coinsBack,
+          });
+          this.plant = null;
+        }
+      }
     }
 
     public toJSON() {

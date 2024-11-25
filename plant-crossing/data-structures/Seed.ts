@@ -84,6 +84,10 @@ export class Seed {
     return this.rarity;
   }
 
+  public getRarityValue() {
+    return rarityValue[this.rarity];
+  }
+
   public setRarity(rarity: Rarity) {
     this.rarity = rarity;
   }

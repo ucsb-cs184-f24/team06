@@ -21,6 +21,10 @@ export class Plant extends Seed {
     return this.seed.getRarity();
   }
 
+  public getRarityValue() {
+    return this.seed.getRarityValue();
+  }
+
   public getNickname() {
     return this.nickname;
   }
