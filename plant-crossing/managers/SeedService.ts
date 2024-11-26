@@ -134,7 +134,6 @@ export class SeedService {
         await this.deleteSeed(seedId);
 
         await setDoc(newPlantRef, newPlant.toFirestore());
-
         return newPlant;
     }
   

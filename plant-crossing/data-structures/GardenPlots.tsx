@@ -11,9 +11,19 @@ import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore,
 import { GardenTool } from "./GardenTools";
 import { Inventory } from "./Inventory";
 
-const SPRITES = {
-    SOIL: require('../assets/Soil_Sprites/Soil_1.png') as ImageSourcePropType,
-  } as const;
+const soilSprites = {
+    dry: require('../assets/soil-sprites/soil-dry.png') as ImageSourcePropType,
+    watered: require('../assets/soil-sprites/soil-watered.png') as ImageSourcePropType,
+    locked: require('../assets/soil-sprites/soil-locked.png') as ImageSourcePropType,
+} as const;
+
+
+const animationPaths = new Map<string, ImageSourcePropType>([
+    ['watering', require('../assets/animation-watering/watering.gif')],
+    ['planting', require('../assets/animation-planting/planting.gif')],
+    ['digging', require('../assets/animation-digging/digging.gif')],
+]);
+  
 
 export class GardenPlot {
     private plots: Plot[];
@@ -62,11 +72,8 @@ export interface GardenGridProps {
   
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots());
-    const [isWatering, setIsWatering] = useState(false);
+    const [animationType, setAnimationType] = useState<string | null>(null);
     const [animationLocation, setAnimationLocation] = useState(-1); //plot that should be animated
-    // const [gifKey, setGifKey] = useState(0); // state to restart gif from frame 1 when animation plays
-    const [gifKey, setGifKey] = useState(''); 
-
     const userId = FIREBASE_AUTH.currentUser?.uid;
 
     const fetchPlots = async () => {
@@ -75,11 +82,19 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
 
         // Listen to real-time updates
         const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
-            const updatedPlots = snapshot.docs.map(doc => ({
-                ...doc.data(),
-                location: doc.data().location,
-            })) as Plot[];
-            setPlots(updatedPlots);
+            const updatedPlots = snapshot.docs.map(doc => {
+                const data = doc.data();
+                console.log("Updated doc data:", data); // Verify growthBoost here
+                return {
+                    ...data,
+                    location: data.location,
+                    plant: {
+                        ...data.plant,
+                        growthBoost: data.plant?.growthBoost || 1, // Include growthBoost, default to 1 if undefined
+                    },
+                };
+            }) as Plot[];
+            setPlots([...updatedPlots]);
         });
 
         return unsubscribe; // Clean up the listener on unmount
@@ -89,41 +104,48 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         fetchPlots();
     }, []);
 
-    const startWateringAnimation = (plotLocation: number) => {
-        setIsWatering(true);
-        setAnimationLocation(plotLocation);
-        restartGif();
+    const clearAnimation = () => {
+        setAnimationType(null);
+        setAnimationLocation(-1);
+        
+    };
+
+    const startAnimation = (type: string, plotLocation: number) => {
+        setTimeout(() => {
+            setAnimationType(type);
+            setAnimationLocation(plotLocation);
+        }, 0); // Briefly reset before reassigning
         const timeout = setTimeout(() => {
-            setIsWatering(false);
-            setAnimationLocation(-1);
+            clearAnimation();
         }, 1250); // 1.25 second watering (5 frames, each display .25 seconds)
         return () => {
             clearTimeout(timeout);
         };
     };
 
-    const restartGif = () => {
-        setGifKey((prevKey) => (prevKey + 1)); // Increment key to re-render the GIF
-    };
-
     const handlePress = async (plot: Plot, index: number) => {
         if (!plot.unlocked) {
           await PlotService.unlockPlot(userId!, plot.location);
         } else {
+            setAnimationType(null); // clear the current animation
           if (plot.plant) {
             if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
-                await SeedService.addSeed(new Seed(plot.plant.type, plot.plant.rarity, plot.plant.growthTime, plot.plant.maxWater, plot.plant.spriteNumber));
+                startAnimation("digging", plot.location);
                 await PlotService.removePlantFromPlot(userId!, plot.location);
+                await SeedService.addSeed(new Seed(plot.plant.type, plot.plant.rarity, plot.plant.growthTime, plot.plant.maxWater, plot.plant.spriteNumber));
             } else if (selectedItem?.type == "WateringCan") {
                 let plantID = await PlantService.getPlantIdByDescription(plot.plant.type, plot.plant.rarity);
                 if(plantID){
+                    startAnimation("watering", plot.location);
                     await PlantService.waterPlant(plantID, 1);
-                    startWateringAnimation(plot.location);
+                    let b = await PlantService.boostPlant(plantID, plot.plant.rarity);
+                    console.log("b'", b);
+                    plot.watered = true;
                 }
             }
           } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
-            console.log(selectedItem);
             await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
+            startAnimation("planting", plot.location);
             setSelectedItem(null); 
           }
         }
@@ -132,21 +154,36 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
     };
 
     const renderPlotContent = (plot: Plot) => {
+        // if(selectedItem?.type == "Shovel"){
+        //     setAnimationType("digging");
+        // }
+        // else if(selectedItem?.type == "WateringCan"){
+        //     setAnimationType("watering");
+        // } else if(selectedItem){
+        //     setAnimationType("planting");
+        // }
         if (plot.unlocked) {
             if (plot.plant) {
+                // console.log("plant ", plot.plant, plot.plant.growthBoost);
+                let plotSprite = soilSprites.dry;
+                console.log("IN RENDER: ", plot.plant.growthBoost);
+                if (plot.plant.growthBoost > 1){ //growth boost set to > 1 when plant watered
+                    plotSprite = soilSprites.watered;
+                    console.log("watered :D");
+                }
+
                 // Planted plot with seed
                 return (
                     <ImageBackground 
-                        source={SPRITES.SOIL}
+                        source={plotSprite}
                         style={styles.plotItem}
                         resizeMode="cover"
                     >
-                    {isWatering && (plot.location == animationLocation) ? (
+                    {(animationType == "watering" || animationType == "digging") && (plot.location == animationLocation) ? (
                         <Image 
-                            source={require('../assets/watering-animation/watering.gif')}
+                            source={animationPaths.get(animationType)}
                             style={styles.wateringGif} 
-                            resizeMode="center" 
-                            key={gifKey}
+                            resizeMode="cover" 
                         />                
                     ) : (
                         <View style={styles.plantOverlay}>
@@ -159,7 +196,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                 // Empty plot
                 return (
                     <ImageBackground 
-                        source={SPRITES.SOIL}
+                        source={soilSprites.dry}
                         style={styles.emptyPlot}
                         resizeMode="cover"
                     >
@@ -173,7 +210,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
             // Locked plot
             return (
                 <ImageBackground 
-                    source={SPRITES.SOIL}
+                    source={soilSprites.locked}
                     style={styles.lockedPlot}
                     resizeMode="cover"
                 >

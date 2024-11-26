@@ -4,6 +4,7 @@ export class Plot {
     public location: number;
     public unlocked: boolean;
     public plant: Plant | null;
+    public watered: boolean;
 
     public constructor(
       unlocked: boolean,
@@ -12,6 +13,7 @@ export class Plot {
       this.unlocked = unlocked;
       this.plant = null;
       this.location = location;
+      this.watered = false;
     };
 
 }
