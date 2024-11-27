@@ -89,8 +89,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                     ...data,
                     location: data.location,
                     plant: {
-                        ...data.plant,
-                        growthBoost: data.plant?.growthBoost || 1, // Include growthBoost, default to 1 if undefined
+                        ...data.plant
                     },
                 };
             }) as Plot[];
@@ -127,8 +126,11 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         if (!plot.unlocked) {
           await PlotService.unlockPlot(userId!, plot.location);
         } else {
+            console.log("selected item:", selectedItem);
             setAnimationType(null); // clear the current animation
-          if (plot.plant) {
+            console.log(plot.plant);
+          if (plot.plant && JSON.stringify(plot.plant) !== "{}") {
+            console.log("test1");
             if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
                 startAnimation("digging", plot.location);
                 await PlotService.removePlantFromPlot(userId!, plot.location);
@@ -144,6 +146,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                 }
             }
           } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
+            console.log("test1");
             await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
             startAnimation("planting", plot.location);
             setSelectedItem(null); 
@@ -166,7 +169,6 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
             if (plot.plant) {
                 // console.log("plant ", plot.plant, plot.plant.growthBoost);
                 let plotSprite = soilSprites.dry;
-                console.log("IN RENDER: ", plot.plant.growthBoost);
                 if (plot.plant.growthBoost > 1){ //growth boost set to > 1 when plant watered
                     plotSprite = soilSprites.watered;
                     console.log("watered :D");
@@ -215,9 +217,6 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                     style={styles.lockedPlot}
                     resizeMode="cover"
                 >
-                    <View style={styles.darkOverlay}>
-                        <Text style={styles.lockedText}>Locked</Text>
-                    </View>
                 </ImageBackground>
             );
         }
