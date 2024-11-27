@@ -5,9 +5,9 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from 'firebase/firestore';
 
 var userDocRef;
-var friends = [];
-var usersEmailList = [];
-var userEmail;
+var friends: any[] = [];
+var usersEmailList: any[] = [];
+var userEmail: any;
 const db = FIRESTORE_DB;
 
 const checkFriends = async () => {
@@ -38,7 +38,7 @@ const updateAllUsers = async () => {
   });
 }
 
-const addFriend = async (userEmail, friendEmail) => {
+const addFriend = async (userEmail: any, friendEmail: any) => {
   try {
     // Query for the document with the specific field value
     const q = query(collection(db, "users"), where("email", "==", userEmail));
@@ -86,7 +86,7 @@ export default function FriendsScreen() {
     }
   };
 
-  const contains = (email, query) => {
+  const contains = (email: any, query: any) => {
     if (email.includes(query)) {
       return true;
     }

@@ -186,8 +186,9 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                             resizeMode="cover" 
                         />                
                     ) : (
-                        <View style={styles.plantOverlay}>
-                            <Text style={styles.plotText}>{plot.plant.type}</Text>
+
+                        <View style={styles.plotItem}>
+                            <Text style={styles.plotText}>{plot.plant?.type}</Text>
                         </View>
                     )}
                     </ImageBackground>
@@ -201,7 +202,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                         resizeMode="cover"
                     >
                         {selectedItem && (
-                            <View style={styles.readyToPlantOverlay} />
+                            <View style={styles.emptyPlot} />
                         )}
                     </ImageBackground>
                 );
@@ -214,7 +215,9 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                     style={styles.lockedPlot}
                     resizeMode="cover"
                 >
-                    <Text style={styles.lockedText}>Locked</Text>
+                    <View style={styles.darkOverlay}>
+                        <Text style={styles.lockedText}>Locked</Text>
+                    </View>
                 </ImageBackground>
             );
         }
@@ -223,15 +226,19 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
     return (
         <View style={styles.gridContainer}>
             <View style={styles.grid}>
-                {plots.map((plot, index) => (
-                    <TouchableOpacity
-                        key={`plot-${index}`}
-                        onPress={() => handlePress(plot, index)}
-                        style={styles.plotTouchable}
-                    >
-                        {renderPlotContent(plot)}
-                    </TouchableOpacity>
-                ))}
+                {plots.map((plot, index) => {
+                    let content = renderPlotContent(plot);
+
+                    return (
+                        <TouchableOpacity
+                            key={`plot-${index}`}
+                            onPress={() => handlePress(plot, index)}
+                            style={styles.plotTouchable}
+                        >
+                            {content}
+                        </TouchableOpacity>
+                    );
+                })}
             </View>
         </View>
     );
@@ -244,9 +251,6 @@ const styles = StyleSheet.create({
     },
     unlocked: {
         backgroundColor: 'lightgreen',
-    },
-    locked: {
-        backgroundColor: 'gray',
     },
     pressed: {
         opacity: 0.7
@@ -272,7 +276,6 @@ const styles = StyleSheet.create({
         marginHorizontal: 0,
     },
     readyToPlantItem: { // highlight tile if something can be planted here
-        backgroundColor: '#ddeeee',
         padding: 2,
         height: plotSize,
         width: plotSize,
@@ -309,7 +312,6 @@ const styles = StyleSheet.create({
     },
     plotItem: {
         flex: 1,
-        backgroundColor: '#abf333',
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -323,16 +325,30 @@ const styles = StyleSheet.create({
     },
     emptyPlot: {
         flex: 1,
-        backgroundColor: '#cceeee',
+        backgroundColor: 'rgba(255, 255, 255, 0.13)',
     },
     lockedPlot: {
         flex: 1,
-        backgroundColor: '#550000',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
         justifyContent: 'center',
         alignItems: 'center',
     },
+    darkOverlay: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Darker overlay
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    // Update lockedText for better visibility
     lockedText: {
         color: '#fff',
         fontSize: 12,
+        fontWeight: 'bold',
+        textShadowColor: 'rgba(0, 0, 0, 0.75)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
     },
 });
