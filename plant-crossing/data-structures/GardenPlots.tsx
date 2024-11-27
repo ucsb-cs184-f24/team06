@@ -10,6 +10,7 @@ import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
 import { GardenTool } from "./GardenTools";
 import { Inventory } from "./Inventory";
+import FastImage from 'react-native-fast-image';
 
 const soilSprites = {
     dry: require('../assets/soil-sprites/soil-dry.png') as ImageSourcePropType,
@@ -72,7 +73,7 @@ export interface GardenGridProps {
   
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots());
-    const [animationType, setAnimationType] = useState<string | null>(null);
+    const [animations, setAnimations] = useState<{ type: string; location: number }[]>([]);
     const [animationLocation, setAnimationLocation] = useState(-1); //plot that should be animated
     const userId = FIREBASE_AUTH.currentUser?.uid;
 
@@ -103,33 +104,25 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         fetchPlots();
     }, []);
 
-    const clearAnimation = () => {
-        setAnimationType(null);
-        setAnimationLocation(-1);
-        
+    const clearAnimation = (plotLocation: number) => {
+        setAnimations((prev) => prev.filter((anim) => anim.location !== plotLocation));
     };
 
     const startAnimation = (type: string, plotLocation: number) => {
-        setTimeout(() => {
-            setAnimationType(type);
-            setAnimationLocation(plotLocation);
-        }, 0); // Briefly reset before reassigning
+        setAnimations((prev) => [...prev, { type, location: plotLocation }]);
         const timeout = setTimeout(() => {
-            clearAnimation();
-        }, 1250); // 1.25 second watering (5 frames, each display .25 seconds)
-        return () => {
-            clearTimeout(timeout);
-        };
+            clearAnimation(plotLocation);
+        }, 3000); // 3 seconds for the animation
+        return () => clearTimeout(timeout);
     };
 
     const handlePress = async (plot: Plot, index: number) => {
         if (!plot.unlocked) {
           await PlotService.unlockPlot(userId!, plot.location);
         } else {
-            console.log("selected item:", selectedItem);
-            setAnimationType(null); // clear the current animation
-            console.log(plot.plant);
-          if (plot.plant && JSON.stringify(plot.plant) !== "{}") {
+            // setAnimations(null); // clear the current animation
+            console.log("plot plant", JSON.stringify(plot.plant));
+          if (plot.plant && (Object.keys(plot.plant).length > 0)) {
             console.log("test1");
             if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
                 startAnimation("digging", plot.location);
@@ -141,12 +134,10 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                     startAnimation("watering", plot.location);
                     await PlantService.waterPlant(plantID, 1);
                     let b = await PlantService.boostPlant(plantID, plot.plant.rarity);
-                    console.log("b'", b);
                     plot.watered = true;
                 }
             }
           } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
-            console.log("test1");
             await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
             startAnimation("planting", plot.location);
             setSelectedItem(null); 
@@ -157,42 +148,32 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
     };
 
     const renderPlotContent = (plot: Plot) => {
-        // if(selectedItem?.type == "Shovel"){
-        //     setAnimationType("digging");
-        // }
-        // else if(selectedItem?.type == "WateringCan"){
-        //     setAnimationType("watering");
-        // } else if(selectedItem){
-        //     setAnimationType("planting");
-        // }
+        const currentAnimation = animations.find((anim) => anim.location === plot.location);
+    
         if (plot.unlocked) {
             if (plot.plant) {
-                // console.log("plant ", plot.plant, plot.plant.growthBoost);
                 let plotSprite = soilSprites.dry;
-                if (plot.plant.growthBoost > 1){ //growth boost set to > 1 when plant watered
+                if (plot.plant.growthBoost > 1) { // Growth boost set to > 1 when plant watered
                     plotSprite = soilSprites.watered;
-                    console.log("watered :D");
                 }
-
-                // Planted plot with seed
+    
                 return (
                     <ImageBackground 
                         source={plotSprite}
                         style={styles.plotItem}
                         resizeMode="cover"
                     >
-                    {(animationType == "watering" || animationType == "digging") && (plot.location == animationLocation) ? (
-                        <Image 
-                            source={animationPaths.get(animationType)}
-                            style={styles.wateringGif} 
-                            resizeMode="cover" 
-                        />                
-                    ) : (
-
-                        <View style={styles.plotItem}>
-                            <Text style={styles.plotText}>{plot.plant?.type}</Text>
-                        </View>
-                    )}
+                        {currentAnimation ? (
+                            <Image 
+                                source={animationPaths.get(currentAnimation.type)}
+                                style={styles.wateringGif} 
+                                resizeMode="cover" 
+                            />                
+                        ) : (
+                            <View style={styles.plotItem}>
+                                <Text style={styles.plotText}>{plot.plant?.type}</Text>
+                            </View>
+                        )}
                     </ImageBackground>
                 );
             } else {
@@ -221,13 +202,13 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
             );
         }
     };
+    
 
     return (
         <View style={styles.gridContainer}>
             <View style={styles.grid}>
                 {plots.map((plot, index) => {
                     let content = renderPlotContent(plot);
-
                     return (
                         <TouchableOpacity
                             key={`plot-${index}`}
