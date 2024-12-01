@@ -49,7 +49,7 @@ const HomeScreen = ({ onAnimationComplete, startAnimation }: any) => {
               transform: [{ scale: scaleAnim }],
             }, globalStyles.text]}
           >
-            Plant{"\n"}Crossings
+            Plant{"\n"}Crossing
           </Animated.Text>
         </View>
       </AnimatedImageBackground>
