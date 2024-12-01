@@ -10,7 +10,7 @@ import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
 import { GardenTool } from "./GardenTools";
 import { Inventory } from "./Inventory";
-import FastImage from 'react-native-fast-image';
+import { Image as ExpoImage} from 'expo-image';
 
 const soilSprites = {
     dry: require('../assets/soil-sprites/soil-dry.png') as ImageSourcePropType,
@@ -112,7 +112,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         setAnimations((prev) => [...prev, { type, location: plotLocation }]);
         const timeout = setTimeout(() => {
             clearAnimation(plotLocation);
-        }, 3000); // 3 seconds for the animation
+        }, 1000); // 1 second for the animation
         return () => clearTimeout(timeout);
     };
 
@@ -120,10 +120,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         if (!plot.unlocked) {
           await PlotService.unlockPlot(userId!, plot.location);
         } else {
-            // setAnimations(null); // clear the current animation
-            console.log("plot plant", JSON.stringify(plot.plant));
           if (plot.plant && (Object.keys(plot.plant).length > 0)) {
-            console.log("test1");
             if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
                 startAnimation("digging", plot.location);
                 await PlotService.removePlantFromPlot(userId!, plot.location);
@@ -138,9 +135,9 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                 }
             }
           } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
-            await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
             startAnimation("planting", plot.location);
             setSelectedItem(null); 
+            await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
           }
         }
     
@@ -164,11 +161,12 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                         resizeMode="cover"
                     >
                         {currentAnimation ? (
-                            <Image 
+                            <ExpoImage 
                                 source={animationPaths.get(currentAnimation.type)}
                                 style={styles.wateringGif} 
-                                resizeMode="cover" 
-                            />                
+                                contentFit="contain"
+                                priority="high"
+                            />           
                         ) : (
                             <View style={styles.plotItem}>
                                 <Text style={styles.plotText}>{plot.plant?.type}</Text>
