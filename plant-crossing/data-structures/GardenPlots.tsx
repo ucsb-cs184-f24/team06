@@ -29,6 +29,7 @@ const animationPaths = new Map<string, ImageSourcePropType>([
     ['watering', require('../assets/animation-watering/watering.gif')],
     ['planting', require('../assets/animation-planting/planting.gif')],
     ['digging', require('../assets/animation-digging/digging.gif')],
+    ['unlock', require('../assets/animation-unlock/unlock.gif')],
 ]);
 
 const getPlantSprite = (spritePath: string): ImageSourcePropType => {
@@ -136,6 +137,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
     const handlePress = async (plot: Plot, index: number) => {
         if (!plot.unlocked) {
             await PlotService.unlockPlot(userId!, plot.location);
+            startAnimation("unlock", plot.location); //a little buggy, can be removed
         } else {
           if (plot.plant && (Object.keys(plot.plant).length > 0)) {
             if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
@@ -225,16 +227,6 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                         resizeMode="cover"
                     >
                         <View style={styles.plotContainer}>
-                            {/* Optional animation (watering, planting, or digging) */}
-                            {currentAnimation && (
-                                <ExpoImage 
-                                    source={animationPaths.get(currentAnimation.type)}
-                                    style={styles.wateringGif} 
-                                    contentFit="contain"
-                                    priority="high"
-                                />           
-                            )}
-                            
                             {/* Plant sprite */}
                             <View style={styles.plantSpriteContainer}>
                                 <Svg 
@@ -253,6 +245,16 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                                     />
                                 </Svg>
                             </View>
+
+                            {/* Optional animation (watering, planting, unlocking plot, or digging) */}
+                            {currentAnimation && (
+                                <ExpoImage 
+                                    source={animationPaths.get(currentAnimation.type)}
+                                    style={styles.wateringGif} 
+                                    contentFit="contain"
+                                    priority="high"
+                                />           
+                            )}
                             {/* Optional text overlay */}
                             <View style={styles.textOverlay}>
                                 <Text style={styles.plotText}>{plot.plant?.type}</Text>
