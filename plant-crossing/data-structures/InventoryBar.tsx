@@ -7,6 +7,7 @@ import { View, StyleSheet, Text, ScrollView, ImageSourcePropType, TouchableOpaci
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { Image as ExpoImage} from "expo-image";
+import { globalStyles } from '../styles/globalStyles';
 
 const seedSprites = new Map<string, ImageSourcePropType>([
   [Rarity.common, require('../assets/seed-sprites/seed-common.png')],
@@ -122,7 +123,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
                         contentFit="contain"
                         priority="high"
                     />  
-                    <Text style={styles.inventoryText}>
+                    <Text style={[globalStyles.text, { color: 'black', fontSize:12 }]}>
                       {item.type}
                     </Text>
                   </View>
@@ -136,7 +137,8 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
   );
 };
 
-const windowWidth = Dimensions.get('window').width;
+const inventoryWidthMultiplier = .75; // inventory takes up 75% of screen
+const windowWidth = Dimensions.get('window').width * inventoryWidthMultiplier;
 const padding = 8;
 const itemSpacing = 8;
 const availableWidth = windowWidth - (padding * 2);
@@ -166,18 +168,19 @@ const styles = StyleSheet.create({
   inventoryItem: {
     backgroundColor: '#d1dbcd',
     width: itemWidth,
-    aspectRatio: 1,
-    borderRadius: 8,
+    height: itemWidth * 1.2,
+    // aspectRatio: 1,
+    // borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 4,
   },
   inventoryItemImage: {
-    width: itemWidth*.75,
+    width: itemWidth*.65,
     aspectRatio: 1,
     borderRadius: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    // justifyContent: 'flex-start',
+    alignSelf: 'flex-start',
     padding: 4,
   },
   emptyItem: {
@@ -190,6 +193,6 @@ const styles = StyleSheet.create({
   inventoryText: {
     fontSize: 12,
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'right',
   },
 });
