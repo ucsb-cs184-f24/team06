@@ -5,12 +5,17 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { PlantService } from "../managers/PlantService";
 import { PlotService } from "../managers/PlotService";
 import { SeedService } from "../managers/SeedService";
-import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity, ImageBackground, ImageSourcePropType, Animated, Image } from 'react-native';
-import {FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
+
+import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity, ImageBackground, ImageSourcePropType, Image } from 'react-native';
+import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
 import { GardenTool } from "./GardenTools";
 import { Inventory } from "./Inventory";
-import { Image as ExpoImage} from 'expo-image';
+import { Plant } from "./Plant";
+import { Seed as SeedObj, Rarity as RarityEnum } from "./Seed";
+import { PLANT_SPRITES } from "./Sprites";
+import { Svg, Image as SvgImage } from "react-native-svg";
+
 
 const soilSprites = {
     dry: require('../assets/soil-sprites/soil-dry.png') as ImageSourcePropType,
@@ -24,11 +29,19 @@ const animationPaths = new Map<string, ImageSourcePropType>([
     ['planting', require('../assets/animation-planting/planting.gif')],
     ['digging', require('../assets/animation-digging/digging.gif')],
 ]);
-  
+
+const getPlantSprite = (spritePath: string): ImageSourcePropType => {
+    try {
+        return PLANT_SPRITES[spritePath];
+    } catch (error) {
+        console.warn(`Failed to load sprite: ${spritePath}`, error);
+        return SPRITES.SOIL; // Fallback to soil sprite
+    }
+}
 
 export class GardenPlot {
     private plots: Plot[];
-    public constructor(){ // 4 x 4 grid, last row locked
+    public constructor() { // 4 x 4 grid, last row locked
         this.plots = [];
         let numUnlocked = 12;
         let numLocked = 4;
@@ -70,7 +83,7 @@ export interface GardenGridProps {
     onPlantHarvested: (seed: Seed) => void;
 }
 
-  
+
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots());
     const [animations, setAnimations] = useState<{ type: string; location: number }[]>([]);
@@ -118,7 +131,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
 
     const handlePress = async (plot: Plot, index: number) => {
         if (!plot.unlocked) {
-          await PlotService.unlockPlot(userId!, plot.location);
+            await PlotService.unlockPlot(userId!, plot.location);
         } else {
           if (plot.plant && (Object.keys(plot.plant).length > 0)) {
             if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
@@ -130,9 +143,13 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                 if(plantID){
                     startAnimation("watering", plot.location);
                     await PlantService.waterPlant(plantID, 1);
-                    let b = await PlantService.boostPlant(plantID, plot.plant.rarity);
+                    await PlantService.boostPlant(plantID, plot.plant.rarity);
                     plot.watered = true;
                 }
+            } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
+                console.log(selectedItem);
+                await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
+                setSelectedItem(null);
             }
           } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
             startAnimation("planting", plot.location);
@@ -140,8 +157,43 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
             await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
           }
         }
-    
+
         fetchPlots();
+    };
+
+    const calculateSpriteSize = (scale: number) => {
+        // scale is a number where 1 = 100% (normal size)
+        // e.g., 1.2 = 120%, 0.8 = 80%
+        const size = 100 * scale;
+        const offset = -(size - 100) / 2;  // Centers the scaled image
+        
+        return {
+            containerSize: `${size}%`,
+            imageSize: size,
+            offset: offset,
+            containerOffset: `${offset}%`
+        };
+    };
+
+    const createPlantFromData = (data: any): Plant => {
+        // First create a seed with the data
+        const seed = new SeedObj(
+            data.type,
+            RarityEnum[data.rarity as keyof typeof RarityEnum],
+            data.growthTime,
+            data.maxWater,
+            data.spriteNum || 1
+        );
+
+        // Set the additional properties on the seed
+        seed.setAge(data.age);
+        seed.setCurrWater(data.currWater);
+        seed.setGrowthBoost(data.growthBoost);
+
+        // Create the plant using the seed
+        const plant = new Plant(seed, data.nickname);
+
+        return plant;
     };
 
     const renderPlotContent = (plot: Plot) => {
@@ -173,6 +225,37 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                             </View>
                         )}
                     </ImageBackground>
+/*                const spritePath = createPlantFromData(plot.plant).getSpriteString();
+                const image = getPlantSprite(spritePath);
+                const spriteScale = 1.3; // Adjust this value to change size (e.g., 1.2 = 120%)
+                const spriteSize = calculateSpriteSize(spriteScale);
+
+                // Planted plot with seed
+                return (
+                    <View style={styles.plotContainer}>
+                        {/* Plant sprite */}
+                        <View style={styles.plantSpriteContainer}>
+                        <Svg 
+                            width="100%" 
+                            height="100%" 
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="xMidYMid meet"
+                        >
+                            <SvgImage
+                                x={spriteSize.offset}
+                                y={spriteSize.offset}
+                                width={spriteSize.imageSize}
+                                height={spriteSize.imageSize}
+                                href={image}
+                                preserveAspectRatio="xMidYMid meet"
+                            />
+                        </Svg>
+                        </View>
+                        {/* Optional text overlay */}
+                        <View style={styles.textOverlay}>
+                            <Text style={styles.plotText}>{plot.plant?.type}</Text>
+                        </View>
+                    </View> */
                 );
             } else {
                 // Empty plot
@@ -234,8 +317,9 @@ const styles = StyleSheet.create({
         opacity: 0.7
     },
     plotText: {
-        fontSize: 22,
+        fontSize: 12,
         color: 'black',
+        textAlign: 'center',
     },
     item: {
         backgroundColor: '#abf333',
@@ -329,4 +413,43 @@ const styles = StyleSheet.create({
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 2,
     },
+    plotContainer: {
+        width: '100%',
+        height: '100%',
+        position: 'relative',
+    },
+
+    plotBackground: {
+        width: '100%',
+        height: '100%',
+        position: 'absolute',
+    },
+
+    plantSpriteContainer: {
+        position: 'absolute',
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: '10%', // Adjust this value to control the size of the sprite
+    },
+
+    plantSprite: {
+        width: '100%',
+        height: '100%',
+        // These transform properties help maintain pixel art quality
+        transform: [
+            { scale: 1 }, // Adjust this value to scale the sprite
+        ],
+    },
+
+    textOverlay: {
+        position: 'absolute',
+        bottom: 0,
+        width: '100%',
+        backgroundColor: 'rgba(255, 255, 255, 0.7)',
+        padding: 2,
+        alignItems: 'center',
+    },
+
 });
