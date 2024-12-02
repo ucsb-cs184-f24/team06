@@ -139,38 +139,34 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
             await PlotService.unlockPlot(userId!, plot.location);
             startAnimation("unlock", plot.location); //a little buggy, can be removed
         } else {
-          if (plot.plant && (Object.keys(plot.plant).length > 0)) {
-            if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
-                startAnimation("digging", plot.location);
-                await PlotService.removePlantFromPlot(userId!, plot.location);
-                setWateredPlots((prev) => { // remove watered plot from set when boost ends
-                    prev.delete(plot.location);
-                    return new Set(prev);
-                });
-                await SeedService.addSeed(new Seed(plot.plant.type, plot.plant.rarity, plot.plant.growthTime, plot.plant.maxWater, plot.plant.spriteNumber));
-            } else if (selectedItem?.type == "WateringCan") {
-                let plantID = await PlantService.getPlantIdByDescription(plot.plant.type, plot.plant.rarity);
-                if(plantID){
-                    startAnimation("watering", plot.location); //start watering animation
-                    setWateredPlots((prev) => new Set(prev.add(plot.location))); //add plot to the set of watered plots (to change sprite)
-                    await PlantService.waterPlant(plantID, 1);
-                    await PlantService.boostPlant(plantID, plot.plant.rarity);
-                    await PlantService.resetBoost(plantID, plot.plant.rarity);
+            if (plot.plant && (Object.keys(plot.plant).length > 0)) {
+                if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
+                    startAnimation("digging", plot.location);
+                    await PlotService.removePlantFromPlot(userId!, plot.location);
                     setWateredPlots((prev) => { // remove watered plot from set when boost ends
                         prev.delete(plot.location);
                         return new Set(prev);
                     });
+                    await SeedService.addSeed(new Seed(plot.plant.type, plot.plant.rarity, plot.plant.growthTime, plot.plant.maxWater, plot.plant.spriteNumber));
+                } else if (selectedItem?.type == "WateringCan") {
+                    let plantID = await PlantService.getPlantIdByDescription(plot.plant.type, plot.plant.rarity);
+                    if(plantID){
+                        startAnimation("watering", plot.location); //start watering animation
+                        setWateredPlots((prev) => new Set(prev.add(plot.location))); //add plot to the set of watered plots (to change sprite)
+                        await PlantService.waterPlant(plantID, 1);
+                        await PlantService.boostPlant(plantID, plot.plant.rarity);
+                        await PlantService.resetBoost(plantID, plot.plant.rarity);
+                        setWateredPlots((prev) => { // remove watered plot from set when boost ends
+                            prev.delete(plot.location);
+                            return new Set(prev);
+                        });
+                    }
+                } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
+                    startAnimation("planting", plot.location);
+                    await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
+                    setSelectedItem(null);
                 }
-            } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
-                console.log(selectedItem);
-                await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
-                setSelectedItem(null);
             }
-          } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
-            startAnimation("planting", plot.location);
-            setSelectedItem(null); 
-            await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
-          }
         }
 
         fetchPlots();
