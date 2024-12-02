@@ -5,6 +5,7 @@ import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import { PlantService } from "../managers/PlantService";
 import { PlotService } from "../managers/PlotService";
 import { SeedService } from "../managers/SeedService";
+
 import { View, StyleSheet, FlatList, Text, Dimensions, TouchableOpacity, ImageBackground, ImageSourcePropType, Image } from 'react-native';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayUnion, collection, onSnapshot, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore';
@@ -14,17 +15,29 @@ import { Plant } from "./Plant";
 import { Seed as SeedObj, Rarity as RarityEnum } from "./Seed";
 import { PLANT_SPRITES } from "./Sprites";
 import { Svg, Image as SvgImage } from "react-native-svg";
+import { Image as ExpoImage} from "expo-image";
 
-const SPRITES = {
-    SOIL: require('../assets/Soil_Sprites/Soil_1.png') as ImageSourcePropType,
+
+const soilSprites = {
+    dry: require('../assets/soil-sprites/soil-dry.png') as ImageSourcePropType,
+    watered: require('../assets/soil-sprites/soil-watered.png') as ImageSourcePropType,
+    locked: require('../assets/soil-sprites/soil-locked.png') as ImageSourcePropType,
 } as const;
+
+
+const animationPaths = new Map<string, ImageSourcePropType>([
+    ['watering', require('../assets/animation-watering/watering.gif')],
+    ['planting', require('../assets/animation-planting/planting.gif')],
+    ['digging', require('../assets/animation-digging/digging.gif')],
+    ['unlock', require('../assets/animation-unlock/unlock.gif')],
+]);
 
 const getPlantSprite = (spritePath: string): ImageSourcePropType => {
     try {
         return PLANT_SPRITES[spritePath];
     } catch (error) {
         console.warn(`Failed to load sprite: ${spritePath}`, error);
-        return SPRITES.SOIL; // Fallback to soil sprite
+        return soilSprites.dry; // Fallback to soil sprite
     }
 }
 
@@ -75,6 +88,8 @@ export interface GardenGridProps {
 
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots());
+    const [animations, setAnimations] = useState<{ type: string; location: number }[]>([]);
+    const [wateredPlots, setWateredPlots] = useState<Set<number>>(new Set());
     const userId = FIREBASE_AUTH.currentUser?.uid;
 
     const fetchPlots = async () => {
@@ -83,11 +98,21 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
 
         // Listen to real-time updates
         const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
-            const updatedPlots = snapshot.docs.map(doc => ({
-                ...doc.data(),
-                location: doc.data().location,
-            })) as Plot[];
-            setPlots(updatedPlots);
+            const updatedPlots = snapshot.docs.map(doc => {
+                const data = doc.data();
+                console.log('Updated doc data:', JSON.stringify(data)); // Verify growthBoost here
+                const growthBoost = data?.plant?.growthBoost;
+                return {
+                    ...data,
+                    location: data.location,
+                    plant: {
+                        ...data.plant,
+                        growthBoost: growthBoost,
+                    },
+                };
+            }) as Plot[];
+            setPlots([...updatedPlots]);
+
         });
 
         return unsubscribe; // Clean up the listener on unmount
@@ -97,25 +122,50 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         fetchPlots();
     }, []);
 
+    const clearAnimation = (plotLocation: number) => {
+        setAnimations((prev) => prev.filter((anim) => anim.location !== plotLocation));
+    };
+
+    const startAnimation = (type: string, plotLocation: number) => {
+        setAnimations((prev) => [...prev, { type, location: plotLocation }]);
+        const timeout = setTimeout(() => {
+            clearAnimation(plotLocation);
+        }, 1250); // 1.25 seconds for the animation
+        return () => clearTimeout(timeout);
+    };
+
     const handlePress = async (plot: Plot, index: number) => {
         if (!plot.unlocked) {
             await PlotService.unlockPlot(userId!, plot.location);
+            startAnimation("unlock", plot.location); //a little buggy, can be removed
         } else {
-            if (plot.plant) {
-                if (selectedItem?.type == "Shovel") { // dig up plant if shovel selected
-                    await SeedService.addSeed(new Seed(plot.plant.type, plot.plant.rarity, plot.plant.growthTime, plot.plant.maxWater, plot.plant.spriteNumber));
+            if (plot.plant && (Object.keys(plot.plant).length > 0)) {
+                if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
+                    startAnimation("digging", plot.location);
                     await PlotService.removePlantFromPlot(userId!, plot.location);
+                    setWateredPlots((prev) => { // remove watered plot from set when boost ends
+                        prev.delete(plot.location);
+                        return new Set(prev);
+                    });
+                    await SeedService.addSeed(new Seed(plot.plant.type, plot.plant.rarity, plot.plant.growthTime, plot.plant.maxWater, plot.plant.spriteNumber));
                 } else if (selectedItem?.type == "WateringCan") {
-                    console.log("selected wc");
                     let plantID = await PlantService.getPlantIdByDescription(plot.plant.type, plot.plant.rarity);
-                    if (plantID) {
+                    if(plantID){
+                        startAnimation("watering", plot.location); //start watering animation
+                        setWateredPlots((prev) => new Set(prev.add(plot.location))); //add plot to the set of watered plots (to change sprite)
                         await PlantService.waterPlant(plantID, 1);
+                        await PlantService.boostPlant(plantID, plot.plant.rarity);
+                        await PlantService.resetBoost(plantID, plot.plant.rarity);
+                        setWateredPlots((prev) => { // remove watered plot from set when boost ends
+                            prev.delete(plot.location);
+                            return new Set(prev);
+                        });
                     }
+                } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
+                    startAnimation("planting", plot.location);
+                    await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
+                    setSelectedItem(null);
                 }
-            } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
-                console.log(selectedItem);
-                await PlotService.addPlantToPlot(userId!, plot.location, selectedItem);
-                setSelectedItem(null);
             }
         }
 
@@ -158,45 +208,65 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
     };
 
     const renderPlotContent = (plot: Plot) => {
+        const currentAnimation = animations.find((anim) => anim.location === plot.location);
+    
         if (plot.unlocked) {
             if (plot.plant) {
+                // sprite path for plant
                 const spritePath = createPlantFromData(plot.plant).getSpriteString();
                 const image = getPlantSprite(spritePath);
                 const spriteScale = 1.3; // Adjust this value to change size (e.g., 1.2 = 120%)
                 const spriteSize = calculateSpriteSize(spriteScale);
 
-                // Planted plot with seed
+                const plotSprite = wateredPlots.has(plot.location) ? soilSprites.watered : soilSprites.dry;
+    
                 return (
-                    <View style={styles.plotContainer}>
-                        {/* Plant sprite */}
-                        <View style={styles.plantSpriteContainer}>
-                        <Svg 
-                            width="100%" 
-                            height="100%" 
-                            viewBox="0 0 100 100"
-                            preserveAspectRatio="xMidYMid meet"
-                        >
-                            <SvgImage
-                                x={spriteSize.offset}
-                                y={spriteSize.offset}
-                                width={spriteSize.imageSize}
-                                height={spriteSize.imageSize}
-                                href={image}
-                                preserveAspectRatio="xMidYMid meet"
-                            />
-                        </Svg>
-                        </View>
-                        {/* Optional text overlay */}
-                        <View style={styles.textOverlay}>
-                            <Text style={styles.plotText}>{plot.plant?.type}</Text>
-                        </View>
-                    </View>
+                    <ImageBackground 
+                        source={plotSprite}
+                        style={styles.plotItem}
+                        resizeMode="cover"
+                    >
+                        <View style={styles.plotContainer}>
+                            {/* Plant sprite */}
+                            <View style={styles.plantSpriteContainer}>
+                                <Svg 
+                                    width="100%" 
+                                    height="100%" 
+                                    viewBox="0 0 100 100"
+                                    preserveAspectRatio="xMidYMid meet"
+                                >
+                                    <SvgImage
+                                        x={spriteSize.offset}
+                                        y={spriteSize.offset}
+                                        width={spriteSize.imageSize}
+                                        height={spriteSize.imageSize}
+                                        href={image}
+                                        preserveAspectRatio="xMidYMid meet"
+                                    />
+                                </Svg>
+                            </View>
+
+                            {/* Optional animation (watering, planting, unlocking plot, or digging) */}
+                            {currentAnimation && (
+                                <ExpoImage 
+                                    source={animationPaths.get(currentAnimation.type)}
+                                    style={styles.wateringGif} 
+                                    contentFit="contain"
+                                    priority="high"
+                                />           
+                            )}
+                            {/* Optional text overlay */}
+                            <View style={styles.textOverlay}>
+                                <Text style={styles.plotText}>{plot.plant?.type}</Text>
+                            </View>
+                        </View> 
+                    </ImageBackground> 
                 );
             } else {
                 // Empty plot
                 return (
-                    <ImageBackground
-                        source={SPRITES.SOIL}
+                    <ImageBackground 
+                        source={soilSprites.dry}
                         style={styles.emptyPlot}
                         resizeMode="cover"
                     >
@@ -209,25 +279,22 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         } else {
             // Locked plot
             return (
-                <ImageBackground
-                    source={SPRITES.SOIL}
+                <ImageBackground 
+                    source={soilSprites.locked}
                     style={styles.lockedPlot}
                     resizeMode="cover"
                 >
-                    <View style={styles.darkOverlay}>
-                        <Text style={styles.lockedText}>Locked</Text>
-                    </View>
                 </ImageBackground>
             );
         }
     };
+    
 
     return (
         <View style={styles.gridContainer}>
             <View style={styles.grid}>
                 {plots.map((plot, index) => {
                     let content = renderPlotContent(plot);
-
                     return (
                         <TouchableOpacity
                             key={`plot-${index}`}
@@ -314,6 +381,14 @@ const styles = StyleSheet.create({
         flex: 1,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    wateringGif: {
+        flex: 1,
+        backgroundColor: 'transparent',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: plotSize,
+        width: plotSize
     },
     emptyPlot: {
         flex: 1,
