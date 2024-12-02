@@ -36,7 +36,7 @@ const getPlantSprite = (spritePath: string): ImageSourcePropType => {
         return PLANT_SPRITES[spritePath];
     } catch (error) {
         console.warn(`Failed to load sprite: ${spritePath}`, error);
-        return SPRITES.SOIL; // Fallback to soil sprite
+        return soilSprites.dry; // Fallback to soil sprite
     }
 }
 
@@ -88,7 +88,7 @@ export interface GardenGridProps {
 export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: GardenGridProps) => {
     const [plots, setPlots] = useState(playerGarden.getPlots());
     const [animations, setAnimations] = useState<{ type: string; location: number }[]>([]);
-    const [animationLocation, setAnimationLocation] = useState(-1); //plot that should be animated
+    const [wateredPlots, setWateredPlots] = useState<Set<number>>(new Set());
     const userId = FIREBASE_AUTH.currentUser?.uid;
 
     const fetchPlots = async () => {
@@ -99,16 +99,19 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
             const updatedPlots = snapshot.docs.map(doc => {
                 const data = doc.data();
-                console.log("Updated doc data:", data); // Verify growthBoost here
+                console.log('Updated doc data:', JSON.stringify(data)); // Verify growthBoost here
+                const growthBoost = data?.plant?.growthBoost;
                 return {
                     ...data,
                     location: data.location,
                     plant: {
-                        ...data.plant
+                        ...data.plant,
+                        growthBoost: growthBoost,
                     },
                 };
             }) as Plot[];
             setPlots([...updatedPlots]);
+
         });
 
         return unsubscribe; // Clean up the listener on unmount
@@ -126,7 +129,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
         setAnimations((prev) => [...prev, { type, location: plotLocation }]);
         const timeout = setTimeout(() => {
             clearAnimation(plotLocation);
-        }, 1000); // 1 second for the animation
+        }, 1250); // 1.25 seconds for the animation
         return () => clearTimeout(timeout);
     };
 
@@ -142,10 +145,15 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
             } else if (selectedItem?.type == "WateringCan") {
                 let plantID = await PlantService.getPlantIdByDescription(plot.plant.type, plot.plant.rarity);
                 if(plantID){
-                    startAnimation("watering", plot.location);
+                    startAnimation("watering", plot.location); //start watering animation
+                    setWateredPlots((prev) => new Set(prev.add(plot.location))); //add plot to the set of watered plots (to change sprite)
                     await PlantService.waterPlant(plantID, 1);
                     await PlantService.boostPlant(plantID, plot.plant.rarity);
-                    plot.watered = true;
+                    await PlantService.resetBoost(plantID, plot.plant.rarity);
+                    setWateredPlots((prev) => { // remove watered plot from set when boost ends
+                        prev.delete(plot.location);
+                        return new Set(prev);
+                    });
                 }
             } else if (selectedItem && (selectedItem.type != "WateringCan" && selectedItem.type != "Shovel")) {
                 console.log(selectedItem);
@@ -208,11 +216,7 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                 const spriteScale = 1.3; // Adjust this value to change size (e.g., 1.2 = 120%)
                 const spriteSize = calculateSpriteSize(spriteScale);
 
-                // wet sprite if soil recently watered
-                let plotSprite = soilSprites.dry;
-                if (plot.plant.growthBoost > 1) { // Growth boost set to > 1 when plant watered
-                    plotSprite = soilSprites.watered;
-                }
+                const plotSprite = wateredPlots.has(plot.location) ? soilSprites.watered : soilSprites.dry;
     
                 return (
                     <ImageBackground 

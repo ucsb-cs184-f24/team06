@@ -66,13 +66,20 @@ export class PlantService {
 
     static async boostPlant(plantId: string, rarity: Rarity){
         const boostValue = 1 + (rarityValue[rarity] * .25); // power of growth boost increases with rarity
-        let duration = 60000 * boostValue; // 1 minute * boostValue
-
+        
         await this.updatePlant(plantId, {growthBoost: boostValue});
-        console.log("plant", plantId, "boosted!");
-        // await new Promise(resolve => setTimeout(resolve, duration));
-        // await this.updatePlant(plantId, {growthBoost: 1});
-        // console.log("Plant", plantId, "boost ended!");
+        console.log("plant", plantId, "boosted, boostvalue:", boostValue);
+        return boostValue;
+    }
+
+    static async resetBoost(plantId: string, rarity: Rarity){
+        const boostValue = 1 + (rarityValue[rarity] * .25); // power of growth boost increases with rarity
+        // let duration = 60000 * boostValue; // 1 minute * boostValue
+        let duration = 10000 * boostValue;
+        
+        await new Promise(resolve => setTimeout(resolve, duration));
+        await this.updatePlant(plantId, {growthBoost: 69});
+        console.log("plant", plantId, "boost removed.");
         return boostValue;
     }
 
