@@ -1,3 +1,5 @@
+import { Plant } from "./Plant";
+
 // Types of rarity value for plants
 export enum Rarity {
   common,
@@ -158,7 +160,7 @@ export class Seed {
 
   // Gets the current sprite of the plant (after the seed stage)
   public getSpriteString() {
-    return "Plant" + String(this.spriteNum) + "_" + String(this.age);
+    return "Plant" + String(this.spriteNum) + "_" + String(this.age+1);
   }
 
   // simulate growth over time using a timer
