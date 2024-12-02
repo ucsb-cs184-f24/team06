@@ -21,3 +21,4 @@
 - Done: No updates
 
 # Samantha West
+- Currently Working On: Adding plant sprites to the Garden Grid/reworking the data structure for storing plant sprites
