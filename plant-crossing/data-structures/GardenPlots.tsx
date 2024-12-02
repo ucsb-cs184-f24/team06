@@ -15,6 +15,7 @@ import { Plant } from "./Plant";
 import { Seed as SeedObj, Rarity as RarityEnum } from "./Seed";
 import { PLANT_SPRITES } from "./Sprites";
 import { Svg, Image as SvgImage } from "react-native-svg";
+import { Image as ExpoImage} from "expo-image";
 
 
 const soilSprites = {
@@ -201,6 +202,13 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
     
         if (plot.unlocked) {
             if (plot.plant) {
+                // sprite path for plant
+                const spritePath = createPlantFromData(plot.plant).getSpriteString();
+                const image = getPlantSprite(spritePath);
+                const spriteScale = 1.3; // Adjust this value to change size (e.g., 1.2 = 120%)
+                const spriteSize = calculateSpriteSize(spriteScale);
+
+                // wet sprite if soil recently watered
                 let plotSprite = soilSprites.dry;
                 if (plot.plant.growthBoost > 1) { // Growth boost set to > 1 when plant watered
                     plotSprite = soilSprites.watered;
@@ -212,50 +220,41 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
                         style={styles.plotItem}
                         resizeMode="cover"
                     >
-                        {currentAnimation ? (
-                            <ExpoImage 
-                                source={animationPaths.get(currentAnimation.type)}
-                                style={styles.wateringGif} 
-                                contentFit="contain"
-                                priority="high"
-                            />           
-                        ) : (
-                            <View style={styles.plotItem}>
+                        <View style={styles.plotContainer}>
+                            {/* Optional animation (watering, planting, or digging) */}
+                            {currentAnimation && (
+                                <ExpoImage 
+                                    source={animationPaths.get(currentAnimation.type)}
+                                    style={styles.wateringGif} 
+                                    contentFit="contain"
+                                    priority="high"
+                                />           
+                            )}
+                            
+                            {/* Plant sprite */}
+                            <View style={styles.plantSpriteContainer}>
+                                <Svg 
+                                    width="100%" 
+                                    height="100%" 
+                                    viewBox="0 0 100 100"
+                                    preserveAspectRatio="xMidYMid meet"
+                                >
+                                    <SvgImage
+                                        x={spriteSize.offset}
+                                        y={spriteSize.offset}
+                                        width={spriteSize.imageSize}
+                                        height={spriteSize.imageSize}
+                                        href={image}
+                                        preserveAspectRatio="xMidYMid meet"
+                                    />
+                                </Svg>
+                            </View>
+                            {/* Optional text overlay */}
+                            <View style={styles.textOverlay}>
                                 <Text style={styles.plotText}>{plot.plant?.type}</Text>
                             </View>
-                        )}
-                    </ImageBackground>
-/*                const spritePath = createPlantFromData(plot.plant).getSpriteString();
-                const image = getPlantSprite(spritePath);
-                const spriteScale = 1.3; // Adjust this value to change size (e.g., 1.2 = 120%)
-                const spriteSize = calculateSpriteSize(spriteScale);
-
-                // Planted plot with seed
-                return (
-                    <View style={styles.plotContainer}>
-                        {/* Plant sprite */}
-                        <View style={styles.plantSpriteContainer}>
-                        <Svg 
-                            width="100%" 
-                            height="100%" 
-                            viewBox="0 0 100 100"
-                            preserveAspectRatio="xMidYMid meet"
-                        >
-                            <SvgImage
-                                x={spriteSize.offset}
-                                y={spriteSize.offset}
-                                width={spriteSize.imageSize}
-                                height={spriteSize.imageSize}
-                                href={image}
-                                preserveAspectRatio="xMidYMid meet"
-                            />
-                        </Svg>
-                        </View>
-                        {/* Optional text overlay */}
-                        <View style={styles.textOverlay}>
-                            <Text style={styles.plotText}>{plot.plant?.type}</Text>
-                        </View>
-                    </View> */
+                        </View> 
+                    </ImageBackground> 
                 );
             } else {
                 // Empty plot
