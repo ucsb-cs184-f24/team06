@@ -16,6 +16,7 @@ import { Seed as SeedObj, Rarity as RarityEnum } from "./Seed";
 import { PLANT_SPRITES } from "./Sprites";
 import { Svg, Image as SvgImage } from "react-native-svg";
 import { Image as ExpoImage} from "expo-image";
+import { globalStyles } from '../styles/globalStyles';
 
 
 const soilSprites = {

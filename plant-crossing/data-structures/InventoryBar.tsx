@@ -3,9 +3,19 @@ import { weightedRandomSelection } from "../utils/weightedRandom";
 import { availableSeeds } from "../data/items";
 import { Inventory } from "./Inventory";
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, ImageSourcePropType, TouchableOpacity, Dimensions } from 'react-native';
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
+import { Image as ExpoImage} from "expo-image";
+import { globalStyles } from '../styles/globalStyles';
+
+const seedSprites = new Map<string, ImageSourcePropType>([
+  [Rarity.common, require('../assets/seed-sprites/seed-common.png')],
+  [Rarity.uncommon, require('../assets/seed-sprites/seed-uncommon.png')],
+  [Rarity.rare, require('../assets/seed-sprites/seed-rare.png')],
+  [Rarity.unique, require('../assets/seed-sprites/seed-unique.png')],
+  [Rarity.legendary, require('../assets/seed-sprites/seed-legendary.png')],
+]);
 
 interface PlayerInventoryProps {
   onItemSelected: (item: Seed) => void;
@@ -106,9 +116,17 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
                 disabled={!item}
               >
                 {item && (
-                  <Text style={styles.inventoryText}>
-                    {item.type}
-                  </Text>
+                  <View>
+                    <ExpoImage 
+                        source={seedSprites.get(item.rarity)}
+                        style={styles.inventoryItemImage} 
+                        contentFit="contain"
+                        priority="high"
+                    />  
+                    <Text style={[globalStyles.text, { color: 'black', fontSize:12 }]}>
+                      {item.type}
+                    </Text>
+                  </View>
                 )}
               </TouchableOpacity>
             ))}
@@ -119,7 +137,8 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
   );
 };
 
-const windowWidth = Dimensions.get('window').width;
+const inventoryWidthMultiplier = .75; // inventory takes up 75% of screen
+const windowWidth = Dimensions.get('window').width * inventoryWidthMultiplier;
 const padding = 8;
 const itemSpacing = 8;
 const availableWidth = windowWidth - (padding * 2);
@@ -149,10 +168,19 @@ const styles = StyleSheet.create({
   inventoryItem: {
     backgroundColor: '#d1dbcd',
     width: itemWidth,
-    aspectRatio: 1,
-    borderRadius: 8,
+    height: itemWidth * 1.2,
+    // aspectRatio: 1,
+    // borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 4,
+  },
+  inventoryItemImage: {
+    width: itemWidth*.65,
+    aspectRatio: 1,
+    borderRadius: 0,
+    // justifyContent: 'flex-start',
+    alignSelf: 'flex-start',
     padding: 4,
   },
   emptyItem: {
@@ -165,6 +193,6 @@ const styles = StyleSheet.create({
   inventoryText: {
     fontSize: 12,
     fontWeight: 'bold',
-    textAlign: 'center',
+    textAlign: 'right',
   },
 });
