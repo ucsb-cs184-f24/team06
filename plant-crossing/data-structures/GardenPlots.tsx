@@ -143,6 +143,10 @@ export const GardenGrid = ({ selectedItem, setSelectedItem, onSeedPlanted }: Gar
             if(selectedItem?.type == "Shovel"){ // dig up plant if shovel selected
                 startAnimation("digging", plot.location);
                 await PlotService.removePlantFromPlot(userId!, plot.location);
+                setWateredPlots((prev) => { // remove watered plot from set when boost ends
+                    prev.delete(plot.location);
+                    return new Set(prev);
+                });
                 await SeedService.addSeed(new Seed(plot.plant.type, plot.plant.rarity, plot.plant.growthTime, plot.plant.maxWater, plot.plant.spriteNumber));
             } else if (selectedItem?.type == "WateringCan") {
                 let plantID = await PlantService.getPlantIdByDescription(plot.plant.type, plot.plant.rarity);
