@@ -3,9 +3,18 @@ import { weightedRandomSelection } from "../utils/weightedRandom";
 import { availableSeeds } from "../data/items";
 import { Inventory } from "./Inventory";
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, Text, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, ScrollView, ImageSourcePropType, TouchableOpacity, Dimensions } from 'react-native';
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
+import { Image as ExpoImage} from "expo-image";
+
+const seedSprites = new Map<string, ImageSourcePropType>([
+  [Rarity.common, require('../assets/seed-sprites/seed-common.png')],
+  [Rarity.uncommon, require('../assets/seed-sprites/seed-uncommon.png')],
+  [Rarity.rare, require('../assets/seed-sprites/seed-rare.png')],
+  [Rarity.unique, require('../assets/seed-sprites/seed-unique.png')],
+  [Rarity.legendary, require('../assets/seed-sprites/seed-legendary.png')],
+]);
 
 interface PlayerInventoryProps {
   onItemSelected: (item: Seed) => void;
@@ -106,9 +115,17 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
                 disabled={!item}
               >
                 {item && (
-                  <Text style={styles.inventoryText}>
-                    {item.type}
-                  </Text>
+                  <View>
+                    <ExpoImage 
+                        source={seedSprites.get(item.rarity)}
+                        style={styles.inventoryItemImage} 
+                        contentFit="contain"
+                        priority="high"
+                    />  
+                    <Text style={styles.inventoryText}>
+                      {item.type}
+                    </Text>
+                  </View>
                 )}
               </TouchableOpacity>
             ))}
@@ -151,6 +168,14 @@ const styles = StyleSheet.create({
     width: itemWidth,
     aspectRatio: 1,
     borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 4,
+  },
+  inventoryItemImage: {
+    width: itemWidth*.75,
+    aspectRatio: 1,
+    borderRadius: 0,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 4,
