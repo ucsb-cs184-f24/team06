@@ -133,9 +133,9 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
                   <View>
                     <Text style={[
                         globalStyles.text,
-                        { color: "black", fontSize: 8 },
+                        { color: "black", fontSize: 8, textAlign: "right"},
                       ]}>
-                      {item.type ? item.numSeeds : ""}
+                      {item.numSeeds ? item.numSeeds : 1}
                     </Text>
                     <ImageBackground
                       source={seedSprites.get(item.rarity)}

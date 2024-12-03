@@ -30,10 +30,7 @@ export class SeedService {
     }
   
     static async addSeed(seed: Seed) {
-      console.log("ADD SEED CALLED");
-      console.log("get by desc:", seed.type, seed.rarity);
       const inventorySeedID = await this.getSeedIdByDescription(seed.type, seed.rarity);
-      console.log("inv: ", inventorySeedID);
       if(!inventorySeedID){
         const seedsCollectionRef = this.getSeedsCollectionRef();
         const newSeedRef = doc(seedsCollectionRef);
@@ -46,27 +43,18 @@ export class SeedService {
           seed.spriteNumber,
           seed.numSeeds
         );
-
-        console.log("new seed created");
     
         await setDoc(newSeedRef, newSeed.toFirestore());
         return newSeed;
+
       } else {
-        console.log("yes in inventory");
         const inventorySeed = await this.getSeedById(inventorySeedID);
-        console.log("inventory seed: ", inventorySeed);
-        console.log("inventory seed ID: ", inventorySeedID);
         if(inventorySeed.numSeeds){
-          console.log("case 1");
           const newNumSeeds = inventorySeed.numSeeds + 1;
           this.updateSeed(inventorySeedID, { numSeeds: newNumSeeds}); // increase number of seeds by 1
         } else{
-          console.log("case 2");
-          this.updateSeed(inventorySeedID, { numSeeds: 2}); // increase number of seeds by 1
-        }
-        
-        console.log("new num seeds", inventorySeed.numSeeds);
-        
+          this.updateSeed(inventorySeedID, { numSeeds: 2}); // added one more seed to preexisting seed without numSeeds variable
+        }        
         return inventorySeed;
       }
     }
@@ -167,7 +155,6 @@ export class SeedService {
     }
   
     static async deleteSeed(seedId: string) {
-      console.log("DELETE SEED CALLED")
       const seed = await this.getSeedById(seedId);
       if(seed && seed.numSeeds > 1){
         const newNumSeeds = seed.numSeeds - 1;
