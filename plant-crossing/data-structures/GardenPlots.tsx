@@ -7,6 +7,8 @@ import { PlantService } from "../managers/PlantService";
 import { PlotService } from "../managers/PlotService";
 import { SeedService } from "../managers/SeedService";
 import { getSpriteForPlant } from "../assets/spritesList";
+import { UnlockPlotModal } from '../components/UnlockPlot';
+
 import {
   View,
   StyleSheet,
@@ -17,6 +19,8 @@ import {
   ImageBackground,
   ImageSourcePropType,
   Image,
+  Modal,
+  Alert
 } from "react-native";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import {
@@ -115,6 +119,8 @@ export const GardenGrid = ({
   >([]);
   const [wateredPlots, setWateredPlots] = useState<Set<number>>(new Set());
   const userId = FIREBASE_AUTH.currentUser?.uid;
+  const [isUnlockModalVisible, setIsUnlockModalVisible] = useState(false);
+  const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(null);
 
   const fetchPlots = async () => {
     console.log("Fetching plots for user:", userId);
@@ -158,11 +164,71 @@ export const GardenGrid = ({
     }, 1250); // 1.25 seconds for the animation
     return () => clearTimeout(timeout);
   };
+  
+  const handleUnlockConfirm = async () => {
+    if (selectedPlotIndex !== null) {
+      try {
+        const db = FIRESTORE_DB;
+        try {
+          const user = FIREBASE_AUTH.currentUser;
+
+          if (!user) {
+            Alert.alert("Error", "Please log in to make a purchase.");
+            return;
+          }
+
+          const userDocRef = doc(db, "users", user.uid);
+          const userDoc = await getDoc(userDocRef);
+          if (!userDoc.exists()) {
+            Alert.alert("Error", "User data not found.");
+            return;
+          }
+
+          const currentCoins = userDoc.data().coins || 0;
+          const itemPrice = Number(10); // cost to unlock plot
+
+          if (currentCoins < itemPrice) {
+            Alert.alert(
+              "Insufficient Coins",
+              `You need ${
+                itemPrice - currentCoins
+              } more coins to purchase this item.`
+            );
+            return;
+          }
+
+          await updateDoc(userDocRef, {
+            coins: currentCoins - itemPrice,
+          });
+
+          // continue with purchase
+          await PlotService.unlockPlot(userId!, selectedPlotIndex);
+          startAnimation("unlock", selectedPlotIndex);
+        } catch (error) {
+          console.error("Purchase error:", error);
+          Alert.alert(
+            "Error",
+            "There was an error processing your purchase. Please try again."
+          );
+        }
+        
+      } catch (error) {
+        console.error("Error unlocking plot:", error);
+        // You might want to show an error message to the user here
+      }
+      setIsUnlockModalVisible(false);
+      setSelectedPlotIndex(null);
+      fetchPlots();
+    }
+  };
 
   const handlePress = async (plot: Plot, index: number) => {
     if (!plot.unlocked) {
-      await PlotService.unlockPlot(userId!, plot.location);
-      startAnimation("unlock", plot.location); //a little buggy, can be removed
+      // plot is locked. display modal to prompt if want to buy
+      setSelectedPlotIndex(plot.location);
+      setIsUnlockModalVisible(true);
+      // await PlotService.unlockPlot(userId!, plot.location);
+      // startAnimation("unlock", plot.location); //a little buggy, can be removed
     } else {
       if (plot.plant && Object.keys(plot.plant).length > 0) {
         if (selectedItem?.type == "Shovel") {
@@ -210,7 +276,7 @@ export const GardenGrid = ({
           await PlotService.addPlantToPlot(
             userId!,
             plot.location,
-            selectedItem
+            selectedItem as Seed
           );
           setSelectedItem(null);
         }
@@ -232,27 +298,6 @@ export const GardenGrid = ({
       offset: offset,
       containerOffset: `${offset}%`,
     };
-  };
-
-  const createPlantFromData = (data: any): Plant => {
-    // First create a seed with the data
-    const seed = new SeedObj(
-      data.type,
-      RarityEnum[data.rarity as keyof typeof RarityEnum],
-      data.growthTime,
-      data.maxWater,
-      data.spriteNum || 1
-    );
-
-    // Set the additional properties on the seed
-    seed.setAge(data.age);
-    seed.setCurrWater(data.currWater);
-    seed.setGrowthBoost(data.growthBoost);
-
-    // Create the plant using the seed
-    const plant = new Plant(seed, data.nickname);
-
-    return plant;
   };
 
   const renderPlotContent = (plot: Plot) => {
@@ -312,7 +357,7 @@ export const GardenGrid = ({
               )}
               {/* Optional text overlay */}
               <View style={styles.textOverlay}>
-                <Text style={styles.plotText}>
+                <Text style={[styles.plotText, globalStyles.text]}>
                   {formatPlantName(plot.plant?.type)}
                 </Text>
               </View>
@@ -339,7 +384,13 @@ export const GardenGrid = ({
           source={soilSprites.locked}
           style={styles.lockedPlot}
           resizeMode="cover"
-        ></ImageBackground>
+        >
+          <View style={styles.textOverlay}>
+            <Text style={[styles.plotText, styles.lockedPlotText, globalStyles.text]}>
+              10 coins
+            </Text>
+          </View>
+        </ImageBackground>
       );
     }
   };
@@ -360,6 +411,12 @@ export const GardenGrid = ({
           );
         })}
       </View>
+      <UnlockPlotModal
+        visible={isUnlockModalVisible}
+        onClose={() => setIsUnlockModalVisible(false)}
+        onConfirm={handleUnlockConfirm}
+        plotIndex={selectedPlotIndex || 0}
+      />
     </View>
   );
 };
@@ -377,7 +434,7 @@ const styles = StyleSheet.create({
   },
   plotText: {
     fontSize: 12,
-    color: "black",
+    color: 'white',
     textAlign: "center",
   },
   item: {
@@ -465,15 +522,8 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-
-  // Update lockedText for better visibility
-  lockedText: {
-    color: "#fff",
-    fontSize: 12,
-    fontWeight: "bold",
-    textShadowColor: "rgba(0, 0, 0, 0.75)",
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 2,
+  lockedPlotText: {
+    color: '#ffa500',
   },
   plotContainer: {
     width: "100%",
@@ -509,7 +559,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     bottom: 0,
     width: "100%",
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
     padding: 2,
     alignItems: "center",
   },
