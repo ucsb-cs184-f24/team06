@@ -1,4 +1,4 @@
-import { Plant } from "./Plant";
+
 
 // Types of rarity value for plants
 export enum Rarity {

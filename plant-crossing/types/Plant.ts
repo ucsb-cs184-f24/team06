@@ -11,6 +11,7 @@ export class Plant extends Seed {
         public age: number = 0,
         public currWater: number = maxWater,
         public growthBoost: number = 1,
+        public growthLevel: number = 1,
     ) {
         super(type, rarity, growthTime, maxWater);
     }
@@ -23,6 +24,7 @@ export class Plant extends Seed {
             age: this.age,
             currWater: this.currWater,
             growthBoost: this.growthBoost,
+            growthLevel: this.growthLevel,
         };
     }
 
@@ -37,6 +39,7 @@ export class Plant extends Seed {
             data.age,
             data.currWater,
             data.growthBoost,
+            data.growthLevel,
         );
     }
 }
