@@ -10,13 +10,13 @@ export const availableSeeds = [
   new Seed("wildflowers", Rarity.common, 5, 5, 28),
 
   // uncommon seeds
-  new Seed("tulips", Rarity.uncommon, 4, 6, 27),
+  new Seed("wildflowers", Rarity.common, 5, 5, 28),
 
   // rare seeds
-  new Seed("cherry_blossom", Rarity.rare, 5, 5, 6),
+  new Seed("tulips", Rarity.uncommon, 4, 6, 27),
 
   // unique seeds
-  new Seed("chromafruit", Rarity.unique, 2, 4, 24),
+  new Seed("cherry_blossom", Rarity.rare, 5, 5, 6),
 
   // legendary seeds
   new Seed("chromafruit", Rarity.legendary, 2, 4, 24),
