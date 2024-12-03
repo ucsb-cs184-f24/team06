@@ -31,6 +31,16 @@ interface ShopItemData {
   image: string;
 }
 
+// Utility function to format seed names
+const formatSeedName = (seedName: string): string => {
+  const formattedName = seedName
+    .split("_") // Split words by underscores
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize the first letter of each word
+    .join(" "); // Join the words with a space
+
+  return `${formattedName} Seed`; // Add "Seed" at the end
+};
+
 export default function ShopScreen() {
   const [shopItems, setShopItems] = useState<ShopItemData[]>([]);
   const [numColumns] = useState(3);
@@ -39,13 +49,17 @@ export default function ShopScreen() {
   const windowWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
 
-  const itemWidth = (windowWidth - (styles.flatListContent.padding * 2) - (styles.flatListContent.gap * 2)) / 3;
+  const itemWidth =
+    (windowWidth -
+      styles.flatListContent.padding * 2 -
+      styles.flatListContent.gap * 2) /
+    3;
 
   useEffect(() => {
     const shop = new Shop();
     const items = shop.getItems().map((item, index) => ({
       id: `${index}`,
-      name: item.getName(),
+      name: formatSeedName(item.getName()), // Apply formatting here
       price: Math.round(item.getPrice()).toString(),
       item: item,
       image:
@@ -64,52 +78,50 @@ export default function ShopScreen() {
     const db = FIRESTORE_DB;
     try {
       const user = FIREBASE_AUTH.currentUser;
-      
+
       if (!user) {
-        Alert.alert('Error', 'Please log in to make a purchase.');
+        Alert.alert("Error", "Please log in to make a purchase.");
         return;
       }
-  
+
       if (!selectedItem) {
-        Alert.alert('Error', 'No item selected.');
+        Alert.alert("Error", "No item selected.");
         return;
       }
-  
-      const userDocRef = doc(db, 'users', user.uid);
+
+      const userDocRef = doc(db, "users", user.uid);
       const userDoc = await getDoc(userDocRef);
       if (!userDoc.exists()) {
-        Alert.alert('Error', 'User data not found.');
+        Alert.alert("Error", "User data not found.");
         return;
       }
-  
+
       const currentCoins = userDoc.data().coins || 0;
       const itemPrice = Number(selectedItem.price);
-  
+
       if (currentCoins < itemPrice) {
         Alert.alert(
-          'Insufficient Coins',
-          `You need ${itemPrice - currentCoins} more coins to purchase this item.`
+          "Insufficient Coins",
+          `You need ${
+            itemPrice - currentCoins
+          } more coins to purchase this item.`
         );
         return;
       }
-  
+
       await updateDoc(userDocRef, {
         coins: currentCoins - itemPrice,
       });
 
       await SeedService.addSeed(selectedItem.item.getSeed());
-  
-      Alert.alert(
-        'Success',
-        `Successfully purchased ${selectedItem.name}!`
-      );
+
+      Alert.alert("Success", `Successfully purchased ${selectedItem.name}!`);
       setModalVisible(false);
-      
     } catch (error) {
-      console.error('Purchase error:', error);
+      console.error("Purchase error:", error);
       Alert.alert(
-        'Error',
-        'There was an error processing your purchase. Please try again.'
+        "Error",
+        "There was an error processing your purchase. Please try again."
       );
     }
   };
@@ -154,8 +166,12 @@ export default function ShopScreen() {
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, globalStyles.text]}>{selectedItem?.name}</Text>
-              <Text style={[styles.modalPrice, globalStyles.text]}>{selectedItem?.price} coins</Text>
+              <Text style={[styles.modalTitle, globalStyles.text]}>
+                {selectedItem?.name}
+              </Text>
+              <Text style={[styles.modalPrice, globalStyles.text]}>
+                {selectedItem?.price} coins
+              </Text>
             </View>
 
             <View style={styles.modalButtons}>
@@ -163,14 +179,18 @@ export default function ShopScreen() {
                 style={[styles.button, styles.buyButton]}
                 onPress={handleBuy}
               >
-                <Text style={[styles.buttonText, globalStyles.text]}>Buy Now</Text>
+                <Text style={[styles.buttonText, globalStyles.text]}>
+                  Buy Now
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
                 style={[styles.button, styles.cancelButton]}
                 onPress={() => setModalVisible(false)}
               >
-                <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
+                <Text style={[styles.buttonText, globalStyles.text]}>
+                  Cancel
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -178,7 +198,7 @@ export default function ShopScreen() {
       </Modal>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
@@ -256,6 +276,6 @@ const styles = StyleSheet.create({
   },
   buttonStyle: {
     padding: 10,
-    marginHorizontal: 10
-  }
+    marginHorizontal: 10,
+  },
 });
