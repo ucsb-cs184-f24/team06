@@ -69,51 +69,47 @@ export const GardenTools: React.FC<GardenToolProps> = ({selectedItem, setSelecte
     }, [selectedItem]); 
 
     return (
-        <SafeAreaView style={styles.container}>
-            <FlatList
-                data={DATA}
-                keyExtractor={(item) => item.getType()}
-                renderItem={({item}) => {
-                    let buttonImg;
-                    if (item.getType() == "WateringCan"){
-                        buttonImg = spriteWateringCan;
-                    } else if (item.getType() == "Shovel"){
-                        buttonImg = spriteShovel;
-                    }
-                    console.log(buttonImg);
+        <ScrollView 
+            contentContainerStyle={styles.scrollContainer}
+            scrollEnabled={false}
+        >
+            {DATA.map((item) => {
+                let buttonImg;
+                if (item.getType() == "WateringCan"){
+                    buttonImg = spriteWateringCan;
+                } else if (item.getType() == "Shovel"){
+                    buttonImg = spriteShovel;
+                }
 
-                    return (
-                        <View style={styles.container}>
-                        <View style={styles.container}>
-                            <Text>{item.getType()}</Text> 
-                            <TouchableOpacity style={styles.button} onPress={() => handlePress(item)}>
-                                <Image source={buttonImg} style={styles.itemImage}/>
-                            </TouchableOpacity>
-                        </View>
-                        </View>
-                    )
-                
-                }}
-                horizontal={true}
-            />
-        </SafeAreaView> 
+                return (
+                    <View key={item.getType()} style={styles.container}>
+                        {/* <Text>{item.getType()}</Text>  */}
+                        <TouchableOpacity style={styles.button} onPress={() => handlePress(item)}>
+                            <Image source={buttonImg} style={styles.itemImage}/>
+                        </TouchableOpacity>
+                    </View>
+                )
+            })}
+        </ScrollView>
     );
 }
-
 const styles = StyleSheet.create({
+    scrollContainer: {
+        width: '100%',
+        justifyContent: 'center',
+    },
     container: {
-        flex: 1,
-        backgroundColor: '#fff',
         alignItems: 'center',
         justifyContent: 'center',
     },
-    itemImage: {
-        width: 100,
-        height: 100,
-    },
     button: {
-        width: 100,
-        height: 100,
-        backgroundColor: '#eeeeee'
+        width: 60,
+        height: 60,
+        backgroundColor: '#e6d7c9',
+    },
+    itemImage: {
+        width: 60,
+        height: 60,
+        resizeMode: 'contain',
     }
-  });
+});
