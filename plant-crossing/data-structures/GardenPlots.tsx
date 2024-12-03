@@ -52,6 +52,14 @@ const animationPaths = new Map<string, ImageSourcePropType>([
   ["unlock", require("../assets/animation-unlock/unlock.gif")],
 ]);
 
+const formatPlantName = (name: string | undefined): string => {
+  if (!name) return "";
+  return name
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
+
 const getPlantSprite = (spritePath: string): ImageSourcePropType => {
   try {
     return PLANT_SPRITES[spritePath];
@@ -292,7 +300,6 @@ export const GardenGrid = ({
                   </Svg>
                 </View>
               )}
-
               {/* Optional animation (watering, planting, unlocking plot, or digging) */}
               {currentAnimation && (
                 <ExpoImage
@@ -304,8 +311,11 @@ export const GardenGrid = ({
               )}
               {/* Optional text overlay */}
               <View style={styles.textOverlay}>
-                <Text style={styles.plotText}>{plot.plant?.type}</Text>
+                <Text style={styles.plotText}>
+                  {formatPlantName(plot.plant?.type)}
+                </Text>
               </View>
+              x
             </View>
           </ImageBackground>
         );
