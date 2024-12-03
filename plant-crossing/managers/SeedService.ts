@@ -32,9 +32,9 @@ export class SeedService {
     static async addSeed(seed: Seed) {
       console.log("ADD SEED CALLED");
       console.log("get by desc:", seed.type, seed.rarity);
-      const inventorySeed = await this.getSeedIdByDescription(seed.type, seed.rarity);
-      console.log("inv: ", inventorySeed);
-      if(!inventorySeed){
+      const inventorySeedID = await this.getSeedIdByDescription(seed.type, seed.rarity);
+      console.log("inv: ", inventorySeedID);
+      if(!inventorySeedID){
         const seedsCollectionRef = this.getSeedsCollectionRef();
         const newSeedRef = doc(seedsCollectionRef);
 
@@ -43,6 +43,8 @@ export class SeedService {
           seed.rarity,
           seed.growthTime,
           seed.maxWater,
+          seed.spriteNumber,
+          seed.numSeeds
         );
 
         console.log("new seed created");
@@ -51,7 +53,20 @@ export class SeedService {
         return newSeed;
       } else {
         console.log("yes in inventory");
-        this.updateSeed(inventorySeed, { numSeeds: seed.numSeeds - 1}); // increase number of seeds by 1
+        const inventorySeed = await this.getSeedById(inventorySeedID);
+        console.log("inventory seed: ", inventorySeed);
+        console.log("inventory seed ID: ", inventorySeedID);
+        if(inventorySeed.numSeeds){
+          console.log("case 1");
+          const newNumSeeds = inventorySeed.numSeeds + 1;
+          this.updateSeed(inventorySeedID, { numSeeds: newNumSeeds}); // increase number of seeds by 1
+        } else{
+          console.log("case 2");
+          this.updateSeed(inventorySeedID, { numSeeds: 2}); // increase number of seeds by 1
+        }
+        
+        console.log("new num seeds", inventorySeed.numSeeds);
+        
         return inventorySeed;
       }
     }
@@ -67,6 +82,8 @@ export class SeedService {
           seed.rarity,
           seed.growthTime,
           seed.maxWater,
+          seed.spriteNumber,
+          seed.numSeeds
         );
         
         batch.set(newSeedRef, newSeed.toFirestore());

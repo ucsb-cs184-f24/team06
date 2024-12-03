@@ -11,6 +11,7 @@ import {
   ImageSourcePropType,
   TouchableOpacity,
   Dimensions,
+  ImageBackground
 } from "react-native";
 import { collection, doc, onSnapshot } from "firebase/firestore";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
@@ -68,7 +69,9 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
             data.type,
             data.rarity as Rarity,
             data.growthTime,
-            data.maxWater
+            data.maxWater,
+            data.spriteNumber,
+            data.numSeeds
           );
         });
         setInventoryItems(seedsList);
@@ -128,7 +131,13 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
               >
                 {item && (
                   <View>
-                    <ExpoImage
+                    <Text style={[
+                        globalStyles.text,
+                        { color: "black", fontSize: 8 },
+                      ]}>
+                      {item.type ? item.numSeeds : ""}
+                    </Text>
+                    <ImageBackground
                       source={seedSprites.get(item.rarity)}
                       style={styles.inventoryItemImage}
                       contentFit="contain"
