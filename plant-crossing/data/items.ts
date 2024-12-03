@@ -1,29 +1,28 @@
 // data/items.ts
 import { Seed, Rarity } from '../types/Seed';
 
-// base growth time and max water are on scales of 1-10, 5 as default
 export const availableSeeds = [
-  // common seeds
-  new Seed("roses", Rarity.common, 5, 5, 20),
-  new Seed("violets", Rarity.common, 3, 3, 21),
-  new Seed("sunflower", Rarity.common, 3, 6, 24),
-  new Seed("wildflowers", Rarity.common, 5, 5, 28),
 
-  // uncommon seeds
-  new Seed("wildflowers", Rarity.common, 5, 5, 28),
+  // common
+  new Seed("roses", Rarity.common, 5, 4, 20),
+  new Seed("violets", Rarity.common, 4, 5, 21),
+  new Seed("sunflower", Rarity.common, 5, 6, 24),
 
-  // rare seeds
-  new Seed("tulips", Rarity.uncommon, 4, 6, 27),
+  // uncommon
+  new Seed("wildflowers", Rarity.uncommon, 6, 6, 28),
 
-  // unique seeds
-  new Seed("cherry_blossom", Rarity.rare, 5, 5, 6),
+  // rare
+  new Seed("tulips", Rarity.rare, 7, 7, 27),
 
-  // legendary seeds
-  new Seed("chromafruit", Rarity.legendary, 2, 4, 24),
+  // unique
+  new Seed("cherry_blossom", Rarity.unique, 8, 8, 6),
+
+  // legendary
+  new Seed("chromafruit", Rarity.legendary, 9, 9, 24),
 ];
 
-// Starting seeds: seeds available to the player when they register an account
 export const startingSeeds = availableSeeds.filter(
   seed => seed.rarity === Rarity.common || 
   seed.rarity === Rarity.uncommon
 );
+
