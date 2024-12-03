@@ -1,4 +1,3 @@
-// data/items.ts
 import { Seed, Rarity } from '../types/Seed';
 
 export const availableSeeds = [
