@@ -70,7 +70,12 @@ export class PlantService {
     
         const newWaterLevel = Math.min(plant.currWater + amount, plant.maxWater);
         await this.updatePlant(plantId, { currWater: newWaterLevel });
-        console.log("Plant", plantId, "watered, waterLevel:", plant.currWater);
+
+        // recalculate growthLevel if water affects it
+        const newGrowthLevel = this.calculateGrowthLevel(plant, newWaterLevel);
+        await this.updatePlant(plantId, { growthLevel: newGrowthLevel });
+
+        console.log("Plant", plantId, "watered, waterLevel:", newWaterLevel, "growthLevel:", newGrowthLevel);
         return newWaterLevel;
     }
 
@@ -89,12 +94,34 @@ export class PlantService {
         const waterConsumptionRate = 0.1;
         const waterConsumed = hoursProgress * waterConsumptionRate * plant.maxWater;
         const newWaterLevel = Math.max(0, plant.currWater - waterConsumed);
-    
+
+        const newGrowthLevel = this.calculateGrowthLevel(plant, newWaterLevel, newAge);
+
         await updateDoc(plantRef, {
           age: newAge,
           currWater: newWaterLevel,
+          growthLevel: newGrowthLevel,
           lastUpdated: Date.now()
         });
+
+        console.log("Updated plant growth progress:", { newAge, newWaterLevel, newGrowthLevel });
+    }
+
+    static calculateGrowthLevel(plant: Plant, waterLevel: number, age?: number): number {
+        const currentAge = age ?? plant.age;
+        const maxWater = plant.maxWater;
+
+        if (currentAge > 20 && waterLevel >= maxWater * 0.9) {
+            return 5;
+        } else if (currentAge > 15 && waterLevel >= maxWater * 0.75) {
+            return 4;
+        } else if (currentAge > 10 && waterLevel >= maxWater * 0.6) {
+            return 3; 
+        } else if (currentAge > 5 && waterLevel >= maxWater * 0.4) {
+            return 2;
+        } else {
+            return 1;
+        }
     }
     
     static async deletePlant(plantId: string) {
