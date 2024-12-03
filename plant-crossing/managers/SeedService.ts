@@ -30,18 +30,30 @@ export class SeedService {
     }
   
     static async addSeed(seed: Seed) {
-      const seedsCollectionRef = this.getSeedsCollectionRef();
-      const newSeedRef = doc(seedsCollectionRef);
+      console.log("ADD SEED CALLED");
+      console.log("get by desc:", seed.type, seed.rarity);
+      const inventorySeed = await this.getSeedIdByDescription(seed.type, seed.rarity);
+      console.log("inv: ", inventorySeed);
+      if(!inventorySeed){
+        const seedsCollectionRef = this.getSeedsCollectionRef();
+        const newSeedRef = doc(seedsCollectionRef);
 
-      const newSeed = new Seed(
-        seed.type,
-        seed.rarity,
-        seed.growthTime,
-        seed.maxWater,
-      );
-  
-      await setDoc(newSeedRef, newSeed.toFirestore());
-      return newSeed;
+        const newSeed = new Seed(
+          seed.type,
+          seed.rarity,
+          seed.growthTime,
+          seed.maxWater,
+        );
+
+        console.log("new seed created");
+    
+        await setDoc(newSeedRef, newSeed.toFirestore());
+        return newSeed;
+      } else {
+        console.log("yes in inventory");
+        this.updateSeed(inventorySeed, { numSeeds: seed.numSeeds - 1}); // increase number of seeds by 1
+        return inventorySeed;
+      }
     }
   
     static async addMultipleSeeds(seeds: Seed[]) {
@@ -132,13 +144,21 @@ export class SeedService {
         );
 
         await this.deleteSeed(seedId);
-
         await setDoc(newPlantRef, newPlant.toFirestore());
+       
         return newPlant;
     }
   
     static async deleteSeed(seedId: string) {
-      const seedRef = doc(this.getSeedsCollectionRef(), seedId);
-      await deleteDoc(seedRef);
+      console.log("DELETE SEED CALLED")
+      const seed = await this.getSeedById(seedId);
+      if(seed && seed.numSeeds > 1){
+        const newNumSeeds = seed.numSeeds - 1;
+        this.updateSeed(seedId, { numSeeds: newNumSeeds}); // decrease number of seeds by 1
+      } else {
+        console.log()
+        const seedRef = doc(this.getSeedsCollectionRef(), seedId);
+        await deleteDoc(seedRef);
+      }
     }
 }
