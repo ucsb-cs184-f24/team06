@@ -173,7 +173,7 @@ export class PlantService {
         
         if (querySnapshot.empty) return null;
         if (querySnapshot.size > 1) {
-            console.warn(`Multiple seeds found for type (${plantType}) and rarity (${rarity})`);
+            console.warn(`Multiple plants found for type (${plantType}) and rarity (${rarity})`);
         }
 
         const plantDoc = querySnapshot.docs[0];

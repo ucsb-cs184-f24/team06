@@ -30,18 +30,33 @@ export class SeedService {
     }
   
     static async addSeed(seed: Seed) {
-      const seedsCollectionRef = this.getSeedsCollectionRef();
-      const newSeedRef = doc(seedsCollectionRef);
+      const inventorySeedID = await this.getSeedIdByDescription(seed.type, seed.rarity);
+      if(!inventorySeedID){
+        const seedsCollectionRef = this.getSeedsCollectionRef();
+        const newSeedRef = doc(seedsCollectionRef);
 
-      const newSeed = new Seed(
-        seed.type,
-        seed.rarity,
-        seed.growthTime,
-        seed.maxWater,
-      );
-  
-      await setDoc(newSeedRef, newSeed.toFirestore());
-      return newSeed;
+        const newSeed = new Seed(
+          seed.type,
+          seed.rarity,
+          seed.growthTime,
+          seed.maxWater,
+          seed.spriteNumber,
+          seed.numSeeds
+        );
+    
+        await setDoc(newSeedRef, newSeed.toFirestore());
+        return newSeed;
+
+      } else {
+        const inventorySeed = await this.getSeedById(inventorySeedID);
+        if(inventorySeed.numSeeds){
+          const newNumSeeds = inventorySeed.numSeeds + 1;
+          this.updateSeed(inventorySeedID, { numSeeds: newNumSeeds}); // increase number of seeds by 1
+        } else{
+          this.updateSeed(inventorySeedID, { numSeeds: 2}); // added one more seed to preexisting seed without numSeeds variable
+        }        
+        return inventorySeed;
+      }
     }
   
     static async addMultipleSeeds(seeds: Seed[]) {
@@ -55,6 +70,8 @@ export class SeedService {
           seed.rarity,
           seed.growthTime,
           seed.maxWater,
+          seed.spriteNumber,
+          seed.numSeeds
         );
         
         batch.set(newSeedRef, newSeed.toFirestore());
@@ -132,13 +149,20 @@ export class SeedService {
         );
 
         await this.deleteSeed(seedId);
-
         await setDoc(newPlantRef, newPlant.toFirestore());
+       
         return newPlant;
     }
   
     static async deleteSeed(seedId: string) {
-      const seedRef = doc(this.getSeedsCollectionRef(), seedId);
-      await deleteDoc(seedRef);
+      const seed = await this.getSeedById(seedId);
+      if(seed && seed.numSeeds > 1){
+        const newNumSeeds = seed.numSeeds - 1;
+        this.updateSeed(seedId, { numSeeds: newNumSeeds}); // decrease number of seeds by 1
+      } else {
+        console.log()
+        const seedRef = doc(this.getSeedsCollectionRef(), seedId);
+        await deleteDoc(seedRef);
+      }
     }
 }

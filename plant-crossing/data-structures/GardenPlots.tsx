@@ -180,7 +180,8 @@ export const GardenGrid = ({
               plot.plant.rarity,
               plot.plant.growthTime,
               plot.plant.maxWater,
-              plot.plant.spriteNumber
+              plot.plant.spriteNumber,
+              1
             )
           );
         } else if (selectedItem?.type == "WateringCan") {
