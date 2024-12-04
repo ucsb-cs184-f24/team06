@@ -153,6 +153,93 @@ export class SeedService {
        
         return newPlant;
     }
+
+    static async tradeSeed(userSeed: string, friendSeed: string, friendEmail: string) {
+      try {
+        // Get user seed
+        const userSeedsCollectionRef = this.getSeedsCollectionRef();
+        const q = query(userSeedsCollectionRef, where('type', '==', userSeed));
+        const querySnapshot = await getDocs(q);
+        
+        if (querySnapshot.empty) {
+          console.error('userSeed not found');
+          throw new Error('User seed not found');
+        }
+        const userSeedDoc = querySnapshot.docs[0];
+        const userSeedId = userSeedDoc.id;
+    
+        // Get friend's ID
+        const friendQuery = query(
+          collection(FIRESTORE_DB, "users"),
+          where("email", "==", friendEmail)
+        );
+        const friendSnapshot = await getDocs(friendQuery);
+        if (friendSnapshot.empty) {
+          console.error('Friend not found');
+          throw new Error('Friend not found');
+        }
+        const friendId = friendSnapshot.docs[0].id;
+    
+        // Get friend seed
+        const friendSeedsCollectionRef = collection(doc(FIRESTORE_DB, 'users', friendId), 'seeds');
+        const friendSeedQ = query(friendSeedsCollectionRef, where('type', '==', friendSeed));
+        const friendSeedQuerySnapshot = await getDocs(friendSeedQ);
+        
+        if (friendSeedQuerySnapshot.empty) {
+          console.error('Friend seed not found');
+          throw new Error('Friend seed not found');
+        }
+        const friendSeedDoc = friendSeedQuerySnapshot.docs[0];
+        const friendSeedId = friendSeedDoc.id;
+        
+        const batch = writeBatch(FIRESTORE_DB);
+    
+        // Add user's seed to friend's collection
+        const friendSeedRef = doc(friendSeedsCollectionRef);
+        const friendNewSeed = Seed.fromFirestore(userSeedDoc.data());
+        friendNewSeed.numSeeds = 1;
+        const findFriendSeedQ = query(friendSeedsCollectionRef, where('type', '==', userSeed));
+        const findFriendSeedSnapshot = await getDocs(findFriendSeedQ);
+        if (findFriendSeedSnapshot.empty) {
+          batch.set(friendSeedRef, friendNewSeed.toFirestore());
+        }
+        else {
+          const findFriendSeedDoc = findFriendSeedSnapshot.docs[0];
+          const findFriendSeedId = findFriendSeedDoc.id;
+          batch.update(doc(friendSeedsCollectionRef, findFriendSeedId), { numSeeds: 1 + findFriendSeedDoc.data().numSeeds });
+        }
+    
+        // Add friend's seed to user's collection
+        const userSeedRef = doc(userSeedsCollectionRef);
+        const userNewSeed = Seed.fromFirestore(friendSeedDoc.data());
+        userNewSeed.numSeeds = 1;
+        const findUserSeedQ = query(userSeedsCollectionRef, where('type', '==', friendSeed));
+        const findUserSeedSnapshot = await getDocs(findUserSeedQ);
+        if (findUserSeedSnapshot.empty) {
+          batch.set(userSeedRef, userNewSeed.toFirestore());
+        }
+        else {
+          const findUserSeedDoc = findUserSeedSnapshot.docs[0];
+          const findUserSeedId = findUserSeedDoc.id;
+          batch.update(doc(userSeedsCollectionRef, findUserSeedId), { numSeeds: 1 + findUserSeedDoc.data().numSeeds });
+        }
+
+        if (friendSeedDoc.data().numSeeds > 1) {
+          batch.update(doc(friendSeedsCollectionRef, friendSeedId), { numSeeds: friendSeedDoc.data().numSeeds - 1 });
+        }
+        else {
+          batch.delete(doc(friendSeedsCollectionRef, friendSeedId));
+        }
+    
+        // Commit the batch
+        await batch.commit();
+        await this.deleteSeed(userSeedId);
+        console.log('Seed trade completed successfully');
+      } catch (error) {
+        console.error('Error trading seeds:', error);
+        throw error;
+      }
+    }
   
     static async deleteSeed(seedId: string) {
       const seed = await this.getSeedById(seedId);
