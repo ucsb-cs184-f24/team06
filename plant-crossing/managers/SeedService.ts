@@ -31,7 +31,6 @@ export class SeedService {
   
     static async addSeed(seed: Seed) {
       const inventorySeedID = await this.getSeedIdByDescription(seed.type, seed.rarity);
-<<<<<<< HEAD
       if (!inventorySeedID) {
           const seedsCollectionRef = this.getSeedsCollectionRef();
           const newSeedRef = doc(seedsCollectionRef); // Generates a new Firestore document with an ID
@@ -51,23 +50,6 @@ export class SeedService {
           console.log(`Adding new seed with ID: ${newSeed.id}`);
           await setDoc(newSeedRef, newSeed.toFirestore());
           return newSeed;
-=======
-      if(!inventorySeedID){
-        const seedsCollectionRef = this.getSeedsCollectionRef();
-        const newSeedRef = doc(seedsCollectionRef);
-
-        const newSeed = new Seed(
-          seed.type,
-          seed.rarity,
-          seed.growthTime,
-          seed.maxWater,
-          seed.numSeeds
-        );
-    
-        await setDoc(newSeedRef, newSeed.toFirestore());
-        return newSeed;
-
->>>>>>> main
       } else {
           const inventorySeed = await this.getSeedById(inventorySeedID);
           if (inventorySeed?.numSeeds) {

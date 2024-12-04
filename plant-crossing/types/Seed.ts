@@ -42,7 +42,6 @@ export class Seed {
           data.rarity as Rarity,
           data.growthTime,
           data.maxWater,
-<<<<<<< HEAD
           data.spriteNumber,
           data.numSeeds,
           data.id
