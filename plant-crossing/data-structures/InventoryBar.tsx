@@ -26,6 +26,14 @@ const seedSprites = new Map<string, ImageSourcePropType>([
   [Rarity.legendary, require("../assets/seed-sprites/seed-legendary.png")],
 ]);
 
+const rarityColorMap: { [key: string]: string } = {
+  common: "#3f3f49", // Gray
+  uncommon: "#4d352c", // Brown
+  rare: "#529269",  // Green
+  unique: "#d4705c",  // Orange
+  legendary: "#743864", // Purple
+};
+
 const formatSeedName = (seedName: string): string => {
   return (
     seedName
@@ -145,7 +153,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
                     <Text
                       style={[
                         globalStyles.text,
-                        { color: "black", fontSize: 12 },
+                        { color: rarityColorMap[item.rarity] || "#000000" },
                       ]}
                     >
                       {item.type ? formatSeedName(item.type) : ""}
