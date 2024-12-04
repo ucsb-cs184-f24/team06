@@ -243,14 +243,24 @@ export default function FriendsScreen() {
       return;
     }
 
-    await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
-    Alert.alert(
-      "Trade Successful",
-      `You traded ${selectedUserSeed} for ${selectedFriendSeed}.`
-    );
+    try{
+      await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
+      Alert.alert(
+        "Trade Successful",
+        `You traded ${selectedUserSeed} for ${selectedFriendSeed}.`
+      );
+    } catch{
+      Alert.alert(
+        "Trade Unsuccessful",
+      );
+    }
+    
+    //delete trade request
+    await SeedService.deleteTradeRequest(userEmail, selectedUserSeed, selectedFriend, selectedFriendSeed);
     setSelectedFriendSeed(null);
     setSelectedUserSeed(null);
     setPendingTradeModalVisible(false);
+    await checkFriends(); //update pending trades list
   }
 
   const handleRejectTrade = async () => { // User B rejects trade from User A
@@ -267,6 +277,7 @@ export default function FriendsScreen() {
     setSelectedFriendSeed(null);
     setSelectedUserSeed(null);
     setPendingTradeModalVisible(false);
+    await checkFriends(); //update pending trades list
   }
 
   useEffect(() => {
@@ -632,7 +643,7 @@ const styles = StyleSheet.create({
     paddingTop: 5
   },
   tradeOffer: {
-    backgroundColor: "purple",
+    backgroundColor: "white",
     padding: 10
   }
 });
