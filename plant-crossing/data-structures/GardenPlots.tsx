@@ -247,7 +247,6 @@ export const GardenGrid = ({
               plot.plant.rarity,
               plot.plant.growthTime,
               plot.plant.maxWater,
-              plot.plant.spriteNumber,
               1
             )
           );
