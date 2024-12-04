@@ -41,7 +41,6 @@ export class SeedService {
           seed.rarity,
           seed.growthTime,
           seed.maxWater,
-          seed.spriteNumber,
           seed.numSeeds
         );
     
@@ -71,7 +70,6 @@ export class SeedService {
           seed.rarity,
           seed.growthTime,
           seed.maxWater,
-          seed.spriteNumber,
           seed.numSeeds
         );
         

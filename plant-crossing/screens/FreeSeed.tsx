@@ -1,16 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions } from "react-native";
+import { View, Text, StyleSheet, Dimensions, Image } from "react-native";
 import { Accelerometer } from "expo-sensors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SeedService } from "../managers/SeedService";
 import { Seed } from "../types/Seed";
 import { availableSeeds } from "../data/items";
 
-// BUG
-// currently the shake timer isn't mapped to unique users
-// so if one user shakes their seed, all other users won't be able to shake a seed until the initial user's 5 hours is up :/
+// const FIVE_HOURS_MS = 5 * 60 * 60 * 1000; // 5 hour timer
+const FIVE_HOURS_MS = 5000; // shorter timer for testing
 
-const FIVE_HOURS_MS = 5 * 60 * 60 * 1000; // 5 hour timer
+const sprites = {
+  Bag: require('../assets/bag-sprites/bag.png'),
+  EmptyBag: require('../assets/bag-sprites/empty-bag.png'),
+};
 
 export default function FreeSeed() {
   const [seed, setSeed] = useState<Seed | null>(null);
@@ -78,12 +80,15 @@ export default function FreeSeed() {
     }
   };
 
+  const currentSprite = canShake() ? sprites.Bag : sprites.EmptyBag;
+
   return (
     <View style={styles.container}>
       <Text style={styles.timerText}>
         {remainingTime ? `Next shake in: ${remainingTime}` : "Shake for a seed!"}
       </Text>
       <View style={styles.square}>
+        <Image source={currentSprite} style={styles.spriteImage} />
         <Text style={styles.seedText}>{seed !== null ? seed.type : "Mystery Seed"}</Text>
       </View>
     </View>
@@ -107,7 +112,6 @@ const styles = StyleSheet.create({
     height: Dimensions.get("window").width * 0.6,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#cd9c59",
     borderRadius: 8,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -115,10 +119,16 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 5,
   },
+  spriteImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "contain",
+  },
   seedText: {
     fontSize: 18,
     fontWeight: "bold",
     color: "#fff",
     textAlign: "center",
+    position: "absolute",
   },
 });

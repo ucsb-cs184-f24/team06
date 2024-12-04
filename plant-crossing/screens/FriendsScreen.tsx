@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, FlatList, TouchableOpacity, Alert, Modal } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, TextInput, FlatList, TouchableOpacity, Alert, Modal, ImageBackground } from 'react-native';
 import filter from 'lodash.filter';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from 'firebase/firestore';
@@ -51,10 +51,14 @@ export default function FriendsScreen() {
   };
 
   const updateAllUsers = async () => {
+    await checkFriends();
     const querySnapshot = await getDocs(collection(db, "users"));
     const emails: string[] = [];
     querySnapshot.forEach((doc) => {
-      emails.push(doc.data().email);
+      const email = doc.data().email;
+      if (email != userEmail) {
+        emails.push(email);
+      }
     });
     setFullData(emails);
   };
@@ -150,7 +154,7 @@ export default function FriendsScreen() {
 
   if (error) {
     return(
-      <View style={styles.list}>
+      <View style={styles.textName}>
         <Text>Error in fetching data</Text>
       </View>
     );
@@ -287,6 +291,9 @@ export default function FriendsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      <ImageBackground
+      source={require('../assets/pixel-flowers.jpeg')}
+      style={styles.backgroundImage}
       <TextInput
         style={styles.searchBar}
         placeholder="Add Friend"
@@ -369,114 +376,150 @@ export default function FriendsScreen() {
               >
                 <Text style={[styles.buttonText, globalStyles.text]}>Add Friend</Text>
               </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => setAddFriendModalVisible(false)}
-              >
-                <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
+            )}
+          /> : 
+          <FlatList 
+            data={friends}
+            keyExtractor={(item) => item}
+            style={styles.textBg}
+            renderItem={({item}) => (
+              <TouchableOpacity onPress={() => handleFriendPress(item)}>
+                <Text style={[globalStyles.text, styles.friendListItem]}>{item}</Text>
               </TouchableOpacity>
+            )}
+          />
+        }
+
+        {/* Add Friend Modal */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={addFriendModalVisible}
+          onRequestClose={() => setAddFriendModalVisible(false)}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, globalStyles.text]}>Add Friend</Text>
+                <Text style={[styles.modalEmail, globalStyles.text]}>{selectedFriend}</Text>
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.button, styles.addButton]}
+                  onPress={handleAddFriend}
+                >
+                  <Text style={[styles.buttonText, globalStyles.text]}>Add Friend</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={() => setAddFriendModalVisible(false)}
+                >
+                  <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      {/* Friend Actions Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={friendActionsModalVisible}
-        onRequestClose={() => setFriendActionsModalVisible(false)}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, globalStyles.text]}>Friend Options</Text>
-              <Text style={[styles.modalEmail, globalStyles.text]}>{selectedFriend}</Text>
-            </View>
+        {/* Friend Actions Modal */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={friendActionsModalVisible}
+          onRequestClose={() => setFriendActionsModalVisible(false)}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, globalStyles.text]}>Friend Options</Text>
+                <Text style={[styles.modalEmail, globalStyles.text]}>{selectedFriend}</Text>
+              </View>
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.tradeButton]}
-                onPress={handleTrade}
-              >
-                <Text style={[styles.buttonText, globalStyles.text]}>Trade</Text>
-              </TouchableOpacity>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.button, styles.tradeButton]}
+                  onPress={handleTrade}
+                >
+                  <Text style={[styles.buttonText, globalStyles.text]}>Trade</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.button, styles.deleteButton]}
-                onPress={handleDeleteFriend}
-              >
-                <Text style={[styles.buttonText, globalStyles.text]}>Delete Friend</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.deleteButton]}
+                  onPress={handleDeleteFriend}
+                >
+                  <Text style={[styles.buttonText, globalStyles.text]}>Delete Friend</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => setFriendActionsModalVisible(false)}
-              >
-                <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={() => setFriendActionsModalVisible(false)}
+                >
+                  <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
 
-      {/* Trade Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={tradeModalVisible}
-        onRequestClose={() => setTradeModalVisible(false)}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={[styles.modalTitle, globalStyles.text]}>Trade Request</Text>
-            <Text style={[styles.modalEmail, globalStyles.text]}>
-              Trading with {selectedFriend}
-            </Text>
+        {/* Trade Modal */}
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={tradeModalVisible}
+          onRequestClose={() => setTradeModalVisible(false)}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <Text style={[styles.modalTitle, globalStyles.text]}>Trade Request</Text>
+              <Text style={[styles.modalEmail, globalStyles.text]}>
+                Trading with {selectedFriend}
+              </Text>
 
-            <Text style={styles.modalTitle}>Your Seeds</Text>
-            <DropDownPicker
-              open={userSeedDropdownOpen}
-              setOpen={setUserSeedDropdownOpen}
-              value={selectedUserSeed}
-              setValue={setSelectedUserSeed}
-              items={userSeeds.map((seed) => ({ label: seed, value: seed }))}
-              placeholder="Select a seed"
-              containerStyle={{ marginBottom: 20 }}
-            />
+              <Text style={styles.modalTitle}>Your Seeds</Text>
+              <DropDownPicker
+                open={userSeedDropdownOpen}
+                setOpen={setUserSeedDropdownOpen}
+                value={selectedUserSeed}
+                setValue={setSelectedUserSeed}
+                items={userSeeds.map((seed) => ({ label: seed, value: seed }))}
+                placeholder="Select a seed"
+                containerStyle={{ marginBottom: 20 }}
+              />
 
-            <Text style={styles.modalTitle}>Friend's Seeds</Text>
-            <DropDownPicker
-              open={friendSeedDropdownOpen}
-              setOpen={setFriendSeedDropdownOpen}
-              value={selectedFriendSeed}
-              setValue={setSelectedFriendSeed}
-              items={friendSeeds.map((seed) => ({ label: seed, value: seed }))}
-              placeholder="Select a friend's seed"
-              containerStyle={{ marginBottom: 20 }}
-            />
+              <Text style={styles.modalTitle}>Friend's Seeds</Text>
+              <DropDownPicker
+                open={friendSeedDropdownOpen}
+                setOpen={setFriendSeedDropdownOpen}
+                value={selectedFriendSeed}
+                setValue={setSelectedFriendSeed}
+                items={friendSeeds.map((seed) => ({ label: seed, value: seed }))}
+                placeholder="Select a friend's seed"
+                containerStyle={{ marginBottom: 20 }}
+              />
 
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.tradeButton]}
-                onPress={handleTradeRequest}
-              >
-                <Text style={[styles.buttonText, globalStyles.text]}>
-                  Send Request
-                </Text>
-              </TouchableOpacity>
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.button, styles.tradeButton]}
+                  onPress={handleTradeRequest}
+                >
+                  <Text style={[styles.buttonText, globalStyles.text]}>
+                    Send Request
+                  </Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => {
-                  setTradeModalVisible(false);
-                  setSelectedFriendSeed(null);
-                  setSelectedUserSeed(null);
-                }}
-              >
-                <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
-              </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={() => {
+                    setTradeModalVisible(false);
+                    setSelectedFriendSeed(null);
+                    setSelectedUserSeed(null);
+                  }}
+                >
+                  <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
         </View>
@@ -526,6 +569,7 @@ export default function FriendsScreen() {
           </View>
         </View>
       </Modal>
+      </ImageBackground>
     </SafeAreaView>
   );
 };
@@ -536,13 +580,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     backgroundColor: '#fff',
   },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+  },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-  },
-  list: {
-    fontSize: 12,
-    paddingTop: 10,
+    marginTop: 5,
+    marginBottom: 10,
+    marginLeft: 10,
   },
   searchBar: {
     paddingHorizontal: 20,
@@ -550,16 +598,16 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderWidth: 1,
     borderRadius: 8,
-    marginBottom: 10,
+    marginHorizontal: 5,
+    backgroundColor: '#fff',
   },
   textName: {
     fontSize: 16,
-    marginLeft: 10,
-    fontWeight: "500",
+    marginLeft: 15,
     marginVertical: 5,
   },
   friendListItem: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "500",
     paddingVertical: 12,
     paddingHorizontal: 10,
@@ -645,5 +693,15 @@ const styles = StyleSheet.create({
   tradeOffer: {
     backgroundColor: "white",
     padding: 10
+  textBg: {
+    backgroundColor: '#fff',
+    marginHorizontal: '5%',
+    marginTop: '5%',
+    marginBottom: '15%',
+  },
+  searchTextBg: {
+    backgroundColor: '#fff',
+    marginHorizontal: '5%',
+    marginBottom: '15%',
   }
 });
