@@ -3,21 +3,27 @@ import { Seed, Rarity } from '../types/Seed';
 export const availableSeeds = [
 
   // common
-  new Seed("roses", Rarity.common, 5, 4, 20),
-  new Seed("violets", Rarity.common, 4, 5, 21),
-  new Seed("sunflower", Rarity.common, 5, 6, 24),
+  new Seed("Rose", Rarity.common, 5, 4),
+  new Seed("Violet", Rarity.common, 4, 5),
+  new Seed("Sunflower", Rarity.common, 5, 6),
+  new Seed("Cactus", Rarity.common, 7, 9),
+  new Seed("Fern", Rarity.common, 4, 7),
+  new Seed("Daisy", Rarity.common, 1, 3),
+  new Seed("Lavender", Rarity.common, 4, 5),
+  new Seed("Marigold", Rarity.common, 5, 5),
+  new Seed("Carnation", Rarity.common, 6, 6),
 
   // uncommon
-  new Seed("wildflowers", Rarity.uncommon, 6, 6, 28),
+  new Seed("Wildflower", Rarity.uncommon, 6, 6),
 
   // rare
-  new Seed("tulips", Rarity.rare, 7, 7, 27),
+  new Seed("Tulip", Rarity.rare, 7, 7),
 
   // unique
-  new Seed("cherry_blossom", Rarity.unique, 8, 8, 6),
+  new Seed("Cherry Blossom", Rarity.unique, 8, 8),
 
   // legendary
-  new Seed("chromafruit", Rarity.legendary, 9, 9, 24),
+  new Seed("Chromafruit", Rarity.legendary, 9, 9),
 ];
 
 export const startingSeeds = availableSeeds.filter(

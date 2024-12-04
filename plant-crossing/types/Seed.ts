@@ -40,19 +40,18 @@ export class Seed {
           data.rarity as Rarity,
           data.growthTime,
           data.maxWater,
-          data.spriteNumber,
           data.numSeeds
         );
     }
 }
   
 export const startingSeeds = [
-    new Seed("Rose", Rarity.common, 3, 5, 1, 1),
-    new Seed("Cactus", Rarity.common, 7, 9, 1, 1),
-    new Seed("Sunflower", Rarity.common, 2, 3, 1, 1),
-    new Seed("Fern", Rarity.common, 4, 7, 1, 1),
-    new Seed("Daisy", Rarity.common, 1, 3, 1, 1),
-    new Seed("Lavender", Rarity.common, 4, 5, 1, 1),
-    new Seed("Marigold", Rarity.common, 5, 5, 1, 1),
-    new Seed("Carnation", Rarity.common, 6, 6, 1, 1),
+    new Seed("Rose", Rarity.common, 3, 5),
+    new Seed("Cactus", Rarity.common, 7, 9),
+    new Seed("Sunflower", Rarity.common, 2, 3),
+    new Seed("Fern", Rarity.common, 4, 7),
+    new Seed("Daisy", Rarity.common, 1, 3),
+    new Seed("Lavender", Rarity.common, 4, 5),
+    new Seed("Marigold", Rarity.common, 5, 5),
+    new Seed("Carnation", Rarity.common, 6, 6),
 ];
