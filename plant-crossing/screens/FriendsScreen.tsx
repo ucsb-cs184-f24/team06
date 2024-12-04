@@ -27,6 +27,8 @@ export default function FriendsScreen() {
   const [selectedFriendSeed, setSelectedFriendSeed] = useState<string | null>(null);
   const [userSeedDropdownOpen, setUserSeedDropdownOpen] = useState(false);
   const [friendSeedDropdownOpen, setFriendSeedDropdownOpen] = useState(false);
+  const [pendingTrades, setPendingTrades] = useState<{friendEmail: string; userSeed: string; friendSeed: string; }[]>([]);
+  const [pendingTradeModalVisible, setPendingTradeModalVisible] = useState(false);
 
   const checkFriends = async () => {
     const user = FIREBASE_AUTH.currentUser;
@@ -45,6 +47,7 @@ export default function FriendsScreen() {
 
     setUserEmail(userDoc.data().email);
     setFriends(userDoc.data().friends || []);
+    setPendingTrades(userDoc.data().pendingTrades || []);
   };
 
   const updateAllUsers = async () => {
@@ -205,19 +208,65 @@ export default function FriendsScreen() {
     }
   };
 
-  const handleTradeRequest = async () => {
+  const handleTradeRequest = async () => { // User A makes trade offer to User B
     if (!selectedUserSeed || !selectedFriendSeed || !selectedFriend) {
       console.error("Trade request missing required fields.");
       return;
     }
-    await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);3
+    await SeedService.sendSeedTradeRequest(userEmail, selectedUserSeed, selectedFriend, selectedFriendSeed);
     setTradeModalVisible(false);
+    setSelectedFriendSeed(null);
+    setSelectedUserSeed(null);
+
+    // await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
+    // setTradeModalVisible(false);
+    // Alert.alert(
+    //   "Trade Successful",
+    //   `You traded ${selectedUserSeed} for ${selectedFriendSeed}.`
+    // );
+    // setSelectedFriendSeed(null);
+    // setSelectedUserSeed(null);
+  }
+
+
+  // set modal for pending trade request
+  const handleIncomingTrade = async (friendEmail: string, friendSeed: string, userSeed: string) => {
+    setSelectedUserSeed(userSeed);
+    setSelectedFriendSeed(friendSeed);
+    setSelectedFriend(friendEmail);
+    setPendingTradeModalVisible(true);
+  }
+
+  const handleAcceptTrade = async () => { // User B accepts trade from User A
+    if (!selectedUserSeed || !selectedFriendSeed || !selectedFriend) {
+      console.error("Trade request missing required fields.");
+      return;
+    }
+
+    await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
     Alert.alert(
       "Trade Successful",
       `You traded ${selectedUserSeed} for ${selectedFriendSeed}.`
     );
     setSelectedFriendSeed(null);
     setSelectedUserSeed(null);
+    setPendingTradeModalVisible(false);
+  }
+
+  const handleRejectTrade = async () => { // User B rejects trade from User A
+    if (!selectedUserSeed || !selectedFriendSeed || !selectedFriend) {
+      console.error("Trade request missing required fields.");
+      return;
+    }
+
+    await SeedService.deleteTradeRequest(userEmail, selectedUserSeed, selectedFriend, selectedFriendSeed);
+    Alert.alert(
+      "Trade Rejected",
+      `You did not trade ${selectedUserSeed} for ${selectedFriendSeed}.`
+    );
+    setSelectedFriendSeed(null);
+    setSelectedUserSeed(null);
+    setPendingTradeModalVisible(false);
   }
 
   useEffect(() => {
@@ -248,15 +297,44 @@ export default function FriendsScreen() {
             </TouchableOpacity>
           )}
         /> : 
-        <FlatList 
-          data={friends}
-          keyExtractor={(item) => item}
-          renderItem={({item}) => (
-            <TouchableOpacity onPress={() => handleFriendPress(item)}>
-              <Text style={styles.friendListItem}>{item}</Text>
-            </TouchableOpacity>
-          )}
-        />
+        <View>
+          <FlatList 
+            data={friends}
+            keyExtractor={(item) => item}
+            renderItem={({item}) => (
+              <TouchableOpacity onPress={() => handleFriendPress(item)}>
+                <Text style={styles.friendListItem}>{item}</Text>
+              </TouchableOpacity>
+            )}
+          />
+
+          {/* display pending trades */}
+          <View style={styles.pendingTradesElement}>
+            <Text style={globalStyles.heading}>
+                Pending Trades
+              </Text>
+            <View style={styles.trades}>
+              
+              <FlatList
+                data={pendingTrades}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={({ item }) => (
+                  <TouchableOpacity onPress={() => handleIncomingTrade(item.friendEmail, item.friendSeed, item.userSeed)}>
+                    <View style={styles.tradeOffer}>
+                      <Text>{item.friendEmail}</Text>
+                      <Text>
+                        {`Your Seed: ${item.userSeed}`}
+                      </Text>
+                      <Text>
+                        {`Friend's Seed: ${item.friendSeed}`}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
+              />
+            </View>
+          </View>
+        </View>
       }
 
       {/* Add Friend Modal */}
@@ -392,6 +470,51 @@ export default function FriendsScreen() {
           </View>
         </View>
       </Modal>
+
+
+
+
+       {/* Pending Trades Modal */}
+       <Modal
+        animationType="fade"
+        transparent={true}
+        visible={pendingTradeModalVisible}
+        onRequestClose={() => setPendingTradeModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, globalStyles.text]}>Trade Request</Text>
+              <Text style={[styles.modalEmail, globalStyles.text]}>
+              {`${selectedFriend} has sent you a trade request:\nFriend's Seed: ${selectedUserSeed}\nYour Seed: ${selectedFriendSeed}`}
+              </Text>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.tradeButton]}
+                onPress={handleAcceptTrade}
+              >
+                <Text style={[styles.buttonText, globalStyles.text]}>Accept Trade</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, styles.deleteButton]}
+                onPress={handleRejectTrade}
+              >
+                <Text style={[styles.buttonText, globalStyles.text]}>Reject Trade</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => setPendingTradeModalVisible(false)}
+              >
+                <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -499,4 +622,17 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
+  pendingTradesElement: {
+    backgroundColor: "#02aba0",
+    paddingTop: 5
+  },
+  trades: {
+    backgroundColor: "#02aba0",
+    padding: 25,
+    paddingTop: 5
+  },
+  tradeOffer: {
+    backgroundColor: "purple",
+    padding: 10
+  }
 });
