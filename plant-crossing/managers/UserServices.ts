@@ -1,6 +1,7 @@
-import { collection, doc, getDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, writeBatch, updateDoc } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { startingSeeds } from '../types/Seed';
+import { PlantService } from '../managers/PlantService'; // Ensure you have this service imported
 
 export const initializeUser = async () => {
   const user = FIREBASE_AUTH.currentUser;
@@ -66,6 +67,26 @@ export const initializeUser = async () => {
       console.error('Error initializing user:', error);
     }
   } else {
-    console.log('User already exists in Firestore');
+    // Existing user: Update plants
+    try {
+      const lastLogin = userSnapshot.data()?.lastLogin || Date.now();
+
+      const plantsCollectionRef = collection(userRef, 'plants');
+      const plantsSnapshot = await getDocs(plantsCollectionRef);
+
+      // Update each plant's growth progress
+      const updatePromises = plantsSnapshot.docs.map(async (plantDoc) => {
+        const plantId = plantDoc.id;
+        await PlantService.updateGrowthProgress(plantId, lastLogin);
+      });
+
+      await Promise.all(updatePromises);
+
+      // Update user's last login
+      await updateDoc(userRef, { lastLogin: Date.now() });
+      console.log('Updated plant growth and user last login');
+    } catch (error) {
+      console.error('Error updating plant growth on user relog:', error);
+    }
   }
 };

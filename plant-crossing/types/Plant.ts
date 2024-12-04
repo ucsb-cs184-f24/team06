@@ -12,6 +12,7 @@ export class Plant extends Seed {
         public currWater: number = maxWater,
         public growthBoost: number = 1,
         public growthLevel: number = 1,
+        public id?: string
     ) {
         super(type, rarity, growthTime, maxWater);
     }
@@ -28,8 +29,8 @@ export class Plant extends Seed {
         };
     }
 
-    static fromFirestore(data: any): Plant {
-        return new Plant(
+    static fromFirestore(data: any, id?: string): Plant {
+        const plant = new Plant(
             data.type,
             data.rarity as Rarity,
             data.growthTime,
@@ -39,7 +40,9 @@ export class Plant extends Seed {
             data.age,
             data.currWater,
             data.growthBoost,
-            data.growthLevel,
+            data.growthLevel
         );
+        plant.id = id;
+        return plant;
     }
 }

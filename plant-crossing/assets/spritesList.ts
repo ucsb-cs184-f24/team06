@@ -62,7 +62,6 @@ export const PLANT_SPRITES: Record<string, Record<number, any>> = {
   
   export const getSpriteForPlant = (plantName: string | undefined, growthLevel: number): any => {
     if (typeof plantName !== "string" || !plantName) {
-      console.warn("Invalid plant name provided. Expected a non-empty string but got:", plantName);
       return null;
     }
   

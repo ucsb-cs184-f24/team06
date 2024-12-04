@@ -84,21 +84,27 @@ export class PlantService {
     }
 
     static async waterPlant(plantId: string, amount: number) {
-        const plant = await this.getPlantById(plantId);
-        if (!plant) throw new Error('Plant not found');
-    
-        const newWaterLevel = Math.min(plant.currWater + amount, plant.maxWater);
-        await this.updatePlant(plantId, { currWater: newWaterLevel });
-
-        // recalculate growthLevel if water affects it
-        const newGrowthLevel = this.calculateGrowthLevel(plant, newWaterLevel);
-        await this.updatePlant(plantId, { growthLevel: newGrowthLevel });
-
-        console.log("Plant", plantId, "watered, waterLevel:", newWaterLevel, "growthLevel:", newGrowthLevel);
-        return newWaterLevel;
+        try {
+            // Fetch plant data
+            const plant = await this.getPlantById(plantId);
+            if (!plant) throw new Error('Plant not found');
+            
+            // Calculate the new water level
+            const newWaterLevel = Math.min(plant.currWater + amount, plant.maxWater);
+            
+            // Update only the water level of the plant
+            await this.updatePlant(plantId, { currWater: newWaterLevel });
+            
+            console.log("Plant", plantId, "watered, waterLevel:", newWaterLevel);
+            return newWaterLevel;
+        } catch (error) {
+            console.error(`Error watering plant ${plantId}:`, error);
+            throw error;
+        }
     }
+    
 
-    static async updateGrowthProgress(plantId: string) {
+    static async updateGrowthProgress(plantId: string, userLastLogin: number) {
         try {
             // Fetch plant data
             const plant = await this.getPlantById(plantId);
@@ -112,13 +118,14 @@ export class PlantService {
             const plantSnap = await getDoc(plantRef);
             const data = plantSnap.data();
     
-            if (!data || !data.lastUpdated) {
-                console.warn(`Plant data or lastUpdated missing for ID ${plantId}`);
+            if (!data) {
+                console.warn(`Plant data missing for ID ${plantId}`);
                 return;
             }
     
-            // Calculate time passed since the last update
-            const timePassed = Date.now() - data.lastUpdated;
+            // Use the greater of lastLogin or plant's lastUpdated
+            const lastCheckTime = Math.max(data.lastUpdated || 0, userLastLogin);
+            const timePassed = Date.now() - lastCheckTime;
             const hoursProgress = timePassed / (1000 * 60 * 60);
     
             // Update plant age based on growth boost
@@ -150,6 +157,7 @@ export class PlantService {
             console.error(`Error updating growth progress for plant ${plantId}:`, error);
         }
     }
+    
     
     static calculateGrowthLevel(plant: Plant, waterLevel: number, age?: number): number {
         const currentAge = age ?? plant.age;
