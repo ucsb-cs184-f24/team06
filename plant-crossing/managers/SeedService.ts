@@ -196,16 +196,40 @@ export class SeedService {
     
         // Add user's seed to friend's collection
         const friendSeedRef = doc(friendSeedsCollectionRef);
-        const friendNewSeed = Seed.fromFirestore(userSeedDoc.data()).toFirestore();
-        batch.set(friendSeedRef, friendNewSeed);
+        const friendNewSeed = Seed.fromFirestore(userSeedDoc.data());
+        friendNewSeed.numSeeds = 1;
+        const findFriendSeedQ = query(friendSeedsCollectionRef, where('type', '==', userSeed));
+        const findFriendSeedSnapshot = await getDocs(findFriendSeedQ);
+        if (findFriendSeedSnapshot.empty) {
+          batch.set(friendSeedRef, friendNewSeed.toFirestore());
+        }
+        else {
+          const findFriendSeedDoc = findFriendSeedSnapshot.docs[0];
+          const findFriendSeedId = findFriendSeedDoc.id;
+          batch.update(doc(friendSeedsCollectionRef, findFriendSeedId), { numSeeds: 1 + findFriendSeedDoc.data().numSeeds });
+        }
     
         // Add friend's seed to user's collection
         const userSeedRef = doc(userSeedsCollectionRef);
-        const userNewSeed = Seed.fromFirestore(friendSeedDoc.data()).toFirestore();
-        batch.set(userSeedRef, userNewSeed);
+        const userNewSeed = Seed.fromFirestore(friendSeedDoc.data());
+        userNewSeed.numSeeds = 1;
+        const findUserSeedQ = query(userSeedsCollectionRef, where('type', '==', friendSeed));
+        const findUserSeedSnapshot = await getDocs(findUserSeedQ);
+        if (findUserSeedSnapshot.empty) {
+          batch.set(userSeedRef, userNewSeed.toFirestore());
+        }
+        else {
+          const findUserSeedDoc = findUserSeedSnapshot.docs[0];
+          const findUserSeedId = findUserSeedDoc.id;
+          batch.update(doc(userSeedsCollectionRef, findUserSeedId), { numSeeds: 1 + findUserSeedDoc.data().numSeeds });
+        }
 
-        // Delete the original seeds
-        batch.delete(doc(friendSeedsCollectionRef, friendSeedId));
+        if (friendSeedDoc.data().numSeeds > 1) {
+          batch.update(doc(friendSeedsCollectionRef, friendSeedId), { numSeeds: friendSeedDoc.data().numSeeds - 1 });
+        }
+        else {
+          batch.delete(doc(friendSeedsCollectionRef, friendSeedId));
+        }
     
         // Commit the batch
         await batch.commit();

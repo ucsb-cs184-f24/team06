@@ -210,7 +210,7 @@ export default function FriendsScreen() {
       console.error("Trade request missing required fields.");
       return;
     }
-    await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
+    await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);3
     setTradeModalVisible(false);
     Alert.alert(
       "Trade Successful",
