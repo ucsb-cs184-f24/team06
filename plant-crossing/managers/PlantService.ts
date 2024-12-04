@@ -99,49 +99,76 @@ export class PlantService {
     }
 
     static async updateGrowthProgress(plantId: string) {
-        const plant = await this.getPlantById(plantId);
-        if (!plant) return;
+        try {
+            // Fetch plant data
+            const plant = await this.getPlantById(plantId);
+            if (!plant) {
+                console.warn(`Plant with ID ${plantId} not found.`);
+                return;
+            }
     
-        const plantRef = doc(this.getPlantsCollectionRef(), plantId);
-        const plantSnap = await getDoc(plantRef);
-        const data = plantSnap.data();
-        
-        const timePassed = Date.now() - data?.lastUpdated;
-        const hoursProgress = timePassed / (1000 * 60 * 60);
-        const newAge = plant.age + (hoursProgress * plant.growthBoost);
+            // Reference to the plant in Firestore
+            const plantRef = doc(this.getPlantsCollectionRef(), plantId);
+            const plantSnap = await getDoc(plantRef);
+            const data = plantSnap.data();
     
-        const waterConsumptionRate = 0.1;
-        const waterConsumed = hoursProgress * waterConsumptionRate * plant.maxWater;
-        const newWaterLevel = Math.max(0, plant.currWater - waterConsumed);
-
-        const newGrowthLevel = this.calculateGrowthLevel(plant, newWaterLevel, newAge);
-
-        await updateDoc(plantRef, {
-          age: newAge,
-          currWater: newWaterLevel,
-          growthLevel: newGrowthLevel,
-          lastUpdated: Date.now()
-        });
-
-        console.log("Updated plant growth progress:", { newAge, newWaterLevel, newGrowthLevel });
+            if (!data || !data.lastUpdated) {
+                console.warn(`Plant data or lastUpdated missing for ID ${plantId}`);
+                return;
+            }
+    
+            // Calculate time passed since the last update
+            const timePassed = Date.now() - data.lastUpdated;
+            const hoursProgress = timePassed / (1000 * 60 * 60);
+    
+            // Update plant age based on growth boost
+            const newAge = plant.age + (hoursProgress * plant.growthBoost);
+    
+            // Calculate water consumption
+            const waterConsumptionRate = 0.1; // Adjust as needed
+            const waterConsumed = hoursProgress * waterConsumptionRate * plant.maxWater;
+            const newWaterLevel = Math.max(0, plant.currWater - waterConsumed);
+    
+            // Determine the new growth level
+            const newGrowthLevel = this.calculateGrowthLevel(plant, newWaterLevel, newAge);
+    
+            // Update plant data in Firestore
+            await updateDoc(plantRef, {
+                age: newAge,
+                currWater: newWaterLevel,
+                growthLevel: newGrowthLevel,
+                lastUpdated: Date.now(),
+            });
+    
+            console.log("Updated plant growth progress:", {
+                plantId,
+                newAge,
+                newWaterLevel,
+                newGrowthLevel,
+            });
+        } catch (error) {
+            console.error(`Error updating growth progress for plant ${plantId}:`, error);
+        }
     }
-
+    
     static calculateGrowthLevel(plant: Plant, waterLevel: number, age?: number): number {
         const currentAge = age ?? plant.age;
         const maxWater = plant.maxWater;
-
+    
+        // Growth level thresholds
         if (currentAge > 20 && waterLevel >= maxWater * 0.9) {
-            return 5;
+            return 5; // Fully grown
         } else if (currentAge > 15 && waterLevel >= maxWater * 0.75) {
             return 4;
         } else if (currentAge > 10 && waterLevel >= maxWater * 0.6) {
-            return 3; 
+            return 3;
         } else if (currentAge > 5 && waterLevel >= maxWater * 0.4) {
             return 2;
         } else {
-            return 1;
+            return 1; // Initial growth level
         }
     }
+    
     
     static async deletePlant(plantId: string) {
         const plantRef = doc(this.getPlantsCollectionRef(), plantId);
