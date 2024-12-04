@@ -294,6 +294,8 @@ export default function FriendsScreen() {
       <ImageBackground
       source={require('../assets/pixel-flowers.jpeg')}
       style={styles.backgroundImage}
+      resizeMode="cover">
+      <Text style={[globalStyles.text, styles.title]}>Friends</Text>
       <TextInput
         style={styles.searchBar}
         placeholder="Add Friend"
@@ -303,28 +305,31 @@ export default function FriendsScreen() {
         value={searchQuery}
         onChangeText={(query) => handleSearch(query)}/>
 
-      {showSearchResults ? 
-        <FlatList
-          data={data}
-          keyExtractor={(item) => item}
-          renderItem={({item}) => (
-            <TouchableOpacity onPress={() => handleAddFriendPress(item)}>
-              <View>
-                <Text style={styles.textName}>{item}</Text>
-              </View>
-            </TouchableOpacity>
-          )}
-        /> : 
-        <View>
-          <FlatList 
-            data={friends}
+{showSearchResults ? 
+          <FlatList
+            data={data}
             keyExtractor={(item) => item}
+            style={styles.searchTextBg}
             renderItem={({item}) => (
-              <TouchableOpacity onPress={() => handleFriendPress(item)}>
-                <Text style={styles.friendListItem}>{item}</Text>
+              <TouchableOpacity onPress={() => handleAddFriendPress(item)}>
+                <View>
+                <Text style={[globalStyles.text, styles.textName]}>{item}</Text>
+                </View>
               </TouchableOpacity>
             )}
-          />
+          /> : 
+          <View>
+            <FlatList 
+              data={friends}
+              keyExtractor={(item) => item}
+              style={styles.textBg}
+              renderItem={({item}) => (
+                <TouchableOpacity onPress={() => handleFriendPress(item)}>
+                  <Text style={[globalStyles.text, styles.friendListItem]}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          
 
           {/* display pending trades */}
           <View style={styles.pendingTradesElement}>
@@ -354,41 +359,6 @@ export default function FriendsScreen() {
           </View>
         </View>
       }
-
-      {/* Add Friend Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={addFriendModalVisible}
-        onRequestClose={() => setAddFriendModalVisible(false)}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, globalStyles.text]}>Add Friend</Text>
-              <Text style={[styles.modalEmail, globalStyles.text]}>{selectedFriend}</Text>
-            </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.addButton]}
-                onPress={handleAddFriend}
-              >
-                <Text style={[styles.buttonText, globalStyles.text]}>Add Friend</Text>
-              </TouchableOpacity>
-            )}
-          /> : 
-          <FlatList 
-            data={friends}
-            keyExtractor={(item) => item}
-            style={styles.textBg}
-            renderItem={({item}) => (
-              <TouchableOpacity onPress={() => handleFriendPress(item)}>
-                <Text style={[globalStyles.text, styles.friendListItem]}>{item}</Text>
-              </TouchableOpacity>
-            )}
-          />
-        }
 
         {/* Add Friend Modal */}
         <Modal
@@ -522,7 +492,6 @@ export default function FriendsScreen() {
               </View>
             </View>
           </View>
-        </View>
       </Modal>
 
 
@@ -693,6 +662,7 @@ const styles = StyleSheet.create({
   tradeOffer: {
     backgroundColor: "white",
     padding: 10
+  },
   textBg: {
     backgroundColor: '#fff',
     marginHorizontal: '5%',
