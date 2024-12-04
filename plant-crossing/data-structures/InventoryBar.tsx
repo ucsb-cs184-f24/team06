@@ -70,8 +70,8 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
             data.rarity as Rarity,
             data.growthTime,
             data.maxWater,
-            data.numSeeds,
-            data.id
+            data.numSeeds
+            //data.id
           );
         });
         setInventoryItems(seedsList);
