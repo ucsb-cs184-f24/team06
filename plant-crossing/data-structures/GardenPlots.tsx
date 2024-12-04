@@ -312,6 +312,8 @@ export const GardenGrid = ({
         if (plot.plant?.id) {
           const plant = await PlantService.getPlantById(plot.plant.id);
           setPlantData(plant);
+        } else {
+          setPlantData(null); // Clear plant data if the plant is removed
         }
       };
       fetchPlantData();
