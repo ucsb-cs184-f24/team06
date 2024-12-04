@@ -12,6 +12,7 @@ import {
   SafeAreaView,
   Alert,
   Button,
+  ImageBackground
 } from "react-native";
 import ShopItem from "../components/ShopItem";
 import Shop from "../data-structures/Shop";
@@ -138,64 +139,68 @@ export default function ShopScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar style="dark" />
-      <GameButton
-        title="Get a Free Seed!"
-        onPress={() => navigation.navigate("FreeSeed")}
-        style={styles.buttonStyle}
-      />
-      <FlatList
-        data={shopItems}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        numColumns={numColumns}
-        key={`shop-list-${numColumns}`}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.flatListContent}
-        columnWrapperStyle={styles.row}
-      />
+      <ImageBackground
+      source={require("../assets/wood_texture.jpg")} // Path to your local image
+      style={styles.backgroundImage}>
+        <StatusBar style="dark" />
+        <GameButton
+          title="Get a Free Seed!"
+          onPress={() => navigation.navigate("FreeSeed")}
+          style={styles.buttonStyle}
+        />
+        <FlatList
+          data={shopItems}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          numColumns={numColumns}
+          key={`shop-list-${numColumns}`}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.flatListContent}
+          columnWrapperStyle={styles.row}
+        />
 
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          setModalVisible(false);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, globalStyles.text]}>
-                {selectedItem?.name}
-              </Text>
-              <Text style={[styles.modalPrice, globalStyles.text]}>
-                {selectedItem?.price} coins
-              </Text>
-            </View>
-
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.buyButton]}
-                onPress={handleBuy}
-              >
-                <Text style={[styles.buttonText, globalStyles.text]}>
-                  Buy Now
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            setModalVisible(false);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <View style={styles.modalHeader}>
+                <Text style={[styles.modalTitle, globalStyles.text]}>
+                  {selectedItem?.name}
                 </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={[styles.buttonText, globalStyles.text]}>
-                  Cancel
+                <Text style={[styles.modalPrice, globalStyles.text]}>
+                  {selectedItem?.price} coins
                 </Text>
-              </TouchableOpacity>
+              </View>
+
+              <View style={styles.modalButtons}>
+                <TouchableOpacity
+                  style={[styles.button, styles.buyButton]}
+                  onPress={handleBuy}
+                >
+                  <Text style={[styles.buttonText, globalStyles.text]}>
+                    Buy Now
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.button, styles.cancelButton]}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={[styles.buttonText, globalStyles.text]}>
+                    Cancel
+                  </Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </View>
-        </View>
-      </Modal>
+        </Modal>
+      </ImageBackground>
     </SafeAreaView>
   );
 }
@@ -203,7 +208,12 @@ export default function ShopScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    // backgroundColor: "#fff",
+  },
+  backgroundImage: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
   },
   flatListContent: {
     padding: 12,
