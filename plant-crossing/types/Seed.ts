@@ -46,9 +46,6 @@ export class Seed {
           data.spriteNumber,
           data.numSeeds,
           data.id
-=======
-          data.numSeeds
->>>>>>> main
         );
     }
 }
