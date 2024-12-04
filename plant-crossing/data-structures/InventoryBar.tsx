@@ -70,7 +70,6 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
             data.rarity as Rarity,
             data.growthTime,
             data.maxWater,
-            data.spriteNumber,
             data.numSeeds,
             data.id
           );
