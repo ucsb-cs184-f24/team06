@@ -3,6 +3,7 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { Plant } from "../types/Plant";
 import { Rarity, rarityValue } from "../types/Seed";
 
+
 export class PlantService {
     private static getUserRef() {
         const currentUser = FIREBASE_AUTH.currentUser;
@@ -104,53 +105,44 @@ export class PlantService {
     }
     
 
-    static async updateGrowthProgress(plantId: string, userLastLogin: number) {
+    static async updateGrowthProgress(plantId: string) {
         try {
-            // Fetch plant data
             const plant = await this.getPlantById(plantId);
             if (!plant) {
                 console.warn(`Plant with ID ${plantId} not found.`);
                 return;
             }
     
-            // Reference to the plant in Firestore
-            const plantRef = doc(this.getPlantsCollectionRef(), plantId);
-            const plantSnap = await getDoc(plantRef);
-            const data = plantSnap.data();
+            // Log fetched plant details
+            console.log(`Fetched plant:`, plant);
     
-            if (!data) {
-                console.warn(`Plant data missing for ID ${plantId}`);
+            // Use createdAt directly from the plant object
+            const plantingTime = plant.createdAt;
+            if (!plantingTime) {
+                console.error(`Plant with ID ${plantId} is missing a createdAt timestamp.`);
                 return;
             }
     
-            // Use the greater of lastLogin or plant's lastUpdated
-            const lastCheckTime = Math.max(data.lastUpdated || 0, userLastLogin);
-            const timePassed = Date.now() - lastCheckTime;
-            const hoursProgress = timePassed / (1000 * 60 * 60);
+            const timeElapsed = Date.now() - plantingTime;
+            console.log(`Time Elapsed since planting: ${timeElapsed} ms`);
     
-            // Update plant age based on growth boost
-            const newAge = plant.age + (hoursProgress * plant.growthBoost);
+            const growthTimeInMs = plant.growthTime * 3600000; // Convert hours to ms
+            const growthPercentage = timeElapsed / growthTimeInMs;
+            console.log(`growth percentage ${growthPercentage}`);
     
-            // Calculate water consumption
-            const waterConsumptionRate = 0.1; // Adjust as needed
-            const waterConsumed = hoursProgress * waterConsumptionRate * plant.maxWater;
-            const newWaterLevel = Math.max(0, plant.currWater - waterConsumed);
+            const newGrowthLevel = Math.max(Math.min(Math.floor(growthPercentage * 5), 5), 1);
+
     
-            // Determine the new growth level
-            const newGrowthLevel = this.calculateGrowthLevel(plant, newWaterLevel, newAge);
+            console.log(`Updating growth level to ${newGrowthLevel}`);
     
-            // Update plant data in Firestore
+            const plantRef = doc(this.getPlantsCollectionRef(), plantId);
             await updateDoc(plantRef, {
-                age: newAge,
-                currWater: newWaterLevel,
                 growthLevel: newGrowthLevel,
                 lastUpdated: Date.now(),
             });
     
-            console.log("Updated plant growth progress:", {
+            console.log("Growth progress updated successfully:", {
                 plantId,
-                newAge,
-                newWaterLevel,
                 newGrowthLevel,
             });
         } catch (error) {
@@ -158,24 +150,29 @@ export class PlantService {
         }
     }
     
+
     
-    static calculateGrowthLevel(plant: Plant, waterLevel: number, age?: number): number {
-        const currentAge = age ?? plant.age;
-        const maxWater = plant.maxWater;
     
-        // Growth level thresholds
-        if (currentAge > 20 && waterLevel >= maxWater * 0.9) {
+    
+    
+    static calculateGrowthLevel(plant: Plant, lastLogin: number): number {
+        const timePassed = Date.now() - lastLogin; // Time since last login in milliseconds
+        const growthTimeMs = plant.growthTime * 60 * 1000; // Convert `growthTime` from minutes to milliseconds
+        const growthPercentage = Math.min(1, timePassed / growthTimeMs); // Growth progress capped at 100%
+    
+        // Determine the growth level based on percentage progress
+        if (growthPercentage >= 1) {
             return 5; // Fully grown
-        } else if (currentAge > 15 && waterLevel >= maxWater * 0.75) {
+        } else if (growthPercentage >= 0.8) {
             return 4;
-        } else if (currentAge > 10 && waterLevel >= maxWater * 0.6) {
+        } else if (growthPercentage >= 0.6) {
             return 3;
-        } else if (currentAge > 5 && waterLevel >= maxWater * 0.4) {
+        } else if (growthPercentage >= 0.4) {
             return 2;
         } else {
-            return 1; // Initial growth level
+            return 1; // Initial growth stage
         }
-    }
+    }    
     
     
     static async deletePlant(plantId: string) {

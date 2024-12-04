@@ -157,6 +157,7 @@ export class SeedService {
           1,
       );
       newPlant.id = newPlantRef.id; // Assign the Firestore document ID to the Plant
+      newPlant.createdAt = Date.now(); // Ensure createdAt is set here
   
       console.log('New plant created:', newPlant);
   

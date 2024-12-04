@@ -67,17 +67,25 @@ export const initializeUser = async () => {
       console.error('Error initializing user:', error);
     }
   } else {
-    // Existing user: Update plants
+    console.log('Existing user branch executed'); // Added log
     try {
       const lastLogin = userSnapshot.data()?.lastLogin || Date.now();
+      console.log(`Last login timestamp: ${lastLogin}`); // Added log
 
       const plantsCollectionRef = collection(userRef, 'plants');
       const plantsSnapshot = await getDocs(plantsCollectionRef);
+      console.log(`Number of plants retrieved: ${plantsSnapshot.size}`); // Added log
+
+      if (plantsSnapshot.empty) {
+        console.log('No plants found to update.');
+        return;
+      }
 
       // Update each plant's growth progress
       const updatePromises = plantsSnapshot.docs.map(async (plantDoc) => {
         const plantId = plantDoc.id;
-        await PlantService.updateGrowthProgress(plantId, lastLogin);
+        console.log(`Calling updateGrowthProgress for plant ID: ${plantId}`); // Added log
+        await PlantService.updateGrowthProgress(plantId);
       });
 
       await Promise.all(updatePromises);
