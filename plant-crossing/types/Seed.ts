@@ -20,8 +20,8 @@ export class Seed {
       public rarity: Rarity,
       public growthTime: number,
       public maxWater: number,
-      public spriteNumber : number,
-      public numSeeds: number, // for seed stacking in inventory
+      public spriteNumber : number=1,
+      public numSeeds: number=1, // for seed stacking in inventory
     ) {}
   
     toFirestore() {
