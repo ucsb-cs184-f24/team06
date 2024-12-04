@@ -64,7 +64,7 @@ export default function ShopScreen() {
       price: Math.round(item.getPrice()).toString(),
       item: item,
       image:
-        "https://cdn.pixabay.com/photo/2022/11/08/14/42/monstera-7578722_640.png",
+        item.getSeed().rarity.toString(),
     }));
     setShopItems(items);
   }, []);
