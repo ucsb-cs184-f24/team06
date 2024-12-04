@@ -22,6 +22,7 @@ export class Seed {
       public maxWater: number,
       public spriteNumber : number=1,
       public numSeeds: number=1, // for seed stacking in inventory
+      public id?: string
     ) {}
   
     toFirestore() {
@@ -30,7 +31,8 @@ export class Seed {
         rarity: this.rarity,
         growthTime: this.growthTime,
         maxWater: this.maxWater,
-        lastUpdated: Date.now()
+        lastUpdated: Date.now(),
+        ...(this.id ? { id: this.id } : {})
       };
     }
 
@@ -40,7 +42,9 @@ export class Seed {
           data.rarity as Rarity,
           data.growthTime,
           data.maxWater,
-          data.numSeeds
+          data.spriteNumber,
+          data.numSeeds,
+          data.id
         );
     }
 }
