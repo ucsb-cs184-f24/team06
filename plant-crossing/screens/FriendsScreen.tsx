@@ -251,15 +251,17 @@ export default function FriendsScreen() {
       return;
     }
 
-    try{
+    try {
       await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
       Alert.alert(
         "Trade Successful",
         `You traded your ${selectedUserSeed} for ${selectedFriendSeed}.`
       );
-    } catch{
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
       Alert.alert(
         "Trade Unsuccessful",
+        errorMessage
       );
     }
     
@@ -358,7 +360,7 @@ export default function FriendsScreen() {
                           <Text style={globalStyles.text}>
                             {item.friendEmail} offers:
                           </Text>
-                          <Text style={[globalStyles.text, {color: '#50de51'}]}>
+                          <Text style={[globalStyles.text, {color: '#27962c'}]}>
                             {`${item.userSeed} for ${item.friendSeed}`}
                           </Text>
                         </View>
@@ -532,7 +534,7 @@ export default function FriendsScreen() {
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, globalStyles.text]}>Trade Request</Text>
               <Text style={[styles.modalEmail, globalStyles.text]}>
-              {`${selectedFriend} has sent you a trade request:\nFriend's Seed: ${selectedUserSeed}\nYour Seed: ${selectedFriendSeed}`}
+              {`${selectedFriend} has sent you a trade request:\nFriend's Seed: ${selectedFriendSeed}\nYour Seed: ${selectedUserSeed}`}
               </Text>
             </View>
 
