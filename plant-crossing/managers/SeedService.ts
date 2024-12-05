@@ -8,7 +8,8 @@ import {
     deleteDoc,
     query,
     writeBatch,
-    where
+    where,
+    arrayUnion
 } from 'firebase/firestore';
 import { FIRESTORE_DB, FIREBASE_AUTH } from '../FirebaseConfig';
 import { Seed, Rarity } from '../types/Seed';
@@ -168,6 +169,87 @@ export class SeedService {
     }
   
   
+
+    static async sendSeedTradeRequest(userEmail: string, userSeed: string, friendEmail: string, friendSeed: string){
+      try{
+        // Get friend's ID
+        const friendQuery = query(
+          collection(FIRESTORE_DB, "users"),
+          where("email", "==", friendEmail)
+        );
+        const friendSnapshot = await getDocs(friendQuery);
+        if (friendSnapshot.empty) {
+          console.error('Friend not found');
+          throw new Error('Friend not found');
+        }
+        const friendId = friendSnapshot.docs[0].id;
+
+        //get friend's doc
+        const friendDocRef = doc(FIRESTORE_DB, 'users', friendId);
+        const friendDocSnap = await getDoc(friendDocRef);
+
+        if (friendDocSnap.exists()) {
+          console.log("FRIEND DOC SNAP:", friendDocSnap);
+          //create trade that friend will see
+          const trade = {
+            friendEmail: userEmail,
+            friendSeed: userSeed,
+            userSeed: friendSeed,
+          };
+
+          if (!friendDocSnap.get('pendingTrades')) {
+              //add "pendingTrades" field to users without it
+              await updateDoc(friendDocRef, { pendingTrades: {trade} });
+              console.log("'pendingTrades' field created with default value.");
+          } else{
+            //"pendingTrades" field exists, add new trade to pendingTrades
+            await updateDoc(friendDocRef, {
+              pendingTrades: arrayUnion(trade),
+            });
+          } 
+        }
+      } catch (error) {
+        console.error('Error sending seed trade request:', error);
+        throw error;
+      }
+    }
+
+    static async deleteTradeRequest(userEmail: string, userSeed: string, friendEmail: string, friendSeed: string){
+      try{
+        // Get our ID
+        const userQuery = query(
+          collection(FIRESTORE_DB, "users"),
+          where("email", "==", userEmail)
+        );
+        const userSnapshot = await getDocs(userQuery);
+        if (userSnapshot.empty) {
+          console.error('User not found');
+          throw new Error('User not found');
+        }
+        const userId = userSnapshot.docs[0].id;
+
+        //get friend's doc
+        const userDocRef = doc(FIRESTORE_DB, 'users', userId);
+        const userDocSnap = await getDoc(userDocRef);
+
+        const pendingTrades = userDocSnap.get('pendingTrades');
+        if (pendingTrades) {
+          const updatedTrades = pendingTrades.filter((trade: any) =>
+            (trade.friendEmail !== friendEmail ||
+            trade.friendSeed !== friendSeed ||
+            trade.userSeed !== userSeed)
+          );
+
+          if (updatedTrades.length !== pendingTrades.length) {
+            await updateDoc(userDocRef, { pendingTrades: updatedTrades });
+            console.log(`Trade from ${friendEmail}: trading ${friendSeed} for ${userSeed} successfully deleted`);
+          }
+        }
+      } catch (error) {
+        console.error('Error sending seed trade request:', error);
+        throw error;
+      }
+    }
 
     static async tradeSeed(userSeed: string, friendSeed: string, friendEmail: string) {
       try {

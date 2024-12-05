@@ -9,7 +9,7 @@ const imageMap: { [key: string]: any } = {
   legendary: require('../assets/seed-sprites/seed-legendary.png'),
 };
 
-const rarityColorMap: { [key: string]: string } = {
+export const rarityColorMap: { [key: string]: string } = {
   common: "#3f3f49", // Gray
   uncommon: "#4d352c", // Brown
   rare: "#529269",  // Green

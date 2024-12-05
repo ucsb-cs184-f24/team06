@@ -6,6 +6,8 @@ import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, getFirestore
 import { globalStyles } from '../styles/globalStyles';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { SeedService } from '../managers/SeedService';
+import {rarityColorMap} from '../components/ShopItem';
+import { Seed } from '../types/Seed';
 
 const db = FIRESTORE_DB;
 
@@ -21,12 +23,14 @@ export default function FriendsScreen() {
   const [friends, setFriends] = useState<string[]>([]);
   const [userEmail, setUserEmail] = useState<string>("");
   const [tradeModalVisible, setTradeModalVisible] = useState(false);
-  const [userSeeds, setUserSeeds] = useState<string[]>([]);
-  const [friendSeeds, setFriendSeeds] = useState<string[]>([]);
+  const [userSeeds, setUserSeeds] = useState<Seed[]>([]);
+  const [friendSeeds, setFriendSeeds] = useState<Seed[]>([]);
   const [selectedUserSeed, setSelectedUserSeed] = useState<string | null>(null);
   const [selectedFriendSeed, setSelectedFriendSeed] = useState<string | null>(null);
   const [userSeedDropdownOpen, setUserSeedDropdownOpen] = useState(false);
   const [friendSeedDropdownOpen, setFriendSeedDropdownOpen] = useState(false);
+  const [pendingTrades, setPendingTrades] = useState<{friendEmail: string; userSeed: string; friendSeed: string; }[]>([]);
+  const [pendingTradeModalVisible, setPendingTradeModalVisible] = useState(false);
 
   const checkFriends = async () => {
     const user = FIREBASE_AUTH.currentUser;
@@ -45,6 +49,7 @@ export default function FriendsScreen() {
 
     setUserEmail(userDoc.data().email);
     setFriends(userDoc.data().friends || []);
+    setPendingTrades(userDoc.data().pendingTrades || []);
   };
 
   const updateAllUsers = async () => {
@@ -105,8 +110,7 @@ export default function FriendsScreen() {
   const fetchTradeSeeds = async (friendEmail: string) => {
     try {
       const userSeedsList = await SeedService.getUserSeeds();
-      const userSeeds = userSeedsList.map(doc => doc.type);
-      setUserSeeds(userSeeds);
+      setUserSeeds(userSeedsList);
       
       const friendQuery = query(
         collection(db, "users"),
@@ -123,8 +127,15 @@ export default function FriendsScreen() {
       const friendSeedsSnapshot = await getDocs(
         collection(db, "users", friendId, "seeds")
       );
-      const friendSeeds = friendSeedsSnapshot.docs.map(doc => doc.data().type);
+      // const friendSeeds = friendSeedsSnapshot.docs.map(doc => doc.data().type);
+      const friendSeeds = friendSeedsSnapshot.docs.map(doc => {
+        const data = { ...doc.data(), id: doc.id };
+        return Seed.fromFirestore(data);
+      });
+
       setFriendSeeds(friendSeeds);
+
+      
     } catch (error) {
       console.error("Error fetching seeds:", error);
     }
@@ -209,19 +220,74 @@ export default function FriendsScreen() {
     }
   };
 
-  const handleTradeRequest = async () => {
+  const handleTradeRequest = async () => { // User A makes trade offer to User B
+    console.log("trade request fields", selectedUserSeed, selectedFriendSeed, selectedFriend);
     if (!selectedUserSeed || !selectedFriendSeed || !selectedFriend) {
       console.error("Trade request missing required fields.");
       return;
     }
-    await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);3
+    await SeedService.sendSeedTradeRequest(userEmail, selectedUserSeed, selectedFriend, selectedFriendSeed);
     setTradeModalVisible(false);
     Alert.alert(
-      "Trade Successful",
-      `You traded ${selectedUserSeed} for ${selectedFriendSeed}.`
+      "Trade Request Sent",
+      `You offered a ${selectedUserSeed} in exchange for a ${selectedFriendSeed}.`
     );
     setSelectedFriendSeed(null);
     setSelectedUserSeed(null);
+  }
+
+
+  // set modal for pending trade request
+  const handleIncomingTrade = async (friendEmail: string, friendSeed: string, userSeed: string) => {
+    setSelectedUserSeed(userSeed);
+    setSelectedFriendSeed(friendSeed);
+    setSelectedFriend(friendEmail);
+    setPendingTradeModalVisible(true);
+  }
+
+  const handleAcceptTrade = async () => { // User B accepts trade from User A
+    if (!selectedUserSeed || !selectedFriendSeed || !selectedFriend) {
+      console.error("Trade request missing required fields.");
+      return;
+    }
+
+    try {
+      await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
+      Alert.alert(
+        "Trade Successful",
+        `You traded your ${selectedUserSeed} for ${selectedFriendSeed}.`
+      );
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unexpected error occurred.";
+      Alert.alert(
+        "Trade Unsuccessful",
+        errorMessage
+      );
+    }
+    
+    //delete trade request
+    await SeedService.deleteTradeRequest(userEmail, selectedUserSeed, selectedFriend, selectedFriendSeed);
+    setSelectedFriendSeed(null);
+    setSelectedUserSeed(null);
+    setPendingTradeModalVisible(false);
+    await checkFriends(); //update pending trades list
+  }
+
+  const handleRejectTrade = async () => { // User B rejects trade from User A
+    if (!selectedUserSeed || !selectedFriendSeed || !selectedFriend) {
+      console.error("Trade request missing required fields.");
+      return;
+    }
+
+    await SeedService.deleteTradeRequest(userEmail, selectedUserSeed, selectedFriend, selectedFriendSeed);
+    Alert.alert(
+      "Trade Rejected",
+      `You did not trade your ${selectedUserSeed} for ${selectedFriendSeed}.`
+    );
+    setSelectedFriendSeed(null);
+    setSelectedUserSeed(null);
+    setPendingTradeModalVisible(false);
+    await checkFriends(); //update pending trades list
   }
 
   useEffect(() => {
@@ -237,7 +303,7 @@ export default function FriendsScreen() {
       resizeMode="cover">
         <Text style={[globalStyles.text, styles.title]}>Friends</Text>
         <TextInput
-          style={[globalStyles.input, styles.searchBar]}
+          style={styles.searchBar}
           placeholder="Add Friend"
           clearButtonMode="always"
           autoCapitalize="none"
@@ -245,29 +311,66 @@ export default function FriendsScreen() {
           value={searchQuery}
           onChangeText={(query) => handleSearch(query)}/>
 
-        {showSearchResults ? 
-          <FlatList
-            data={data}
-            keyExtractor={(item) => item}
-            style={styles.searchTextBg}
-            renderItem={({item}) => (
-              <TouchableOpacity onPress={() => handleAddFriendPress(item)}>
-                <View>
-                <Text style={[globalStyles.text, styles.textName]}>{item}</Text>
+          {showSearchResults ? 
+
+            <FlatList
+              data={data}
+              keyExtractor={(item) => item}
+              style={styles.searchTextBg}
+              renderItem={({item}) => (
+                <TouchableOpacity onPress={() => handleAddFriendPress(item)}>
+                  <View>
+                  <Text style={[globalStyles.text, styles.textName]}>{item}</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            /> : 
+            <View style={styles.friendsElement}>
+              <FlatList 
+                data={friends}
+                keyExtractor={(item) => item}
+                style={[styles.textBg, { flex: 1, minHeight: 345 }]}
+                renderItem={({item}) => (
+                  <TouchableOpacity onPress={() => handleFriendPress(item)}>
+                    <Text style={[globalStyles.text, styles.friendListItem]}>{item}</Text>
+                  </TouchableOpacity>
+                )}
+              />
+      
+            
+
+            {/* display pending trades */}
+            <ImageBackground
+              source={require('../assets/pending-trades-background.jpg')}
+              style={styles.pendingTradesBackgroundImage}
+              resizeMode="cover">
+              <View style={styles.pendingTradesElement}>
+                <Text style={globalStyles.heading}>
+                    Pending Trades
+                  </Text>
+                <View style={styles.trades}>
+                  
+                  <FlatList
+                    data={pendingTrades}
+                    keyExtractor={(item, index) => index.toString()}
+                    style={[{ flex: 1, minHeight: 155 }]}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity onPress={() => handleIncomingTrade(item.friendEmail, item.friendSeed, item.userSeed)}>
+                        <View style={styles.tradeOffer}>
+                          <Text style={globalStyles.text}>
+                            {item.friendEmail} offers:
+                          </Text>
+                          <Text style={[globalStyles.text, {color: '#27962c'}]}>
+                            {`${item.userSeed} for ${item.friendSeed}`}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                  />
                 </View>
-              </TouchableOpacity>
-            )}
-          /> : 
-          <FlatList 
-            data={friends}
-            keyExtractor={(item) => item}
-            style={styles.textBg}
-            renderItem={({item}) => (
-              <TouchableOpacity onPress={() => handleFriendPress(item)}>
-                <Text style={[globalStyles.text, styles.friendListItem]}>{item}</Text>
-              </TouchableOpacity>
-            )}
-          />
+              </View>
+              </ImageBackground>
+          </View>
         }
 
         {/* Add Friend Modal */}
@@ -358,15 +461,22 @@ export default function FriendsScreen() {
               </Text>
 
               <Text style={styles.modalTitle}>Your Seeds</Text>
-              <DropDownPicker
-                open={userSeedDropdownOpen}
-                setOpen={setUserSeedDropdownOpen}
-                value={selectedUserSeed}
-                setValue={setSelectedUserSeed}
-                items={userSeeds.map((seed) => ({ label: seed, value: seed }))}
-                placeholder="Select a seed"
-                containerStyle={{ marginBottom: 20 }}
-              />
+              <View>
+                <DropDownPicker
+                  open={userSeedDropdownOpen}
+                  setOpen={setUserSeedDropdownOpen}
+                  value={selectedUserSeed}
+                  setValue={setSelectedUserSeed}
+                  items={userSeeds.map((seed) => ({ label: `${seed.type} (You have: ${seed.numSeeds})`, value: seed.type }))}
+                  placeholder="Select a seed"
+                  containerStyle={{ 
+                    marginBottom: 20, 
+                    zIndex: 2
+                  }}
+                  style={{ zIndex: 2 }}
+                  dropDownContainerStyle={{ zIndex: 2 }}
+                />
+              </View>
 
               <Text style={styles.modalTitle}>Friend's Seeds</Text>
               <DropDownPicker
@@ -374,9 +484,14 @@ export default function FriendsScreen() {
                 setOpen={setFriendSeedDropdownOpen}
                 value={selectedFriendSeed}
                 setValue={setSelectedFriendSeed}
-                items={friendSeeds.map((seed) => ({ label: seed, value: seed }))}
+                items={friendSeeds.map((seed) => ({ label: `${seed.type} (Friend has: ${seed.numSeeds})`, value: seed.type }))}
                 placeholder="Select a friend's seed"
-                containerStyle={{ marginBottom: 20 }}
+                containerStyle={{ 
+                  marginBottom: 20, 
+                  zIndex: 1 
+                }}
+                style={{ zIndex: 1 }}
+                dropDownContainerStyle={{ zIndex: 1 }}
               />
 
               <View style={styles.modalButtons}>
@@ -402,7 +517,52 @@ export default function FriendsScreen() {
               </View>
             </View>
           </View>
-        </Modal>
+      </Modal>
+
+
+
+
+       {/* Pending Trades Modal */}
+       <Modal
+        animationType="fade"
+        transparent={true}
+        visible={pendingTradeModalVisible}
+        onRequestClose={() => setPendingTradeModalVisible(false)}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, globalStyles.text]}>Trade Request</Text>
+              <Text style={[styles.modalEmail, globalStyles.text]}>
+              {`${selectedFriend} has sent you a trade request:\nFriend's Seed: ${selectedFriendSeed}\nYour Seed: ${selectedUserSeed}`}
+              </Text>
+            </View>
+
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.tradeButton]}
+                onPress={handleAcceptTrade}
+              >
+                <Text style={[styles.buttonText, globalStyles.text]}>Accept Trade</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, styles.deleteButton]}
+                onPress={handleRejectTrade}
+              >
+                <Text style={[styles.buttonText, globalStyles.text]}>Reject Trade</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={() => setPendingTradeModalVisible(false)}
+              >
+                <Text style={[styles.buttonText, globalStyles.text]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       </ImageBackground>
     </SafeAreaView>
   );
@@ -413,11 +573,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     backgroundColor: '#fff',
+    paddingBottom:0
   },
   backgroundImage: {
     flex: 1,
     width: '100%',
     height: '100%',
+    paddingBottom:0
   },
   title: {
     fontSize: 24,
@@ -515,15 +677,42 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "600",
   },
+  pendingTradesElement: {
+    height:'100%',
+    paddingTop: 5,
+    // alignContent: 'flex-end'
+  },
+  trades: {
+    // backgroundColor: "#02aba0",
+    padding: 20,
+    paddingTop: 5,
+    alignContent: 'flex-end'
+  },
+  tradeOffer: {
+    backgroundColor: "white",
+    padding: 10
+  },
   textBg: {
     backgroundColor: '#fff',
     marginHorizontal: '5%',
     marginTop: '5%',
-    marginBottom: '15%',
+    marginBottom: '5%',
   },
   searchTextBg: {
     backgroundColor: '#fff',
     marginHorizontal: '5%',
     marginBottom: '15%',
+  },
+  pendingTradesBackgroundImage: {
+    width: '100%',
+    height: 250,
+    resizeMode: 'contain',
+    zIndex: 2
+  },
+  friendsElement: {
+    width: '100%',
+    height: '80%',
+    resizeMode: 'contain',
+    zIndex: 2
   }
 });

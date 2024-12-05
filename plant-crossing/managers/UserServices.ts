@@ -22,7 +22,8 @@ export const initializeUser = async () => {
       coins: 100,
       friends: {},
       createdAt: Date.now(),
-      lastLogin: Date.now()
+      lastLogin: Date.now(),
+      pendingTrades: {}
     });
 
     const seedsCollectionRef = collection(userRef, 'seeds');
