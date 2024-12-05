@@ -110,7 +110,6 @@ export default function FriendsScreen() {
   const fetchTradeSeeds = async (friendEmail: string) => {
     try {
       const userSeedsList = await SeedService.getUserSeeds();
-      // const userSeeds = userSeedsList.map(doc => doc.type);
       setUserSeeds(userSeedsList);
       
       const friendQuery = query(
@@ -460,20 +459,22 @@ export default function FriendsScreen() {
               </Text>
 
               <Text style={styles.modalTitle}>Your Seeds</Text>
-              <DropDownPicker
-                open={userSeedDropdownOpen}
-                setOpen={setUserSeedDropdownOpen}
-                value={selectedUserSeed}
-                setValue={setSelectedUserSeed}
-                items={userSeeds.map((seed) => ({ label: seed.type, value: seed.type }))}
-                placeholder="Select a seed"
-                containerStyle={{ 
-                  marginBottom: 20, 
-                  zIndex: 2
-                }}
-                style={{ zIndex: 2 }}
-                dropDownContainerStyle={{ zIndex: 2 }}
-              />
+              <View>
+                <DropDownPicker
+                  open={userSeedDropdownOpen}
+                  setOpen={setUserSeedDropdownOpen}
+                  value={selectedUserSeed}
+                  setValue={setSelectedUserSeed}
+                  items={userSeeds.map((seed) => ({ label: `${seed.type} (You have: ${seed.numSeeds})`, value: seed.type }))}
+                  placeholder="Select a seed"
+                  containerStyle={{ 
+                    marginBottom: 20, 
+                    zIndex: 2
+                  }}
+                  style={{ zIndex: 2 }}
+                  dropDownContainerStyle={{ zIndex: 2 }}
+                />
+              </View>
 
               <Text style={styles.modalTitle}>Friend's Seeds</Text>
               <DropDownPicker
@@ -481,7 +482,7 @@ export default function FriendsScreen() {
                 setOpen={setFriendSeedDropdownOpen}
                 value={selectedFriendSeed}
                 setValue={setSelectedFriendSeed}
-                items={friendSeeds.map((seed) => ({ label: seed.type, value: seed.type }))}
+                items={friendSeeds.map((seed) => ({ label: `${seed.type} (Friend has: ${seed.numSeeds})`, value: seed.type }))}
                 placeholder="Select a friend's seed"
                 containerStyle={{ 
                   marginBottom: 20, 

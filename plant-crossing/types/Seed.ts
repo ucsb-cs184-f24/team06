@@ -30,6 +30,7 @@ export class Seed {
         rarity: this.rarity,
         growthTime: this.growthTime,
         maxWater: this.maxWater,
+        numSeeds: this.numSeeds,
         lastUpdated: Date.now()
       };
     }

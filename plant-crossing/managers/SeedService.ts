@@ -49,7 +49,7 @@ export class SeedService {
 
       } else {
         const inventorySeed = await this.getSeedById(inventorySeedID);
-        if(inventorySeed.numSeeds){
+        if(inventorySeed && inventorySeed.numSeeds){
           const newNumSeeds = inventorySeed.numSeeds + 1;
           this.updateSeed(inventorySeedID, { numSeeds: newNumSeeds}); // increase number of seeds by 1
         } else{
