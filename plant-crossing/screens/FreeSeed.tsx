@@ -116,18 +116,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  textBox: {
-    backgroundColor: "rgba(0, 0, 0, 0.6)", // Semi-transparent background
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    marginBottom: 10,
-    alignSelf: "center",
-  },
   text: {
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: "bold",
-    color: "#d3ffd1",
+    color: "#050000",
     textAlign: "center",
   },
   square: {
