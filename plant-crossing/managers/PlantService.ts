@@ -194,7 +194,7 @@ export class PlantService {
         const coinsRef = doc(this.getUserRef(), 'coins');
         const coinsSnap = await getDoc(coinsRef);
         const coins = coinsSnap.exists() ? coinsSnap.data() : { value: 0 };
-        const newCoins = coins.value + this.getWaterLevel(plant) * plant.growthBoost * rarityValue[plant.rarity] * amount;
+        const newCoins = coins.value + plant.growthLevel * rarityValue[plant.rarity] * amount;
         await setDoc(coinsRef, { value: newCoins });
     }
 
