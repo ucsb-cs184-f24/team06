@@ -32,32 +32,38 @@ export class SeedService {
   
     static async addSeed(seed: Seed) {
       const inventorySeedID = await this.getSeedIdByDescription(seed.type, seed.rarity);
-      if(!inventorySeedID){
-        const seedsCollectionRef = this.getSeedsCollectionRef();
-        const newSeedRef = doc(seedsCollectionRef);
-
-        const newSeed = new Seed(
-          seed.type,
-          seed.rarity,
-          seed.growthTime,
-          seed.maxWater,
-          seed.numSeeds
-        );
-    
-        await setDoc(newSeedRef, newSeed.toFirestore());
-        return newSeed;
-
+      if (!inventorySeedID) {
+          const seedsCollectionRef = this.getSeedsCollectionRef();
+          const newSeedRef = doc(seedsCollectionRef); // Generates a new Firestore document with an ID
+  
+          const newSeed = new Seed(
+              seed.type,
+              seed.rarity,
+              seed.growthTime,
+              seed.maxWater,
+              seed.spriteNumber,
+              seed.numSeeds
+          );
+  
+          // Explicitly assign the generated Firestore ID to the seed
+          newSeed.id = newSeedRef.id;
+  
+          console.log(`Adding new seed with ID: ${newSeed.id}`);
+          await setDoc(newSeedRef, newSeed.toFirestore());
+          return newSeed;
       } else {
-        const inventorySeed = await this.getSeedById(inventorySeedID);
-        if(inventorySeed && inventorySeed.numSeeds){
-          const newNumSeeds = inventorySeed.numSeeds + 1;
-          this.updateSeed(inventorySeedID, { numSeeds: newNumSeeds}); // increase number of seeds by 1
-        } else{
-          this.updateSeed(inventorySeedID, { numSeeds: 2}); // added one more seed to preexisting seed without numSeeds variable
-        }        
-        return inventorySeed;
+          const inventorySeed = await this.getSeedById(inventorySeedID);
+          if (inventorySeed?.numSeeds) {
+              const newNumSeeds = inventorySeed.numSeeds + 1;
+              await this.updateSeed(inventorySeedID, { numSeeds: newNumSeeds }); // Increase number of seeds
+          } else {
+              await this.updateSeed(inventorySeedID, { numSeeds: 2 }); // Fallback for seeds without `numSeeds`
+          }
+          return inventorySeed;
       }
     }
+  
+  
   
     static async addMultipleSeeds(seeds: Seed[]) {
       const batch = writeBatch(FIRESTORE_DB);
@@ -129,29 +135,40 @@ export class SeedService {
 
   
     static async plantSeed(seedId: string, location: number) {
-        const seed = await this.getSeedById(seedId);
-        if (!seed) throw new Error('Seed not found');
-
-        const plantCollectionRef = this.getPlantsCollectionRef();
-        const newPlantRef = doc(plantCollectionRef);
+      console.log(`plantSeed called with seedId: ${seedId} and location: ${location}`);
+      const seed = await this.getSeedById(seedId);
+      if (!seed) {
+          console.error('Seed not found');
+          throw new Error('Seed not found');
+      }
   
-        const newPlant = new Plant(
-            seed.type,
-            seed.rarity,
-            seed.growthTime,
-            seed.maxWater,
-            `${seed.type.replace(' Seed', '')}`,
-            location, 
-            0, 
-            seed.maxWater,
-            1,
-        );
-
-        await this.deleteSeed(seedId);
-        await setDoc(newPlantRef, newPlant.toFirestore());
-       
-        return newPlant;
+      const plantCollectionRef = this.getPlantsCollectionRef();
+      const newPlantRef = doc(plantCollectionRef);
+  
+      const newPlant = new Plant(
+          seed.type,
+          seed.rarity,
+          seed.growthTime,
+          seed.maxWater,
+          `${seed.type.replace(' Seed', '')}`,
+          location,
+          0,
+          seed.maxWater,
+          1,
+      );
+      newPlant.id = newPlantRef.id; // Assign the Firestore document ID to the Plant
+      newPlant.createdAt = Date.now(); // Ensure createdAt is set here
+  
+      console.log('New plant created:', newPlant);
+  
+      await this.deleteSeed(seedId);
+      await setDoc(newPlantRef, newPlant.toFirestore());
+      
+      console.log(`Plant saved to Firestore with ID: ${newPlant.id}`);
+      return newPlant;
     }
+  
+  
 
     static async sendSeedTradeRequest(userEmail: string, userSeed: string, friendEmail: string, friendSeed: string){
       try{

@@ -7,7 +7,7 @@ import { PlantService } from "../managers/PlantService";
 import { PlotService } from "../managers/PlotService";
 import { SeedService } from "../managers/SeedService";
 import { getSpriteForPlant } from "../assets/spritesList";
-import { UnlockPlotModal } from '../components/UnlockPlot';
+import { UnlockPlotModal } from "../components/UnlockPlot";
 
 import {
   View,
@@ -20,7 +20,7 @@ import {
   ImageSourcePropType,
   Image,
   Modal,
-  Alert
+  Alert,
 } from "react-native";
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import {
@@ -120,7 +120,9 @@ export const GardenGrid = ({
   const [wateredPlots, setWateredPlots] = useState<Set<number>>(new Set());
   const userId = FIREBASE_AUTH.currentUser?.uid;
   const [isUnlockModalVisible, setIsUnlockModalVisible] = useState(false);
-  const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(null);
+  const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(
+    null
+  );
 
   const fetchPlots = async () => {
     console.log("Fetching plots for user:", userId);
@@ -164,7 +166,7 @@ export const GardenGrid = ({
     }, 1250); // 1.25 seconds for the animation
     return () => clearTimeout(timeout);
   };
-  
+
   const handleUnlockConfirm = async () => {
     if (selectedPlotIndex !== null) {
       try {
@@ -211,7 +213,6 @@ export const GardenGrid = ({
             "There was an error processing your purchase. Please try again."
           );
         }
-        
       } catch (error) {
         console.error("Error unlocking plot:", error);
         // You might want to show an error message to the user here
@@ -304,13 +305,24 @@ export const GardenGrid = ({
       (anim) => anim.location === plot.location
     );
 
+    const [plantData, setPlantData] = useState<Plant | null>(null);
+
+    useEffect(() => {
+      const fetchPlantData = async () => {
+        if (plot.plant?.id) {
+          const plant = await PlantService.getPlantById(plot.plant.id);
+          setPlantData(plant);
+        } else {
+          setPlantData(null); // Clear plant data if the plant is removed
+        }
+      };
+      fetchPlantData();
+    }, [plot.plant?.id]);
+
     if (plot.unlocked) {
-      if (plot.plant) {
+      if (plantData) {
         // Get the sprite directly using getSpriteForPlant
-        const image = getSpriteForPlant(
-          plot.plant.type,
-          plot.plant.growthLevel
-        );
+        const image = getSpriteForPlant(plantData.type, plantData.growthLevel);
         const spriteScale = 1.3; // Adjust this value to change size (e.g., 1.2 = 120%)
         const spriteSize = calculateSpriteSize(spriteScale);
 
@@ -357,15 +369,14 @@ export const GardenGrid = ({
               {/* Optional text overlay */}
               <View style={styles.textOverlay}>
                 <Text style={[styles.plotText, globalStyles.text]}>
-                  {formatPlantName(plot.plant?.type)}
+                  {formatPlantName(plantData.type)}
                 </Text>
               </View>
-              x
             </View>
           </ImageBackground>
         );
       } else {
-        // Empty plot
+        // Plot is unlocked but has no plant data
         return (
           <ImageBackground
             source={soilSprites.dry}
@@ -385,7 +396,13 @@ export const GardenGrid = ({
           resizeMode="cover"
         >
           <View style={styles.textOverlay}>
-            <Text style={[styles.plotText, styles.lockedPlotText, globalStyles.text]}>
+            <Text
+              style={[
+                styles.plotText,
+                styles.lockedPlotText,
+                globalStyles.text,
+              ]}
+            >
               10 coins
             </Text>
           </View>
@@ -433,7 +450,7 @@ const styles = StyleSheet.create({
   },
   plotText: {
     fontSize: 12,
-    color: 'white',
+    color: "white",
     textAlign: "center",
   },
   item: {
@@ -522,7 +539,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   lockedPlotText: {
-    color: '#ffa500',
+    color: "#ffa500",
   },
   plotContainer: {
     width: "100%",

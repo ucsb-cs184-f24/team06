@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, StyleSheet, Dimensions, Image } from "react-native";
+import { View, Text, StyleSheet, Dimensions, Image, ImageBackground } from "react-native";
 import { Accelerometer } from "expo-sensors";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SeedService } from "../managers/SeedService";
@@ -12,7 +12,14 @@ const FIVE_HOURS_MS = 5000; // shorter timer for testing
 const sprites = {
   Bag: require('../assets/bag-sprites/bag.png'),
   EmptyBag: require('../assets/bag-sprites/empty-bag.png'),
+  Common: require('../assets/seed-sprites/seed-common.png'),
+  Uncommon: require('../assets/seed-sprites/seed-uncommon.png'),
+  Rare: require('../assets/seed-sprites/seed-rare.png'),
+  Unique: require('../assets/seed-sprites/seed-unique.png'),
+  Legendary: require('../assets/seed-sprites/seed-legendary.png'),
 };
+
+const background = require('../assets/hardwood-background.png');
 
 export default function FreeSeed() {
   const [seed, setSeed] = useState<Seed | null>(null);
@@ -45,7 +52,7 @@ export default function FreeSeed() {
       Math.abs(x) > shakeThreshold || Math.abs(y) > shakeThreshold || Math.abs(z) > shakeThreshold;
 
     if (shakeDetected && canShake()) {
-      const randomSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length)];
+      const randomSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length - 1)];
       console.log("Shake detected! Random seed: ", randomSeed);
       setSeed(randomSeed);
       await SeedService.addSeed(randomSeed);
@@ -63,6 +70,7 @@ export default function FreeSeed() {
   const updateRemainingTime = () => {
     if (!lastShakeTime) {
       setRemainingTime("");
+      setSeed(null); // Clear the seed name when the timer expires
       return;
     }
 
@@ -77,21 +85,28 @@ export default function FreeSeed() {
       setRemainingTime(`${hours}h ${minutes}m ${seconds}s`);
     } else {
       setRemainingTime("");
+      setSeed(null); // Clear the seed name when the timer expires
     }
   };
 
   const currentSprite = canShake() ? sprites.Bag : sprites.EmptyBag;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.timerText}>
-        {remainingTime ? `Next shake in: ${remainingTime}` : "Shake for a seed!"}
-      </Text>
+    <ImageBackground source={background} style={styles.container}>
+      <View style={styles.textBox}>
+        <Text style={styles.text}>
+          {remainingTime ? `Next shake in: ${remainingTime}` : "Shake for a seed!"}
+        </Text>
+      </View>
       <View style={styles.square}>
         <Image source={currentSprite} style={styles.spriteImage} />
-        <Text style={styles.seedText}>{seed !== null ? seed.type : "Mystery Seed"}</Text>
+        {seed && (
+          <View style={styles.textBox}>
+            <Text style={styles.text}>{seed.type}</Text>
+          </View>
+        )}
       </View>
-    </View>
+    </ImageBackground>
   );
 }
 
@@ -100,12 +115,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "#f0f0f0",
   },
-  timerText: {
-    fontSize: 16,
-    color: "#333",
-    marginBottom: 20,
+  textBox: {
+    backgroundColor: "rgba(0, 0, 0, 0.6)", // Semi-transparent background
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 8,
+    marginBottom: 10,
+    alignSelf: "center",
+  },
+  text: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#d3ffd1",
+    textAlign: "center",
   },
   square: {
     width: Dimensions.get("window").width * 0.6,
@@ -123,12 +146,5 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     resizeMode: "contain",
-  },
-  seedText: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#fff",
-    textAlign: "center",
-    position: "absolute",
   },
 });

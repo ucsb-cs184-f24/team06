@@ -1,6 +1,7 @@
-import { collection, doc, getDoc, writeBatch } from 'firebase/firestore';
+import { collection, doc, getDoc, getDocs, writeBatch, updateDoc } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { startingSeeds } from '../types/Seed';
+import { PlantService } from '../managers/PlantService'; // Ensure you have this service imported
 
 export const initializeUser = async () => {
   const user = FIREBASE_AUTH.currentUser;
@@ -67,6 +68,34 @@ export const initializeUser = async () => {
       console.error('Error initializing user:', error);
     }
   } else {
-    console.log('User already exists in Firestore');
+    console.log('Existing user branch executed'); // Added log
+    try {
+      const lastLogin = userSnapshot.data()?.lastLogin || Date.now();
+      console.log(`Last login timestamp: ${lastLogin}`); // Added log
+
+      const plantsCollectionRef = collection(userRef, 'plants');
+      const plantsSnapshot = await getDocs(plantsCollectionRef);
+      console.log(`Number of plants retrieved: ${plantsSnapshot.size}`); // Added log
+
+      if (plantsSnapshot.empty) {
+        console.log('No plants found to update.');
+        return;
+      }
+
+      // Update each plant's growth progress
+      const updatePromises = plantsSnapshot.docs.map(async (plantDoc) => {
+        const plantId = plantDoc.id;
+        console.log(`Calling updateGrowthProgress for plant ID: ${plantId}`); // Added log
+        await PlantService.updateGrowthProgress(plantId);
+      });
+
+      await Promise.all(updatePromises);
+
+      // Update user's last login
+      await updateDoc(userRef, { lastLogin: Date.now() });
+      console.log('Updated plant growth and user last login');
+    } catch (error) {
+      console.error('Error updating plant growth on user relog:', error);
+    }
   }
 };
