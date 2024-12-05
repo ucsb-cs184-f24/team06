@@ -6,6 +6,8 @@ import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, getFirestore
 import { globalStyles } from '../styles/globalStyles';
 import DropDownPicker from 'react-native-dropdown-picker';
 import { SeedService } from '../managers/SeedService';
+import {rarityColorMap} from '../components/ShopItem';
+import { Seed } from '../types/Seed';
 
 const db = FIRESTORE_DB;
 
@@ -21,8 +23,8 @@ export default function FriendsScreen() {
   const [friends, setFriends] = useState<string[]>([]);
   const [userEmail, setUserEmail] = useState<string>("");
   const [tradeModalVisible, setTradeModalVisible] = useState(false);
-  const [userSeeds, setUserSeeds] = useState<string[]>([]);
-  const [friendSeeds, setFriendSeeds] = useState<string[]>([]);
+  const [userSeeds, setUserSeeds] = useState<Seed[]>([]);
+  const [friendSeeds, setFriendSeeds] = useState<Seed[]>([]);
   const [selectedUserSeed, setSelectedUserSeed] = useState<string | null>(null);
   const [selectedFriendSeed, setSelectedFriendSeed] = useState<string | null>(null);
   const [userSeedDropdownOpen, setUserSeedDropdownOpen] = useState(false);
@@ -108,8 +110,8 @@ export default function FriendsScreen() {
   const fetchTradeSeeds = async (friendEmail: string) => {
     try {
       const userSeedsList = await SeedService.getUserSeeds();
-      const userSeeds = userSeedsList.map(doc => doc.type);
-      setUserSeeds(userSeeds);
+      // const userSeeds = userSeedsList.map(doc => doc.type);
+      setUserSeeds(userSeedsList);
       
       const friendQuery = query(
         collection(db, "users"),
@@ -126,8 +128,15 @@ export default function FriendsScreen() {
       const friendSeedsSnapshot = await getDocs(
         collection(db, "users", friendId, "seeds")
       );
-      const friendSeeds = friendSeedsSnapshot.docs.map(doc => doc.data().type);
+      // const friendSeeds = friendSeedsSnapshot.docs.map(doc => doc.data().type);
+      const friendSeeds = friendSeedsSnapshot.docs.map(doc => {
+        const data = { ...doc.data(), id: doc.id };
+        return Seed.fromFirestore(data);
+      });
+
       setFriendSeeds(friendSeeds);
+
+      
     } catch (error) {
       console.error("Error fetching seeds:", error);
     }
@@ -213,23 +222,19 @@ export default function FriendsScreen() {
   };
 
   const handleTradeRequest = async () => { // User A makes trade offer to User B
+    console.log("trade request fields", selectedUserSeed, selectedFriendSeed, selectedFriend);
     if (!selectedUserSeed || !selectedFriendSeed || !selectedFriend) {
       console.error("Trade request missing required fields.");
       return;
     }
     await SeedService.sendSeedTradeRequest(userEmail, selectedUserSeed, selectedFriend, selectedFriendSeed);
     setTradeModalVisible(false);
+    Alert.alert(
+      "Trade Request Sent",
+      `You offered a ${selectedUserSeed} in exchange for a ${selectedFriendSeed}.`
+    );
     setSelectedFriendSeed(null);
     setSelectedUserSeed(null);
-
-    // await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
-    // setTradeModalVisible(false);
-    // Alert.alert(
-    //   "Trade Successful",
-    //   `You traded ${selectedUserSeed} for ${selectedFriendSeed}.`
-    // );
-    // setSelectedFriendSeed(null);
-    // setSelectedUserSeed(null);
   }
 
 
@@ -251,7 +256,7 @@ export default function FriendsScreen() {
       await SeedService.tradeSeed(selectedUserSeed, selectedFriendSeed, selectedFriend);
       Alert.alert(
         "Trade Successful",
-        `You traded ${selectedUserSeed} for ${selectedFriendSeed}.`
+        `You traded your ${selectedUserSeed} for ${selectedFriendSeed}.`
       );
     } catch{
       Alert.alert(
@@ -276,7 +281,7 @@ export default function FriendsScreen() {
     await SeedService.deleteTradeRequest(userEmail, selectedUserSeed, selectedFriend, selectedFriendSeed);
     Alert.alert(
       "Trade Rejected",
-      `You did not trade ${selectedUserSeed} for ${selectedFriendSeed}.`
+      `You did not trade your ${selectedUserSeed} for ${selectedFriendSeed}.`
     );
     setSelectedFriendSeed(null);
     setSelectedUserSeed(null);
@@ -295,70 +300,77 @@ export default function FriendsScreen() {
       source={require('../assets/pixel-flowers.jpeg')}
       style={styles.backgroundImage}
       resizeMode="cover">
-      <Text style={[globalStyles.text, styles.title]}>Friends</Text>
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Add Friend"
-        clearButtonMode="always"
-        autoCapitalize="none"
-        autoCorrect={false}
-        value={searchQuery}
-        onChangeText={(query) => handleSearch(query)}/>
+        <Text style={[globalStyles.text, styles.title]}>Friends</Text>
+        <TextInput
+          style={styles.searchBar}
+          placeholder="Add Friend"
+          clearButtonMode="always"
+          autoCapitalize="none"
+          autoCorrect={false}
+          value={searchQuery}
+          onChangeText={(query) => handleSearch(query)}/>
 
-{showSearchResults ? 
-          <FlatList
-            data={data}
-            keyExtractor={(item) => item}
-            style={styles.searchTextBg}
-            renderItem={({item}) => (
-              <TouchableOpacity onPress={() => handleAddFriendPress(item)}>
-                <View>
-                <Text style={[globalStyles.text, styles.textName]}>{item}</Text>
-                </View>
-              </TouchableOpacity>
-            )}
-          /> : 
-          <View>
-            <FlatList 
-              data={friends}
+          {showSearchResults ? 
+
+            <FlatList
+              data={data}
               keyExtractor={(item) => item}
-              style={styles.textBg}
+              style={styles.searchTextBg}
               renderItem={({item}) => (
-                <TouchableOpacity onPress={() => handleFriendPress(item)}>
-                  <Text style={[globalStyles.text, styles.friendListItem]}>{item}</Text>
+                <TouchableOpacity onPress={() => handleAddFriendPress(item)}>
+                  <View>
+                  <Text style={[globalStyles.text, styles.textName]}>{item}</Text>
+                  </View>
                 </TouchableOpacity>
               )}
-            />
-          
-
-          {/* display pending trades */}
-          <View style={styles.pendingTradesElement}>
-            <Text style={globalStyles.heading}>
-                Pending Trades
-              </Text>
-            <View style={styles.trades}>
-              
-              <FlatList
-                data={pendingTrades}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <TouchableOpacity onPress={() => handleIncomingTrade(item.friendEmail, item.friendSeed, item.userSeed)}>
-                    <View style={styles.tradeOffer}>
-                      <Text>{item.friendEmail}</Text>
-                      <Text>
-                        {`Your Seed: ${item.userSeed}`}
-                      </Text>
-                      <Text>
-                        {`Friend's Seed: ${item.friendSeed}`}
-                      </Text>
-                    </View>
+            /> : 
+            <View style={styles.friendsElement}>
+              <FlatList 
+                data={friends}
+                keyExtractor={(item) => item}
+                style={[styles.textBg, { flex: 1, minHeight: 345 }]}
+                renderItem={({item}) => (
+                  <TouchableOpacity onPress={() => handleFriendPress(item)}>
+                    <Text style={[globalStyles.text, styles.friendListItem]}>{item}</Text>
                   </TouchableOpacity>
                 )}
               />
-            </View>
+      
+            
+
+            {/* display pending trades */}
+            <ImageBackground
+              source={require('../assets/pending-trades-background.jpg')}
+              style={styles.pendingTradesBackgroundImage}
+              resizeMode="cover">
+              <View style={styles.pendingTradesElement}>
+                <Text style={globalStyles.heading}>
+                    Pending Trades
+                  </Text>
+                <View style={styles.trades}>
+                  
+                  <FlatList
+                    data={pendingTrades}
+                    keyExtractor={(item, index) => index.toString()}
+                    style={[{ flex: 1, minHeight: 155 }]}
+                    renderItem={({ item }) => (
+                      <TouchableOpacity onPress={() => handleIncomingTrade(item.friendEmail, item.friendSeed, item.userSeed)}>
+                        <View style={styles.tradeOffer}>
+                          <Text style={globalStyles.text}>
+                            {item.friendEmail} offers:
+                          </Text>
+                          <Text style={[globalStyles.text, {color: '#50de51'}]}>
+                            {`${item.userSeed} for ${item.friendSeed}`}
+                          </Text>
+                        </View>
+                      </TouchableOpacity>
+                    )}
+                  />
+                </View>
+              </View>
+              </ImageBackground>
           </View>
-        </View>
-      }
+        }
 
         {/* Add Friend Modal */}
         <Modal
@@ -453,9 +465,14 @@ export default function FriendsScreen() {
                 setOpen={setUserSeedDropdownOpen}
                 value={selectedUserSeed}
                 setValue={setSelectedUserSeed}
-                items={userSeeds.map((seed) => ({ label: seed, value: seed }))}
+                items={userSeeds.map((seed) => ({ label: seed.type, value: seed.type }))}
                 placeholder="Select a seed"
-                containerStyle={{ marginBottom: 20 }}
+                containerStyle={{ 
+                  marginBottom: 20, 
+                  zIndex: 2
+                }}
+                style={{ zIndex: 2 }}
+                dropDownContainerStyle={{ zIndex: 2 }}
               />
 
               <Text style={styles.modalTitle}>Friend's Seeds</Text>
@@ -464,9 +481,14 @@ export default function FriendsScreen() {
                 setOpen={setFriendSeedDropdownOpen}
                 value={selectedFriendSeed}
                 setValue={setSelectedFriendSeed}
-                items={friendSeeds.map((seed) => ({ label: seed, value: seed }))}
+                items={friendSeeds.map((seed) => ({ label: seed.type, value: seed.type }))}
                 placeholder="Select a friend's seed"
-                containerStyle={{ marginBottom: 20 }}
+                containerStyle={{ 
+                  marginBottom: 20, 
+                  zIndex: 1 
+                }}
+                style={{ zIndex: 1 }}
+                dropDownContainerStyle={{ zIndex: 1 }}
               />
 
               <View style={styles.modalButtons}>
@@ -548,11 +570,13 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     backgroundColor: '#fff',
+    paddingBottom:0
   },
   backgroundImage: {
     flex: 1,
     width: '100%',
     height: '100%',
+    paddingBottom:0
   },
   title: {
     fontSize: 24,
@@ -651,13 +675,15 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
   pendingTradesElement: {
-    backgroundColor: "#02aba0",
-    paddingTop: 5
+    height:'100%',
+    paddingTop: 5,
+    // alignContent: 'flex-end'
   },
   trades: {
-    backgroundColor: "#02aba0",
-    padding: 25,
-    paddingTop: 5
+    // backgroundColor: "#02aba0",
+    padding: 20,
+    paddingTop: 5,
+    alignContent: 'flex-end'
   },
   tradeOffer: {
     backgroundColor: "white",
@@ -667,11 +693,23 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginHorizontal: '5%',
     marginTop: '5%',
-    marginBottom: '15%',
+    marginBottom: '5%',
   },
   searchTextBg: {
     backgroundColor: '#fff',
     marginHorizontal: '5%',
     marginBottom: '15%',
+  },
+  pendingTradesBackgroundImage: {
+    width: '100%',
+    height: 250,
+    resizeMode: 'contain',
+    zIndex: 2
+  },
+  friendsElement: {
+    width: '100%',
+    height: '80%',
+    resizeMode: 'contain',
+    zIndex: 2
   }
 });
