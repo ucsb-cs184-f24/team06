@@ -19,7 +19,7 @@ const sprites = {
   Legendary: require('../assets/seed-sprites/seed-legendary.png'),
 };
 
-const background = require('../assets/hardwood-background.png');
+const background = require('../assets/wood_texture.jpg');
 
 export default function FreeSeed() {
   const [seed, setSeed] = useState<Seed | null>(null);
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
   text: {
     fontSize: 25,
     fontWeight: "bold",
-    color: "#050000",
+    color: "#ffffff",
     textAlign: "center",
   },
   square: {
