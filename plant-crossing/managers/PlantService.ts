@@ -189,14 +189,22 @@ export class PlantService {
     }
 
     static async produceCoins(plantId: string, amount: number) {
-        const plant = await this.getPlantById(plantId);
-        if (!plant) throw new Error('Plant not found');
-        const coinsRef = doc(this.getUserRef(), 'coins');
-        const coinsSnap = await getDoc(coinsRef);
-        const coins = coinsSnap.exists() ? coinsSnap.data() : { value: 0 };
-        const newCoins = coins.value + plant.growthLevel * rarityValue[plant.rarity] * amount;
-        await setDoc(coinsRef, { value: newCoins });
-    }
+        try {
+            const plant = await this.getPlantById(plantId);
+            if (!plant) throw new Error('Plant not found');
+            const userRef = this.getUserRef();
+            const userSnap = await getDoc(userRef);
+            if (!userSnap.exists()) throw new Error('User document not found');
+            const coins = userSnap.data().coins || 0;
+            const coinsProduced = plant.growthLevel * rarityValue[plant.rarity] * (1 + Math.floor(amount / 60000));
+            const newCoins = coins + coinsProduced;
+            await updateDoc(userRef, { coins: newCoins });
+            console.log(`Plant ${plant.nickname} produced ${coinsProduced} coins while you were gone. You now have ${newCoins} coins!`);
+        } catch (error) {
+            console.error(`Error producing coins for plant ${plantId}:`, error);
+            throw error;
+        }
+    }    
 
     static async getPlantIdByDescription(plantType: string, rarity: Rarity): Promise<string | null> {
         const plantsCollectionRef = this.getPlantsCollectionRef();

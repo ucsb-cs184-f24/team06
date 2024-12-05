@@ -1,7 +1,8 @@
 import { collection, doc, getDoc, getDocs, writeBatch, updateDoc } from 'firebase/firestore';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { startingSeeds } from '../types/Seed';
-import { PlantService } from '../managers/PlantService'; // Ensure you have this service imported
+import { PlantService } from '../managers/PlantService';
+import { PlotService } from '../managers/PlotService';
 
 export const initializeUser = async () => {
   const user = FIREBASE_AUTH.currentUser;
@@ -68,34 +69,42 @@ export const initializeUser = async () => {
       console.error('Error initializing user:', error);
     }
   } else {
-    console.log('Existing user branch executed'); // Added log
+    console.log('Existing user branch executed');
     try {
       const lastLogin = userSnapshot.data()?.lastLogin || Date.now();
-      console.log(`Last login timestamp: ${lastLogin}`); // Added log
+      const timeSinceLastLogin = Date.now() - lastLogin;
 
-      const plantsCollectionRef = collection(userRef, 'plants');
-      const plantsSnapshot = await getDocs(plantsCollectionRef);
-      console.log(`Number of plants retrieved: ${plantsSnapshot.size}`); // Added log
+      console.log(`Time since last login: ${timeSinceLastLogin} ms`);
 
-      if (plantsSnapshot.empty) {
-        console.log('No plants found to update.');
+      const plotsCollectionRef = collection(userRef, 'plots');
+      const plotsSnapshot = await getDocs(plotsCollectionRef);
+      
+      if (plotsSnapshot.empty) {
+        console.log('No plots found.');
         return;
       }
-
-      // Update each plant's growth progress
-      const updatePromises = plantsSnapshot.docs.map(async (plantDoc) => {
-        const plantId = plantDoc.id;
-        console.log(`Calling updateGrowthProgress for plant ID: ${plantId}`); // Added log
-        await PlantService.updateGrowthProgress(plantId);
+      
+      // Iterate through all plots to find planted plants
+      const produceCoinsPromises = [];
+      plotsSnapshot.forEach((plotDoc) => {
+        const plotData = plotDoc.data();
+        if (plotData.plant && plotData.plant.id) {
+          const plantId = plotData.plant.id;
+          console.log(`Calling produceCoins for planted plant ID: ${plantId}`);
+          produceCoinsPromises.push(PlantService.produceCoins(plantId, timeSinceLastLogin));
+        } else {
+          console.warn(`Invalid or missing plant data in plot: ${plotDoc.id}`);
+        }
       });
-
-      await Promise.all(updatePromises);
-
+      
+      await Promise.all(produceCoinsPromises);
+      
       // Update user's last login
       await updateDoc(userRef, { lastLogin: Date.now() });
-      console.log('Updated plant growth and user last login');
+      console.log('Coins produced for planted plants and user last login updated');
+      
     } catch (error) {
-      console.error('Error updating plant growth on user relog:', error);
+      console.error('Error processing plants on user relog:', error);
     }
   }
 };
