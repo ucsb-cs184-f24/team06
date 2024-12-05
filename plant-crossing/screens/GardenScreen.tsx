@@ -5,6 +5,7 @@ import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground } f
 import { GardenGrid } from '../data-structures/GardenPlots';
 import { PlayerInventory } from '../data-structures/InventoryBar';
 import { GardenTool, GardenTools } from '../data-structures/GardenTools';
+import { globalStyles } from '../styles/globalStyles';
 
 const GardenGridWrapper: React.FC<{
   selectedItem: Seed | GardenTool | null;
@@ -60,21 +61,36 @@ export default function GardenScreen() {
       </View>
 
       {/* Lower Section (2/5 of screen) */}
-      <View style={styles.lowerSection}>
-        <View style={styles.inventorySection}>
-          <PlayerInventory 
-            onItemSelected={handleItemSelected} 
-            // seedToRemove={seedToRemove}
-            // seedToAdd={seedToAdd}
-          />
+      <ImageBackground 
+          source={require('../assets/inventory-background.jpg')} 
+          style={styles.backgroundImage}
+          resizeMode="stretch"
+        >
+
+        <View style={styles.invHeaderText}>
+          <Text style={[globalStyles.text, { color: 'white', fontSize:16 }]}>
+            Inventory
+          </Text>
+          <Text style={[globalStyles.text, { color: 'white', fontSize:16 }]}>
+            Tools
+          </Text>
         </View>
-        <View style={styles.toolsSection}>
-          <GardenTools
-            selectedItem={selectedItem} 
-            setSelectedItem={setSelectedItem}
-          />
+        <View style={styles.lowerSection}>
+          <View style={styles.inventorySection}>
+            <PlayerInventory 
+              onItemSelected={handleItemSelected} 
+              // seedToRemove={seedToRemove}
+              // seedToAdd={seedToAdd}
+            />
+          </View>
+          <View style={styles.toolsSection}>
+            <GardenTools
+              selectedItem={selectedItem} 
+              setSelectedItem={setSelectedItem}
+            />
+          </View>
         </View>
-      </View>
+      </ImageBackground>
       
       <StatusBar style="auto" />
     </View>
@@ -108,11 +124,15 @@ const styles = StyleSheet.create({
   lowerSection: {
     flex: 2,
     width: '100%',
+    flexDirection: 'row',
+    padding: 8, // Adds uniform padding around all sides
+    // paddingTop: 1
   },
   // Tools section (1/5 of screen)
   toolsSection: {
-    flex: 1,
-    width: '100%',
+    // flex: 1,
+    padding: 5,
+    width: '18%',
     backgroundColor: '#f5f5f5',
     borderTopWidth: 1,
     borderTopColor: '#ddd',
@@ -124,20 +144,39 @@ const styles = StyleSheet.create({
   // Inventory section (1/5 of screen)
   inventorySection: {
     flex: 1,
-    width: '100%',
+    padding: 5,
+    width: '75%',
     backgroundColor: '#ededed',
     borderTopWidth: 1,
     borderTopColor: '#ddd',
+    marginRight:8, //add padding between inventory and tools
   },
   invItem: {
     backgroundColor: '#d1dbcd',
-    padding: 20,
+    padding: 5,
     width: 150,
     marginVertical: 16,
     marginHorizontal: 16,
   },
-  invText: {
-    fontSize: 14,
-    fontWeight: 'bold',
+  invHeaderText:{
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    padding: 8, // Adds uniform padding around all sides
+    paddingTop: 5,
+    paddingBottom: 0
+    // backgroundColor: "#392031"
   },
+  lowerTextInventory:{
+    fontSize: 20,
+    fontWeight: 'bold',
+    color:'#ffe8e1',
+    alignItems: 'flex-start',
+  },
+  lowerTextTools:{
+    fontSize: 20,
+    fontWeight: 'bold',
+    color:'#1fe8e1',
+    alignItems: 'flex-end', // Align content to the left
+  }
 });

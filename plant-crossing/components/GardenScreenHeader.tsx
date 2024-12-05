@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, SafeAreaView } from 'react-native';
 import { getFirestore, doc, onSnapshot } from 'firebase/firestore';
 import { FIREBASE_AUTH } from '../FirebaseConfig';
+import { globalStyles } from "../styles/globalStyles";
 
 interface UserData {
   email: string;
@@ -35,12 +36,12 @@ const Header = () => {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
-        <Text style={styles.email} numberOfLines={1} ellipsizeMode="tail">
+        <Text style={[globalStyles.text, styles.email]} numberOfLines={1} ellipsizeMode="tail">
           {userData.email}
         </Text>
         <View style={styles.coinsContainer}>
-          <Text style={styles.coins}>{userData.coins}</Text>
-          <Text style={styles.coinsLabel}>coins</Text>
+          <Text style={[globalStyles.text, styles.coins]}>{userData.coins}</Text>
+          <Text style={[globalStyles.text, styles.coinsLabel]}>coins</Text>
         </View>
       </View>
     </SafeAreaView>

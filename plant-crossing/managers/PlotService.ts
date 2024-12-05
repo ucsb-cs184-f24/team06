@@ -86,4 +86,35 @@ export class PlotService {
           console.error(`Error removing plant from plot ${plotLocation}:`, error);
         }
       }
+
+      static async syncPlantInPlot(userId: string, plotLocation: number) {
+        try {
+            const plotRef = doc(FIRESTORE_DB, `users/${userId}/plots/${plotLocation}`);
+            const plotSnapshot = await getDoc(plotRef);
+
+            if (!plotSnapshot.exists()) {
+                console.error(`Plot with location ${plotLocation} not found.`);
+                return;
+            }
+
+            const plotData = plotSnapshot.data();
+
+            if (plotData?.plant) {
+                const plantRef = doc(FIRESTORE_DB, `users/${userId}/plants/${plotData.plant.id}`);
+                const plantSnapshot = await getDoc(plantRef);
+
+                if (!plantSnapshot.exists()) {
+                    console.error(`Plant with ID ${plotData.plant.id} not found.`);
+                    return;
+                }
+
+                const updatedPlantData = plantSnapshot.data();
+                await updateDoc(plotRef, { plant: updatedPlantData });
+
+                console.log(`Synchronized plant data in plot ${plotLocation}.`);
+            }
+        } catch (error) {
+            console.error(`Error synchronizing plant in plot ${plotLocation}:`, error);
+        }
+    }
 }

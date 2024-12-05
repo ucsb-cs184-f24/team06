@@ -3,6 +3,7 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { Plant } from "../types/Plant";
 import { Rarity, rarityValue } from "../types/Seed";
 
+
 export class PlantService {
     private static getUserRef() {
         const currentUser = FIREBASE_AUTH.currentUser;
@@ -64,38 +65,115 @@ export class PlantService {
         await updateDoc(plantRef, updateData);
     }
 
-    static async waterPlant(plantId: string, amount: number) {
-        const plant = await this.getPlantById(plantId);
-        if (!plant) throw new Error('Plant not found');
-    
-        const newWaterLevel = Math.min(plant.currWater + amount, plant.maxWater);
-        await this.updatePlant(plantId, { currWater: newWaterLevel });
-        console.log("Plant", plantId, "watered, waterLevel:", plant.currWater);
-        return newWaterLevel;
+    static async boostPlant(plantId: string, rarity: Rarity){
+        const boostValue = 1 + (rarityValue[rarity] * .25); // power of growth boost increases with rarity
+        
+        await this.updatePlant(plantId, {growthBoost: boostValue});
+        console.log("plant", plantId, "boosted, boostvalue:", boostValue);
+        return boostValue;
     }
 
-    static async updateGrowthProgress(plantId: string) {
-        const plant = await this.getPlantById(plantId);
-        if (!plant) return;
-    
-        const plantRef = doc(this.getPlantsCollectionRef(), plantId);
-        const plantSnap = await getDoc(plantRef);
-        const data = plantSnap.data();
+    static async resetBoost(plantId: string, rarity: Rarity){
+        const boostValue = 1 + (rarityValue[rarity] * .25); // power of growth boost increases with rarity
+        // let duration = 60000 * boostValue; // 1 minute * boostValue
+        let duration = 10000 * boostValue;
         
-        const timePassed = Date.now() - data?.lastUpdated;
-        const hoursProgress = timePassed / (1000 * 60 * 60);
-        const newAge = plant.age + (hoursProgress * plant.growthBoost);
-    
-        const waterConsumptionRate = 0.1;
-        const waterConsumed = hoursProgress * waterConsumptionRate * plant.maxWater;
-        const newWaterLevel = Math.max(0, plant.currWater - waterConsumed);
-    
-        await updateDoc(plantRef, {
-          age: newAge,
-          currWater: newWaterLevel,
-          lastUpdated: Date.now()
-        });
+        await new Promise(resolve => setTimeout(resolve, duration));
+        await this.updatePlant(plantId, {growthBoost: 69});
+        console.log("plant", plantId, "boost removed.");
+        return boostValue;
     }
+
+    static async waterPlant(plantId: string, amount: number) {
+        try {
+            // Fetch plant data
+            const plant = await this.getPlantById(plantId);
+            if (!plant) throw new Error('Plant not found');
+            
+            // Calculate the new water level
+            const newWaterLevel = Math.min(plant.currWater + amount, plant.maxWater);
+            
+            // Update only the water level of the plant
+            await this.updatePlant(plantId, { currWater: newWaterLevel });
+            
+            console.log("Plant", plantId, "watered, waterLevel:", newWaterLevel);
+            return newWaterLevel;
+        } catch (error) {
+            console.error(`Error watering plant ${plantId}:`, error);
+            throw error;
+        }
+    }
+    
+
+    static async updateGrowthProgress(plantId: string) {
+        try {
+            const plant = await this.getPlantById(plantId);
+            if (!plant) {
+                console.warn(`Plant with ID ${plantId} not found.`);
+                return;
+            }
+    
+            // Log fetched plant details
+            console.log(`Fetched plant:`, plant);
+    
+            // Use createdAt directly from the plant object
+            const plantingTime = plant.createdAt;
+            if (!plantingTime) {
+                console.error(`Plant with ID ${plantId} is missing a createdAt timestamp.`);
+                return;
+            }
+    
+            const timeElapsed = Date.now() - plantingTime;
+            console.log(`Time Elapsed since planting: ${timeElapsed} ms`);
+    
+            const growthTimeInMs = plant.growthTime * 3600000; // Convert hours to ms
+            const growthPercentage = timeElapsed / growthTimeInMs;
+            console.log(`growth percentage ${growthPercentage}`);
+    
+            const newGrowthLevel = Math.max(Math.min(Math.floor(growthPercentage * 5), 5), 1);
+
+    
+            console.log(`Updating growth level to ${newGrowthLevel}`);
+    
+            const plantRef = doc(this.getPlantsCollectionRef(), plantId);
+            await updateDoc(plantRef, {
+                growthLevel: newGrowthLevel,
+                lastUpdated: Date.now(),
+            });
+    
+            console.log("Growth progress updated successfully:", {
+                plantId,
+                newGrowthLevel,
+            });
+        } catch (error) {
+            console.error(`Error updating growth progress for plant ${plantId}:`, error);
+        }
+    }
+    
+
+    
+    
+    
+    
+    static calculateGrowthLevel(plant: Plant, lastLogin: number): number {
+        const timePassed = Date.now() - lastLogin; // Time since last login in milliseconds
+        const growthTimeMs = plant.growthTime * 60 * 1000; // Convert `growthTime` from minutes to milliseconds
+        const growthPercentage = Math.min(1, timePassed / growthTimeMs); // Growth progress capped at 100%
+    
+        // Determine the growth level based on percentage progress
+        if (growthPercentage >= 1) {
+            return 5; // Fully grown
+        } else if (growthPercentage >= 0.8) {
+            return 4;
+        } else if (growthPercentage >= 0.6) {
+            return 3;
+        } else if (growthPercentage >= 0.4) {
+            return 2;
+        } else {
+            return 1; // Initial growth stage
+        }
+    }    
+    
     
     static async deletePlant(plantId: string) {
         const plantRef = doc(this.getPlantsCollectionRef(), plantId);
@@ -127,7 +205,7 @@ export class PlantService {
         
         if (querySnapshot.empty) return null;
         if (querySnapshot.size > 1) {
-            console.warn(`Multiple seeds found for type (${plantType}) and rarity (${rarity})`);
+            console.warn(`Multiple plants found for type (${plantType}) and rarity (${rarity})`);
         }
 
         const plantDoc = querySnapshot.docs[0];
