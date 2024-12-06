@@ -53,7 +53,6 @@ export class PlantService {
     }
 
     static async updatePlant(plantId: string, updates: Partial<Plant>) {
-        console.log("Updating plant ", plantId);
         const plantRef = doc(this.getPlantsCollectionRef(), plantId);
         
         const updateData = {
@@ -117,9 +116,6 @@ export class PlantService {
                 return;
             }
     
-            // Log fetched plant details
-            console.log(`Fetched plant:`, plant);
-    
             // Use createdAt directly from the plant object
             const plantingTime = plant.createdAt;
             if (!plantingTime) {
@@ -128,16 +124,11 @@ export class PlantService {
             }
     
             const timeElapsed = Date.now() - plantingTime;
-            console.log(`Time Elapsed since planting: ${timeElapsed} ms`);
     
             const growthTimeInMs = plant.growthTime * 3600000; // Convert hours to ms
             const growthPercentage = timeElapsed / growthTimeInMs;
-            console.log(`growth percentage ${growthPercentage}`);
     
             const newGrowthLevel = Math.max(Math.min(Math.floor(growthPercentage * 5), 5), 1);
-
-    
-            console.log(`Updating growth level to ${newGrowthLevel}`);
     
             const plantRef = doc(this.getPlantsCollectionRef(), plantId);
             await updateDoc(plantRef, {
@@ -145,10 +136,6 @@ export class PlantService {
                 lastUpdated: Date.now(),
             });
     
-            console.log("Growth progress updated successfully:", {
-                plantId,
-                newGrowthLevel,
-            });
         } catch (error) {
             console.error(`Error updating growth progress for plant ${plantId}:`, error);
         }
@@ -225,7 +212,6 @@ export class PlantService {
     
             await updateDoc(userRef, { coins: newCoins });
     
-            console.log(`Plant ${plant.nickname} produced ${coinsProduced} coins while you were gone.`);
             return coinsProduced; // Return the coins produced
         } catch (error) {
             console.error(`Error producing coins for plant ${plantId}:`, error);

@@ -80,8 +80,6 @@ class Player {
     public waterSpecificPlant(plant: Plant) {
         if (this.plantInventory.includes(plant)) {
         plant.waterPlant();
-        } else {
-        console.log("Plant not found in your inventory.");
         }
     }
 
@@ -89,8 +87,6 @@ class Player {
     public waterSpecificSeed(seed: Seed) {
         if (this.seedInventory.includes(seed)) {
         seed.waterSeed();
-        } else {
-        console.log("Seed not found in your inventory.");
         }
     }
   }

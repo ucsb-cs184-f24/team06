@@ -21,12 +21,10 @@ const SignupScreen = () => {
     setLoading(true);
     try {
         const user = await createUserWithEmailAndPassword(FIREBASE_AUTH, email, password);
-        console.log(user);
         await initializeUser();
         navigation.navigate('MainScreens');
     } catch (error) {
         alert('Signup failed: ' + error);
-        console.log(error);
     }
     setLoading(false);
   };

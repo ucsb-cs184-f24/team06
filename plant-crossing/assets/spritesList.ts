@@ -64,12 +64,12 @@ export const PLANT_SPRITES: Record<string, Record<number, any>> = {
       4: require('./Plant_Sprites/short_cactus_4.png'),
       5: require('./Plant_Sprites/short_cactus_5.png'),
     },
-    'yellow_cactus': {
-      1: require('./Plant_Sprites/yellow_cactus_1.png'),
-      2: require('./Plant_Sprites/yellow_cactus_2.png'),
-      3: require('./Plant_Sprites/yellow_cactus_3.png'),
-      4: require('./Plant_Sprites/yellow_cactus_4.png'),
-      5: require('./Plant_Sprites/yellow_cactus_5.png'),
+    'golden_cactus': {
+      1: require('./Plant_Sprites/golden_cactus_1.png'),
+      2: require('./Plant_Sprites/golden_cactus_2.png'),
+      3: require('./Plant_Sprites/golden_cactus_3.png'),
+      4: require('./Plant_Sprites/golden_cactus_4.png'),
+      5: require('./Plant_Sprites/golden_cactus_5.png'),
     },
     'pink_cactus': {
       1: require('./Plant_Sprites/pink_cactus_1.png'),
@@ -112,6 +112,20 @@ export const PLANT_SPRITES: Record<string, Record<number, any>> = {
       3: require('./Plant_Sprites/tropical_tree_3.png'),
       4: require('./Plant_Sprites/tropical_tree_4.png'),
       5: require('./Plant_Sprites/tropical_tree_5.png'),
+    },
+    'aloe_vera': {
+      1: require('./Plant_Sprites/aloe_vera_1.png'),
+      2: require('./Plant_Sprites/aloe_vera_2.png'),
+      3: require('./Plant_Sprites/aloe_vera_3.png'),
+      4: require('./Plant_Sprites/aloe_vera_4.png'),
+      5: require('./Plant_Sprites/aloe_vera_5.png'),
+    },
+    'oak_tree': {
+      1: require('./Plant_Sprites/oak_tree_1.png'),
+      2: require('./Plant_Sprites/oak_tree_2.png'),
+      3: require('./Plant_Sprites/oak_tree_3.png'),
+      4: require('./Plant_Sprites/oak_tree_4.png'),
+      5: require('./Plant_Sprites/oak_tree_5.png'),
     },
   };
   

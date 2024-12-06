@@ -123,7 +123,6 @@ export const GardenGrid = ({
   const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(null);
 
   const fetchPlots = async () => {
-    console.log("Fetching plots for user:", userId);
     const plotsRef = collection(FIRESTORE_DB, "users", userId!, "plots");
   
     // Listen to real-time updates
