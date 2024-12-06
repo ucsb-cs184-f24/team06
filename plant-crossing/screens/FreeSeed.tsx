@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, StyleSheet, Dimensions, Image, ImageBackground } from "react-native";
 import { Accelerometer } from "expo-sensors";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { SeedService } from "../managers/SeedService";
 import { Seed } from "../types/Seed";
 import { availableSeeds } from "../data/items";
+import { FIREBASE_AUTH } from "../FirebaseConfig";
+import { getFirestore, doc, getDoc, updateDoc, onSnapshot } from 'firebase/firestore';
 
 const FIVE_HOURS_MS = 60 * 60 * 1000; // 5 hour timer
+const db = getFirestore();
 
 const sprites = {
   Bag: require('../assets/bag-sprites/bag.png'),
@@ -24,17 +26,50 @@ export default function FreeSeed() {
   const [seed, setSeed] = useState<Seed | null>(null);
   const [lastShakeTime, setLastShakeTime] = useState<number | null>(null);
   const [remainingTime, setRemainingTime] = useState<string>("");
+  const user = FIREBASE_AUTH.currentUser;
 
   useEffect(() => {
-    const getLastShakeTime = async () => {
-      const storedTime = await AsyncStorage.getItem("lastShakeTime");
-      if (storedTime) {
-        setLastShakeTime(parseInt(storedTime, 10));
+    let unsubscribe: (() => void) | null = null;
+
+    const setupFirebaseListener = async () => {
+      if (!user) {
+        return;
+      }
+
+      try {
+        const userDocRef = doc(db, 'users', user.uid);
+        // First, get the initial data
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          if (userData.lastShakeTime) {
+            setLastShakeTime(userData.lastShakeTime);
+          }
+        }
+
+        unsubscribe = onSnapshot(userDocRef, (doc) => {
+          if (doc.exists()) {
+            const userData = doc.data();
+            setLastShakeTime(userData.lastShakeTime);
+          }
+        });
+
+      } catch (error) {
+        console.error("Error setting up Firebase listener:", error);
       }
     };
 
-    getLastShakeTime();
+    setupFirebaseListener();
 
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
+      }
+    };
+  }, [user]);
+
+  useEffect(() => {
     Accelerometer.setUpdateInterval(1000);
     const subscription = Accelerometer.addListener(handleShake);
     const timer = setInterval(updateRemainingTime, 1000);
@@ -46,20 +81,31 @@ export default function FreeSeed() {
   }, [lastShakeTime]);
 
   const handleShake = async ({ x, y, z }) => {
+    if (!user) return;
+    
     const shakeThreshold = 1.78;
     const shakeDetected =
       Math.abs(x) > shakeThreshold || Math.abs(y) > shakeThreshold || Math.abs(z) > shakeThreshold;
 
-    // Prevent shaking again if the timer is active
     if (shakeDetected && canShake() && !seed) {
-      const randomSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length)];
-      console.log("Shake detected! Random seed: ", randomSeed);
-      setSeed(randomSeed);
-      await SeedService.addSeed(randomSeed);
-      const currentTime = Date.now();
-      setLastShakeTime(currentTime);
+      try {
+        const randomSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length)];
+        console.log("Shake detected! Random seed: ", randomSeed);
+        
+        const currentTime = Date.now();
+        
+        // Update Firebase first
+        const userDocRef = doc(db, 'users', user.uid);
+        await updateDoc(userDocRef, {
+          lastShakeTime: currentTime
+        });
 
-      await AsyncStorage.setItem("lastShakeTime", currentTime.toString());
+        setLastShakeTime(currentTime);
+        setSeed(randomSeed);
+        await SeedService.addSeed(randomSeed);
+      } catch (error) {
+        console.error("Error handling shake:", error);
+      }
     }
   };
 
@@ -84,7 +130,7 @@ export default function FreeSeed() {
       setRemainingTime(`${hours}h ${minutes}m ${seconds}s`);
     } else {
       setRemainingTime("");
-      setSeed(null); // Clear the seed only when the timer expires
+      setSeed(null);
     }
   };
 
@@ -93,7 +139,11 @@ export default function FreeSeed() {
   return (
     <ImageBackground source={background} style={styles.container}>
       <Text style={styles.text}>
-        {remainingTime ? `Next shake in: ${remainingTime}` : "Shake for a seed!"}
+        {!user 
+            ? "Please log in to shake"
+            : remainingTime 
+              ? `Next shake in: ${remainingTime}` 
+              : "Shake for a seed!"}
       </Text>
       <View style={styles.square}>
         <Image source={currentSprite} style={styles.spriteImage} />
