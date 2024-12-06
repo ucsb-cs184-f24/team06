@@ -1,7 +1,7 @@
 import { StatusBar } from 'expo-status-bar';
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Seed } from '../types/Seed'
-import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground } from 'react-native';
+import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground, Animated } from 'react-native';
 import { GardenGrid } from '../data-structures/GardenPlots';
 import { PlayerInventory } from '../data-structures/InventoryBar';
 import { GardenTool, GardenTools } from '../data-structures/GardenTools';
@@ -33,6 +33,22 @@ export default function GardenScreen() {
   const [selectedItem, setSelectedItem] = useState<Seed | GardenTool | null>(null);
   const [seedToRemove, setSeedToRemove] = useState<Seed | null>(null);
   const [seedToAdd, setSeedToAdd] = useState<Seed | null>(null);
+  const [showOverlay, setShowOverlay] = useState(true);
+
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      fadeAnim.setValue(1);
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start(() => setShowOverlay(false));
+    }, 2500);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleItemSelected = (item: Seed) => {
     setSelectedItem(item); // select item from inventory
@@ -50,6 +66,17 @@ export default function GardenScreen() {
 
   return (
     <View style={styles.container}>
+      {showOverlay && (
+        <Animated.View
+          style={[
+            styles.overlay,
+            {
+              opacity: fadeAnim,
+            },
+          ]}
+        />
+      )}
+
       {/* Garden Plot Section (3/5 of screen) */}
       <View style={styles.gardenSection}>
         <GardenGridWrapper 
@@ -178,5 +205,10 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color:'#1fe8e1',
     alignItems: 'flex-end', // Align content to the left
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'green',
+    zIndex: 10,
   }
 });

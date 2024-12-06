@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, SafeAreaView, TextInput, FlatList, TouchableOpacity, Alert, Modal, ImageBackground } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, Text, StyleSheet, SafeAreaView, TextInput, FlatList, TouchableOpacity, Alert, Modal, ImageBackground, Animated } from 'react-native';
 import filter from 'lodash.filter';
 import { FIREBASE_AUTH, FIRESTORE_DB } from '../FirebaseConfig';
 import { arrayRemove, arrayUnion, collection, doc, getDoc, getDocs, getFirestore, query, updateDoc, where } from 'firebase/firestore';
@@ -31,6 +31,22 @@ export default function FriendsScreen() {
   const [friendSeedDropdownOpen, setFriendSeedDropdownOpen] = useState(false);
   const [pendingTrades, setPendingTrades] = useState<{friendEmail: string; userSeed: string; friendSeed: string; }[]>([]);
   const [pendingTradeModalVisible, setPendingTradeModalVisible] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(true);
+
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      fadeAnim.setValue(1);
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start(() => setShowOverlay(false));
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, []);
 
   const checkFriends = async () => {
     const user = FIREBASE_AUTH.currentUser;
@@ -297,6 +313,16 @@ export default function FriendsScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {showOverlay && (
+        <Animated.View
+          style={[
+            styles.overlay,
+            {
+              opacity: fadeAnim,
+            },
+          ]}
+        />
+      )}
       <ImageBackground
       source={require('../assets/pixel-flowers.jpeg')}
       style={styles.backgroundImage}
@@ -714,5 +740,10 @@ const styles = StyleSheet.create({
     height: '80%',
     resizeMode: 'contain',
     zIndex: 2
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'green',
+    zIndex: 10,
   }
 });
