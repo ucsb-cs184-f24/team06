@@ -13,20 +13,20 @@ export const availableSeeds = [
   // uncommon
   new Seed("wildflower", Rarity.uncommon, 6, 6),
   new Seed("poppy", Rarity.uncommon, 6, 6),
-  new Seed("yellow_cactus", Rarity.uncommon, 6, 6),
+  //new Seed("yellow_cactus", Rarity.uncommon, 6, 6),
 
   // rare
   new Seed("tulip", Rarity.rare, 7, 7),
-  new Seed("short_cactus", Rarity.rare, 7, 7),
+  //new Seed("short_cactus", Rarity.rare, 7, 7),
 
   // unique
   new Seed("cherry_blossom", Rarity.unique, 8, 8),
   new Seed("chrysanthemum", Rarity.unique, 8, 8),
-  new Seed("tall_cactus", Rarity.unique, 8, 8),
+  //new Seed("tall_cactus", Rarity.unique, 8, 8),
 
   // legendary
   new Seed("chromafruit", Rarity.legendary, 9, 9),
-  new Seed("pink_cactus", Rarity.legendary, 9, 9),
+  //new Seed("pink_cactus", Rarity.legendary, 9, 9),
 ];
 
 export const startingSeeds = availableSeeds.filter(

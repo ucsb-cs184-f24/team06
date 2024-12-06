@@ -1,7 +1,7 @@
 
 
 export const PLANT_SPRITES: Record<string, Record<number, any>> = {
-    'cherry blossom': {
+    'cherry_blossom': {
       1: require('./Plant_Sprites/cherry_blossom_1.png'),
       2: require('./Plant_Sprites/cherry_blossom_2.png'),
       3: require('./Plant_Sprites/cherry_blossom_3.png'),
@@ -118,15 +118,19 @@ export const PLANT_SPRITES: Record<string, Record<number, any>> = {
   
   export const getSpriteForPlant = (plantName: string | undefined, growthLevel: number): any => {
     if (typeof plantName !== "string" || !plantName) {
+      console.warn("Invalid plant name provided:", plantName);
       return null;
     }
   
-    const normalizedPlantName = plantName.toLowerCase();
+    const normalizedPlantName = plantName.toLowerCase().replace(/ /g, "_");
   
     if (PLANT_SPRITES[normalizedPlantName] && PLANT_SPRITES[normalizedPlantName][growthLevel]) {
+      console.log(`plant sprite name: ${normalizedPlantName}`)
       return PLANT_SPRITES[normalizedPlantName][growthLevel];
     }
   
+    console.warn(`Sprite not found for plant: ${normalizedPlantName}, growth level: ${growthLevel}`);
     return null;
   };
+  
   
