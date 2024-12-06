@@ -139,7 +139,6 @@ export const PLANT_SPRITES: Record<string, Record<number, any>> = {
     const normalizedPlantName = plantName.toLowerCase().replace(/ /g, "_");
   
     if (PLANT_SPRITES[normalizedPlantName] && PLANT_SPRITES[normalizedPlantName][growthLevel]) {
-      console.log(`plant sprite name: ${normalizedPlantName}`)
       return PLANT_SPRITES[normalizedPlantName][growthLevel];
     }
   
