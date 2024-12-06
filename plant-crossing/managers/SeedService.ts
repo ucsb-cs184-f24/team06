@@ -144,16 +144,16 @@ export class SeedService {
       const newPlantRef = doc(plantCollectionRef);
   
       const newPlant = new Plant(
-          seed.type,
-          seed.rarity,
-          seed.growthTime,
-          seed.maxWater,
-          `${seed.type.replace(' Seed', '')}`,
-          location,
-          0,
-          seed.maxWater,
-          1,
-      );
+        seed.type,
+        seed.rarity,
+        seed.growthTime,
+        seed.maxWater,
+        `${seed.type.replace(' Seed', '')}`,
+        location,
+        0,
+        false,
+        1,
+    );
       newPlant.id = newPlantRef.id; // Assign the Firestore document ID to the Plant
       newPlant.createdAt = Date.now(); // Ensure createdAt is set here
   

@@ -110,6 +110,7 @@ export const initializeUser = async () => {
       const updatePromises = plantsSnapshot.docs.map(async (plantDoc) => {
         const plantId = plantDoc.id;
         await PlantService.updateGrowthProgress(plantId);
+        PlantService.resetBoost(plantId);
       });
 
       await Promise.all(updatePromises);

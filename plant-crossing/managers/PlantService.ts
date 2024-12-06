@@ -3,7 +3,6 @@ import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { Plant } from "../types/Plant";
 import { Rarity, rarityValue } from "../types/Seed";
 
-
 export class PlantService {
     private static getUserRef() {
         const currentUser = FIREBASE_AUTH.currentUser;
@@ -64,43 +63,51 @@ export class PlantService {
         await updateDoc(plantRef, updateData);
     }
 
-    static async boostPlant(plantId: string, rarity: Rarity){
-        const boostValue = 1 + (rarityValue[rarity] * .25); // power of growth boost increases with rarity
-        
-        await this.updatePlant(plantId, {growthBoost: boostValue});
-        return boostValue;
-    }
-
-    static async resetBoost(plantId: string, rarity: Rarity){
-        const boostValue = 1 + (rarityValue[rarity] * .25); // power of growth boost increases with rarity
-        // let duration = 60000 * boostValue; // 1 minute * boostValue
-        let duration = 10000 * boostValue;
-        
-        await new Promise(resolve => setTimeout(resolve, duration));
-        await this.updatePlant(plantId, {growthBoost: 69});
-        return boostValue;
-    }
-
-    static async waterPlant(plantId: string, amount: number) {
-        try {
-            // Fetch plant data
+    static async boostPlant(plantId: string, rarity: Rarity, userId: string){
+        try{
             const plant = await this.getPlantById(plantId);
-            if (!plant) throw new Error('Plant not found');
-            
-            // Calculate the new water level
-            const newWaterLevel = Math.min(plant.currWater + amount, plant.maxWater);
-            
-            // Update only the water level of the plant
-            await this.updatePlant(plantId, { currWater: newWaterLevel });
+            if(plant && plant.growthBoost == false){
+                const boostFactor = plant.maxWater * 120000; // growth time reduced by 2 minutes per level of water retention
+                const timeReduction = 600000 + boostFactor;
+                const newTimeCreated = plant?.createdAt ? plant?.createdAt - timeReduction : Date.now() - timeReduction;
 
-            return newWaterLevel;
-        } catch (error) {
-            console.error(`Error watering plant ${plantId}:`, error);
-            throw error;
+                const delayFactor = plant.maxWater * 5000; // take longer to reset boost if plant water retention is high
+                const boostResetTime = Date.now() + (rarityValue[rarity] * 20000) + delayFactor; // extra 20 seconds per level of rarity
+                await this.updatePlant(plantId, {createdAt: newTimeCreated, growthBoost: true, boostExpiration: boostResetTime});
+                
+                return;
+            }
+        } catch{
+            console.error("Plant", plantId, "could not be boosted.");
+        }
+    }
+
+    static async resetBoost(plantId: string) {
+        try {
+            const plant = await this.getPlantById(plantId);
+            if (plant && plant.boostExpiration) {
+                const remainingDuration = plant.boostExpiration - Date.now();
+    
+                if (remainingDuration > 0) {
+                    await new Promise(resolve => setTimeout(resolve, remainingDuration));
+                }
+                await this.deleteBoost(plantId);
+            }
+        } catch(error) {
+            console.error("Plant", plantId, "boost removal timer was not set.", error);
+        }
+    }
+
+    //immediately delete boost
+    static async deleteBoost(plantId: string){
+        try{
+            await this.updatePlant(plantId, {growthBoost: false});
+        } catch{
+            console.error("Plant", plantId, "boost could not be removed");
         }
     }
     
-
+    
     static async updateGrowthProgress(plantId: string) {
         try {
             const plant = await this.getPlantById(plantId);
@@ -158,7 +165,6 @@ export class PlantService {
         }
     }    
     
-    
     static async deletePlant(plantId: string) {
         const plantRef = doc(this.getPlantsCollectionRef(), plantId);
         await deleteDoc(plantRef);
@@ -167,10 +173,29 @@ export class PlantService {
     static getGrowthProgress(plant: Plant): number {
         return Math.min(100, (plant.age / plant.growthTime) * 100);
     }
+
+    static async produceCoins(plantId: string, amount: number): Promise<number> {
+        try {
+            const plant = await this.getPlantById(plantId);
+            if (!plant) throw new Error('Plant not found');
     
-    static getWaterLevel(plant: Plant): number {
-        return (plant.currWater / plant.maxWater) * 100;
-    }
+            const userRef = this.getUserRef();
+            const userSnap = await getDoc(userRef);
+            if (!userSnap.exists()) throw new Error('User document not found');
+    
+            const coins = userSnap.data().coins || 0;
+            const coinsProduced = plant.growthLevel * rarityValue[plant.rarity] * (1 + Math.floor(amount / 60000));
+            const newCoins = coins + coinsProduced;
+    
+            await updateDoc(userRef, { coins: newCoins });
+    
+            console.log(`Plant ${plant.nickname} produced ${coinsProduced} coins while you were gone.`);
+            return coinsProduced; // Return the coins produced
+        } catch (error) {
+            console.error(`Error producing coins for plant ${plantId}:`, error);
+            throw error; // Ensure any errors are propagated
+        }
+    }    
 
     static async produceCoins(plantId: string, amount: number): Promise<number> {
         try {

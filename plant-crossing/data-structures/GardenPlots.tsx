@@ -1,6 +1,6 @@
 import { Plot } from "../types/Plot";
 import { Plant } from "../types/Plant";
-import { Seed, Rarity } from "../types/Seed";
+import { Seed } from "../types/Seed";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { PlantService } from "../managers/PlantService";
@@ -120,18 +120,22 @@ export const GardenGrid = ({
   const [wateredPlots, setWateredPlots] = useState<Set<number>>(new Set());
   const userId = FIREBASE_AUTH.currentUser?.uid;
   const [isUnlockModalVisible, setIsUnlockModalVisible] = useState(false);
-  const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(
-    null
-  );
+  const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(null);
 
   const fetchPlots = async () => {
     const plotsRef = collection(FIRESTORE_DB, "users", userId!, "plots");
-
+  
     // Listen to real-time updates
     const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
       const updatedPlots = snapshot.docs.map((doc) => {
         const data = doc.data();
         const growthBoost = data?.plant?.growthBoost;
+  
+        // Log or handle the growthBoost status change
+        if (growthBoost == true) {
+          setWateredPlots((prev) => new Set(prev.add(data.location))); //add plot to the set of watered plots (to change sprite)
+        } 
+  
         return {
           ...data,
           location: data.location,
@@ -141,9 +145,10 @@ export const GardenGrid = ({
           },
         };
       }) as Plot[];
+  
       setPlots([...updatedPlots]);
     });
-
+  
     return unsubscribe; // Clean up the listener on unmount
   };
 
@@ -213,7 +218,6 @@ export const GardenGrid = ({
         }
       } catch (error) {
         console.error("Error unlocking plot:", error);
-        // You might want to show an error message to the user here
       }
       setIsUnlockModalVisible(false);
       setSelectedPlotIndex(null);
@@ -253,12 +257,12 @@ export const GardenGrid = ({
             plot.plant.type,
             plot.plant.rarity
           );
-          if (plantID) {
+          if (plantID && userId) {
             startAnimation("watering", plot.location); //start watering animation
             setWateredPlots((prev) => new Set(prev.add(plot.location))); //add plot to the set of watered plots (to change sprite)
-            await PlantService.waterPlant(plantID, 1);
-            await PlantService.boostPlant(plantID, plot.plant.rarity);
-            await PlantService.resetBoost(plantID, plot.plant.rarity);
+            await PlantService.boostPlant(plantID, plot.plant.rarity, userId);
+            await PlantService.resetBoost(plantID);
+
             setWateredPlots((prev) => {
               // remove watered plot from set when boost ends
               prev.delete(plot.location);
