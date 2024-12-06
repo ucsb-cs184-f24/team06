@@ -2,7 +2,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, query, setDoc, updateDoc, 
 import { FIREBASE_AUTH, FIRESTORE_DB } from "../FirebaseConfig";
 import { Plant } from "../types/Plant";
 import { Rarity, rarityValue } from "../types/Seed";
-
+import { PlotService } from "./PlotService";
 
 export class PlantService {
     private static getUserRef() {
@@ -65,7 +65,7 @@ export class PlantService {
         await updateDoc(plantRef, updateData);
     }
 
-    static async boostPlant(plantId: string, rarity: Rarity){
+    static async boostPlant(plantId: string, rarity: Rarity, userId: string, plotLocation: number){
         try{
             const plant = await this.getPlantById(plantId);
             if(plant && plant.growthBoost == false){
@@ -76,6 +76,7 @@ export class PlantService {
                 const delayFactor = plant.maxWater * 5000; // take longer to reset boost if plant water retention is high
                 const boostResetTime = Date.now() + (rarityValue[rarity] * 20000) + delayFactor; // extra 20 seconds per level of rarity
                 await this.updatePlant(plantId, {createdAt: newTimeCreated, growthBoost: true, boostExpiration: boostResetTime});
+                
                 return;
             }
         } catch{
@@ -107,6 +108,7 @@ export class PlantService {
             console.error("Plant", plantId, "boost could not be removed");
         }
     }
+    
     
     static async updateGrowthProgress(plantId: string) {
         try {
