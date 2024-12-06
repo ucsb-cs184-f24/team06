@@ -132,9 +132,10 @@ export const GardenGrid = ({
       const updatedPlots = snapshot.docs.map((doc) => {
         const data = doc.data();
         const growthBoost = data?.plant?.growthBoost;
+        console.log("GROWTH BOOST:", growthBoost);
   
         // Log or handle the growthBoost status change
-        if (growthBoost) {
+        if (growthBoost == true) {
           setWateredPlots((prev) => new Set(prev.add(data.location))); //add plot to the set of watered plots (to change sprite)
         } 
   
@@ -143,6 +144,7 @@ export const GardenGrid = ({
           location: data.location,
           plant: {
             ...data.plant,
+            growthBoost: growthBoost,
           },
         };
       }) as Plot[];
