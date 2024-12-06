@@ -142,6 +142,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
                     <Text
                       style={[
                         globalStyles.text,
+                        styles.cornerText,
                         { color: "black", fontSize: 8, textAlign: "right" },
                       ]}
                     >
@@ -156,6 +157,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
                     <Text
                       style={[
                         globalStyles.text,
+                        styles.labelText,
                         { color: rarityColorMap[item.rarity] || "#000000" },
                       ]}
                     >
@@ -175,7 +177,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
 const inventoryWidthMultiplier = 0.75; // inventory takes up 75% of screen
 const windowWidth = Dimensions.get("window").width * inventoryWidthMultiplier;
 const padding = 8;
-const itemSpacing = 8;
+const itemSpacing = 6;
 const availableWidth = windowWidth - padding * 2;
 const itemWidth = (availableWidth - itemSpacing * 3) / 4; // 3 gaps for 4 columns
 
@@ -203,16 +205,25 @@ const styles = StyleSheet.create({
   inventoryItem: {
     backgroundColor: "#d1dbcd",
     width: itemWidth,
-    height: itemWidth * 1.2,
-    justifyContent: "center",
+    height: itemWidth * 1.5,
+    justifyContent: "flex-start",
     alignItems: "center",
-    padding: 4,
+    padding: 2,
   },
   inventoryItemImage: {
     width: itemWidth * 0.65,
     aspectRatio: 1,
-    alignSelf: "flex-start",
+    alignSelf: "center",
     padding: 4,
+  },
+  cornerText: {
+    position: "relative",
+    top: 1,
+    right: 1,
+    textAlign: "right",
+  },
+  labelText: {
+    lineHeight: 14,
   },
   emptyItem: {
     backgroundColor: "#e8e8e8",
