@@ -15,7 +15,7 @@ export const PLANT_SPRITES: Record<string, Record<number, any>> = {
       4: require('./Plant_Sprites/rose_4.png'),
       5: require('./Plant_Sprites/rose_5.png'),
     },
-    'violets': {
+    'violet': {
       1: require('./Plant_Sprites/violet_1.png'),
       2: require('./Plant_Sprites/violet_2.png'),
       3: require('./Plant_Sprites/violet_3.png'),
@@ -43,7 +43,7 @@ export const PLANT_SPRITES: Record<string, Record<number, any>> = {
       4: require('./Plant_Sprites/tulip_4.png'),
       5: require('./Plant_Sprites/tulip_5.png'),
     },
-    'wildflowers': {
+    'wildflower': {
       1: require('./Plant_Sprites/wildflower_1.png'),
       2: require('./Plant_Sprites/wildflower_2.png'),
       3: require('./Plant_Sprites/wildflower_3.png'),
