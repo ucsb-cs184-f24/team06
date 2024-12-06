@@ -67,23 +67,35 @@ export class PlantService {
 
     static async boostPlant(plantId: string, rarity: Rarity){
         try{
-            const timeReduction = 900000; // plant growth time reduced by 15 minutes per watering
             const plant = await this.getPlantById(plantId);
-            const newTimeCreated = plant?.createdAt ? plant?.createdAt - timeReduction : Date.now() - timeReduction;
-            await this.updatePlant(plantId, {createdAt: newTimeCreated, growthBoost: true});
+            if(plant && plant.growthBoost == false){
+                const boostFactor = plant.maxWater * 120000; // growth time reduced by 2 minutes per level of water retention
+                const timeReduction = 600000 + boostFactor;
+                const newTimeCreated = plant?.createdAt ? plant?.createdAt - timeReduction : Date.now() - timeReduction;
+
+                const delayFactor = plant.maxWater * 5000; // take longer to reset boost if plant water retention is high
+                const boostResetTime = Date.now() + (rarityValue[rarity] * 20000) + delayFactor; // extra 20 seconds per level of rarity
+                await this.updatePlant(plantId, {createdAt: newTimeCreated, growthBoost: true, boostExpiration: boostResetTime});
+                return;
+            }
         } catch{
             console.error("Plant", plantId, "could not be boosted.");
         }
     }
 
-    //calculate boost duration and delete boost after delay
-    static async resetBoost(plantId: string, rarity: Rarity){
-        try{
-            let duration = 45000 + (rarityValue[rarity] * 15000); // 1 minute, extra 15 seconds per level of rarity
-            await new Promise(resolve => setTimeout(resolve, duration));
-            await this.deleteBoost(plantId);
-        } catch {
-            console.error("Plant", plantId, "boost removal timer was not set.");
+    static async resetBoost(plantId: string) {
+        try {
+            const plant = await this.getPlantById(plantId);
+            if (plant && plant.boostExpiration) {
+                const remainingDuration = plant.boostExpiration - Date.now();
+    
+                if (remainingDuration > 0) {
+                    await new Promise(resolve => setTimeout(resolve, remainingDuration));
+                }
+                await this.deleteBoost(plantId);
+            }
+        } catch(error) {
+            console.error("Plant", plantId, "boost removal timer was not set.", error);
         }
     }
 

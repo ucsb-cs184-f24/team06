@@ -13,7 +13,8 @@ export class Plant extends Seed {
         public growthLevel: number = 1,
         public id?: string,
         public createdAt: number = Date.now(), // Default to current time
-        public lastUpdated: number = Date.now() // Default to current time
+        public lastUpdated: number = Date.now(), // Default to current time
+        public boostExpiration: number = Date.now()
     ) {
         super(type, rarity, growthTime, maxWater);
     }
@@ -28,6 +29,7 @@ export class Plant extends Seed {
             growthLevel: this.growthLevel,
             createdAt: this.createdAt,
             lastUpdated: this.lastUpdated,
+            boostExpiration: this.boostExpiration
         };
     }
 
@@ -41,6 +43,10 @@ export class Plant extends Seed {
             ? data.lastUpdated.toMillis()
             : data.lastUpdated || createdAt; // Default to `createdAt` if missing
 
+        const boostExpiration =  data.boostExpiration?.toMillis
+            ? data.boostExpiration.toMillis()
+            : data.boostExpiration || Date.now(); // Fallback to current time if missing
+
         const plant = new Plant(
             data.type,
             data.rarity as Rarity,
@@ -53,7 +59,8 @@ export class Plant extends Seed {
             data.growthLevel || 1,
             id,
             createdAt,
-            lastUpdated
+            lastUpdated,
+            boostExpiration
         );
 
         plant.id = id; // Assign the ID separately if provided

@@ -116,6 +116,7 @@ export const initializeUser = async () => {
         const plantId = plantDoc.id;
         console.log(`Calling updateGrowthProgress for plant ID: ${plantId}`);
         await PlantService.updateGrowthProgress(plantId);
+        PlantService.resetBoost(plantId);
       });
 
       await Promise.all(updatePromises);

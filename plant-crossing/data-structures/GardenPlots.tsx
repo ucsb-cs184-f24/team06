@@ -131,8 +131,16 @@ export const GardenGrid = ({
     const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
       const updatedPlots = snapshot.docs.map((doc) => {
         const data = doc.data();
+
+        // // ensure that growthBoost remains true if user logs out, then logs back in during boost period
+        // const boostExpired = data?.plant?.boostExpired;
+        // let growthBoost = false;
+        // if(boostExpired && boostExpired < Date.now()){
+        //   PlantService.resetBoost();
+        //   // growthBoost = boostExpired < Date.now();
+        // }
+
         const growthBoost = data?.plant?.growthBoost;
-        console.log("GROWTH BOOST:", growthBoost);
   
         // Log or handle the growthBoost status change
         if (growthBoost == true) {
@@ -265,7 +273,18 @@ export const GardenGrid = ({
             startAnimation("watering", plot.location); //start watering animation
             setWateredPlots((prev) => new Set(prev.add(plot.location))); //add plot to the set of watered plots (to change sprite)
             await PlantService.boostPlant(plantID, plot.plant.rarity);
-            await PlantService.resetBoost(plantID, plot.plant.rarity);
+            
+            // // Fetch the updated plant data
+            // const updatedPlant = await PlantService.getPlantById(plantID);
+
+            // if (updatedPlant) {
+            //     await PlantService.resetBoost(plantID);
+            //     setWateredPlots((prev) => {
+            //         prev.delete(plot.location);
+            //         return new Set(prev);
+            //     });
+            // }
+            await PlantService.resetBoost(plantID);
             setWateredPlots((prev) => {
               // remove watered plot from set when boost ends
               prev.delete(plot.location);
