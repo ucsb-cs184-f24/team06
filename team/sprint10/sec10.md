@@ -7,8 +7,7 @@ Complete:
 # Sophia
 Complete: 
 - Removed all console.logs, kept all console.warnings
-Currently:
-- Resolving new bug with searching for users
+- Resolved bug caused by searching for users when a user email registered to Firebase is undefined
 
 # Sam
 Complete: 
@@ -18,8 +17,8 @@ Complete:
 
 # Elijah
 Complete: 
-- Reformatted inventory bar UI so that plant name, seed packet sprite and number of plants in the stack are contained within an 
-- Downsized large images to improve laoding time
+- Reformatted inventory bar UI so that plant name, seed packet sprite and number of plants in the stack are contained within a single UI element
+- Downsized large images to improve loading time
 - Added green transition to all screens upon first login so that users do not see unloaded images
 
 # Esme
