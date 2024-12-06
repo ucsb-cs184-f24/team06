@@ -28,7 +28,7 @@ export const availableSeeds = [
 
   // legendary
   new Seed("chromafruit", Rarity.legendary, 9, 9),
-  new Seed("golden_cactus", Rarity.uncommon, 9, 10),
+  new Seed("golden_cactus", Rarity.legendary, 9, 10),
 ];
 
 export const startingSeeds = availableSeeds.filter(
