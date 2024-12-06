@@ -17,4 +17,4 @@ Implemented user authentication and management with Firebase. Created Firebase a
 Words.
 
 ## Elijah Frankle
-Words.
+Code: Created early data structures, structure for page navigation, bottom tab navigation, home screen naviation, transitions between pages, home screen animation, worked on integrating spirtes, improving formatting/graphics and loading issues. Assets: researched pixel assets, obtained plant sprite sheet, edited it into usable files. Discussion: led group discussion on high level features, created tracking documents in discord for group assignments.
