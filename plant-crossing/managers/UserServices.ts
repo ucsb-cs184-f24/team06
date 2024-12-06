@@ -24,6 +24,7 @@ export const initializeUser = async () => {
       friends: {},
       createdAt: Date.now(),
       lastLogin: Date.now(),
+      lastShakeTime: null,
       pendingTrades: {},
     });
 
