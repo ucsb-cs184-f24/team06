@@ -117,4 +117,6 @@ export class PlotService {
             console.error(`Error synchronizing plant in plot ${plotLocation}:`, error);
         }
     }
+
+    
 }

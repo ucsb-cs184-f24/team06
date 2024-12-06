@@ -121,7 +121,6 @@ export const GardenGrid = ({
   const userId = FIREBASE_AUTH.currentUser?.uid;
   const [isUnlockModalVisible, setIsUnlockModalVisible] = useState(false);
   const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(null);
-  const [growthBoostActive, setGrowthBoostActive] = useState(false);
 
   const fetchPlots = async () => {
     console.log("Fetching plots for user:", userId);
@@ -131,15 +130,6 @@ export const GardenGrid = ({
     const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
       const updatedPlots = snapshot.docs.map((doc) => {
         const data = doc.data();
-
-        // // ensure that growthBoost remains true if user logs out, then logs back in during boost period
-        // const boostExpired = data?.plant?.boostExpired;
-        // let growthBoost = false;
-        // if(boostExpired && boostExpired < Date.now()){
-        //   PlantService.resetBoost();
-        //   // growthBoost = boostExpired < Date.now();
-        // }
-
         const growthBoost = data?.plant?.growthBoost;
   
         // Log or handle the growthBoost status change
@@ -229,7 +219,6 @@ export const GardenGrid = ({
         }
       } catch (error) {
         console.error("Error unlocking plot:", error);
-        // You might want to show an error message to the user here
       }
       setIsUnlockModalVisible(false);
       setSelectedPlotIndex(null);
@@ -273,18 +262,8 @@ export const GardenGrid = ({
             startAnimation("watering", plot.location); //start watering animation
             setWateredPlots((prev) => new Set(prev.add(plot.location))); //add plot to the set of watered plots (to change sprite)
             await PlantService.boostPlant(plantID, plot.plant.rarity);
-            
-            // // Fetch the updated plant data
-            // const updatedPlant = await PlantService.getPlantById(plantID);
-
-            // if (updatedPlant) {
-            //     await PlantService.resetBoost(plantID);
-            //     setWateredPlots((prev) => {
-            //         prev.delete(plot.location);
-            //         return new Set(prev);
-            //     });
-            // }
             await PlantService.resetBoost(plantID);
+
             setWateredPlots((prev) => {
               // remove watered plot from set when boost ends
               prev.delete(plot.location);
