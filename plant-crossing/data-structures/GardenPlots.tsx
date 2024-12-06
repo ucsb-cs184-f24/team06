@@ -125,14 +125,12 @@ export const GardenGrid = ({
   );
 
   const fetchPlots = async () => {
-    console.log("Fetching plots for user:", userId);
     const plotsRef = collection(FIRESTORE_DB, "users", userId!, "plots");
 
     // Listen to real-time updates
     const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
       const updatedPlots = snapshot.docs.map((doc) => {
         const data = doc.data();
-        console.log("Updated doc data:", JSON.stringify(data)); // Verify growthBoost here
         const growthBoost = data?.plant?.growthBoost;
         return {
           ...data,

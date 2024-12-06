@@ -62,7 +62,6 @@ export const GardenTools: React.FC<GardenToolProps> = ({selectedItem, setSelecte
     // Change the tool graphics if a seed item is selected in the inventory
     useEffect(() => {
         if (selectedItem && (selectedItem?.type != "WateringCan" && selectedItem?.type != "Shovel")) {
-            console.log("Selected item changed:", selectedItem?.type);
             setSpriteShovel(sprites.Shovel);
             setSpriteWateringCan(sprites.WateringCan);
         }

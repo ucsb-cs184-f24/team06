@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   StyleSheet,
   View,
@@ -12,7 +12,8 @@ import {
   SafeAreaView,
   Alert,
   Button,
-  ImageBackground
+  ImageBackground,
+  Animated
 } from "react-native";
 import ShopItem from "../components/ShopItem";
 import Shop from "../data-structures/Shop";
@@ -47,8 +48,11 @@ export default function ShopScreen() {
   const [numColumns] = useState(3);
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState<ShopItemData | null>(null);
+  const [showOverlay, setShowOverlay] = useState(true);
   const windowWidth = Dimensions.get("window").width;
   const navigation = useNavigation();
+
+  const fadeAnim = useRef(new Animated.Value(1)).current;
 
   const itemWidth =
     (windowWidth -
@@ -69,8 +73,20 @@ export default function ShopScreen() {
     setShopItems(items);
   }, []);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      fadeAnim.setValue(1);
+      Animated.timing(fadeAnim, {
+        toValue: 0,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start(() => setShowOverlay(false));
+    }, 500);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
   const handleItemPress = (item: ShopItemData) => {
-    console.log("Item pressed:", item);
     setSelectedItem(item);
     setModalVisible(true);
   };
@@ -139,6 +155,16 @@ export default function ShopScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {showOverlay && (
+        <Animated.View
+          style={[
+            styles.overlay,
+            {
+              opacity: fadeAnim,
+            },
+          ]}
+        />
+      )}
       <ImageBackground
       source={require("../assets/wood_texture.jpg")} // Path to your local image
       style={styles.backgroundImage}>
@@ -290,4 +316,9 @@ const styles = StyleSheet.create({
     marginVertical: 20,
     backgroundColor: "#34C759",
   },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'green',
+    zIndex: 10,
+  }
 });
