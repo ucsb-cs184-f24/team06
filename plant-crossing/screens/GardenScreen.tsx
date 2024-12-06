@@ -60,7 +60,6 @@ export default function GardenScreen() {
   }
 
   const handlePlantHarvested = (item: Seed) => {
-    console.log("Handling plant harvest for: ", item);
     setSeedToAdd(item);
   }
 

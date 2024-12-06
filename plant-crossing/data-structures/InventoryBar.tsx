@@ -55,7 +55,6 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
   ); // Manage playerInventory here
 
   useEffect(() => {
-    console.log("PlayerInventory loaded");
     const userId = FIREBASE_AUTH.currentUser?.uid;
     if (!userId) {
       console.error("No user ID available");
@@ -66,12 +65,10 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
       doc(FIRESTORE_DB, "users", userId),
       "seeds"
     );
-    console.log("Fetching seeds from Firestore:", seedsCollectionRef);
 
     const unsubscribe = onSnapshot(seedsCollectionRef, (snapshot) => {
       try {
         const seedsList = snapshot.docs.map((doc) => {
-          //console.log("Seed data:", doc.data());
           const data = doc.data();
           return new Seed(
             data.type,
@@ -83,7 +80,6 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
           );
         });
         setInventoryItems(seedsList);
-        console.log("Inventory updated:", seedsList);
       } catch (error) {
         console.error("Error processing snapshot:", error);
       }

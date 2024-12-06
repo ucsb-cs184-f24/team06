@@ -53,7 +53,6 @@ export default function FreeSeed() {
     // Prevent shaking again if the timer is active
     if (shakeDetected && canShake() && !seed) {
       const randomSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length)];
-      console.log("Shake detected! Random seed: ", randomSeed);
       setSeed(randomSeed);
       await SeedService.addSeed(randomSeed);
       const currentTime = Date.now();

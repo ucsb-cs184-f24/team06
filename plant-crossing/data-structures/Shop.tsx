@@ -41,7 +41,6 @@ export default class Shop {
   private refreshItems() {
     this.items = this.generateRandomItems(5);
     this.lastUpdated = new Date();
-    console.log("Shop inventory updated at: ", this.lastUpdated);
   }
 
   public getItems() {
@@ -53,12 +52,10 @@ export default class Shop {
     const item = this.items.find((shopItem) => shopItem.getSeed().type === itemName);
 
     if (!item) {
-      console.log("Item not found.");
       return false;
     }
 
     if (player.getCoins() < item.getPrice()) {
-      console.log("Not enough coins.");
       return false;
     }
 
@@ -67,8 +64,6 @@ export default class Shop {
 
     // add the item to the player's inventory based on the item type
     player.getSeedInventory().push(item.getSeed());
-
-    console.log(`${itemName} bought successfully!`);
     return true;
   }
 }

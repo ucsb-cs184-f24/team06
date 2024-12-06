@@ -28,7 +28,6 @@ const LoginScreen = () => {
       }
     } catch (error) {
       alert('Login failed: ' + error);
-      console.log(error);
     }
     setLoading(false);
   };

@@ -87,7 +87,6 @@ export default function FriendsScreen() {
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        console.log("User not found.");
         return;
       }
 
@@ -108,7 +107,6 @@ export default function FriendsScreen() {
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
-        console.log("User not found.");
         return;
       }
 
@@ -135,7 +133,6 @@ export default function FriendsScreen() {
       const friendSnaphot = await getDocs(friendQuery);
   
       if (friendSnaphot.empty) {
-        console.log('Friend not found');
         return;
       }
       const friendDoc = friendSnaphot.docs[0];
@@ -237,7 +234,6 @@ export default function FriendsScreen() {
   };
 
   const handleTradeRequest = async () => { // User A makes trade offer to User B
-    console.log("trade request fields", selectedUserSeed, selectedFriendSeed, selectedFriend);
     if (!selectedUserSeed || !selectedFriendSeed || !selectedFriend) {
       console.error("Trade request missing required fields.");
       return;
