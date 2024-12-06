@@ -287,5 +287,7 @@ const styles = StyleSheet.create({
   buttonStyle: {
     padding: 10,
     marginHorizontal: 10,
+    marginVertical: 20,
+    backgroundColor: "#34C759",
   },
 });

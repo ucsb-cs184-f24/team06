@@ -1,6 +1,6 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { Seed } from '../data-structures/Seed'
+import { Seed } from '../types/Seed'
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, ImageBackground } from 'react-native';
 import { GardenGrid } from '../data-structures/GardenPlots';
 import { PlayerInventory } from '../data-structures/InventoryBar';

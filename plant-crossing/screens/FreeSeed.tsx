@@ -6,8 +6,7 @@ import { SeedService } from "../managers/SeedService";
 import { Seed } from "../types/Seed";
 import { availableSeeds } from "../data/items";
 
-// const FIVE_HOURS_MS = 5 * 60 * 60 * 1000; // 5 hour timer
-const FIVE_HOURS_MS = 5000; // shorter timer for testing
+const FIVE_HOURS_MS = 60 * 60 * 1000; // 5 hour timer
 
 const sprites = {
   Bag: require('../assets/bag-sprites/bag.png'),
@@ -19,7 +18,7 @@ const sprites = {
   Legendary: require('../assets/seed-sprites/seed-legendary.png'),
 };
 
-const background = require('../assets/hardwood-background.png');
+const background = require('../assets/wood_texture.jpg');
 
 export default function FreeSeed() {
   const [seed, setSeed] = useState<Seed | null>(null);
@@ -51,8 +50,9 @@ export default function FreeSeed() {
     const shakeDetected =
       Math.abs(x) > shakeThreshold || Math.abs(y) > shakeThreshold || Math.abs(z) > shakeThreshold;
 
-    if (shakeDetected && canShake()) {
-      const randomSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length - 1)];
+    // Prevent shaking again if the timer is active
+    if (shakeDetected && canShake() && !seed) {
+      const randomSeed = availableSeeds[Math.floor(Math.random() * availableSeeds.length)];
       console.log("Shake detected! Random seed: ", randomSeed);
       setSeed(randomSeed);
       await SeedService.addSeed(randomSeed);
@@ -70,7 +70,6 @@ export default function FreeSeed() {
   const updateRemainingTime = () => {
     if (!lastShakeTime) {
       setRemainingTime("");
-      setSeed(null); // Clear the seed name when the timer expires
       return;
     }
 
@@ -85,7 +84,7 @@ export default function FreeSeed() {
       setRemainingTime(`${hours}h ${minutes}m ${seconds}s`);
     } else {
       setRemainingTime("");
-      setSeed(null); // Clear the seed name when the timer expires
+      setSeed(null); // Clear the seed only when the timer expires
     }
   };
 
@@ -93,17 +92,13 @@ export default function FreeSeed() {
 
   return (
     <ImageBackground source={background} style={styles.container}>
-      <View style={styles.textBox}>
-        <Text style={styles.text}>
-          {remainingTime ? `Next shake in: ${remainingTime}` : "Shake for a seed!"}
-        </Text>
-      </View>
+      <Text style={styles.text}>
+        {remainingTime ? `Next shake in: ${remainingTime}` : "Shake for a seed!"}
+      </Text>
       <View style={styles.square}>
         <Image source={currentSprite} style={styles.spriteImage} />
         {seed && (
-          <View style={styles.textBox}>
-            <Text style={styles.text}>{seed.type}</Text>
-          </View>
+          <Text style={styles.text}>{seed.type}</Text>
         )}
       </View>
     </ImageBackground>
@@ -116,18 +111,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
-  textBox: {
-    backgroundColor: "rgba(0, 0, 0, 0.6)", // Semi-transparent background
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 8,
-    marginBottom: 10,
-    alignSelf: "center",
-  },
   text: {
-    fontSize: 18,
+    fontSize: 25,
     fontWeight: "bold",
-    color: "#d3ffd1",
+    color: "#ffffff",
     textAlign: "center",
   },
   square: {
