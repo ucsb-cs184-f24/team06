@@ -11,7 +11,7 @@ Words.
 Words.
 
 ## Richard Fang
-Words.
+Implemented user authentication and management with Firebase. Created Firebase app and database and set up backend integration with Firebase. Created the currently used backend data structures for Plants, Seeds, and Plots (in types) and their respective functions (in managers). Implemented all CRUD operations to the plants, seeds, and plots to read and write from Firebase so user data is properly stored and loaded upon logging into the app. Implemented buying functionality in the shop to properly interact with user coins and inventory (checking and updating data in Firebase) and designed frontend modals for buying items and header to display user email and coin amount. Implemented deleting friends and trading functionality and designed frontend trading modals to select and request seeds for trading.
 
 ## Esme Puzio
 Words.
