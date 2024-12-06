@@ -29,8 +29,8 @@ const seedSprites = new Map<string, ImageSourcePropType>([
 const rarityColorMap: { [key: string]: string } = {
   common: "#3f3f49", // Gray
   uncommon: "#4d352c", // Brown
-  rare: "#529269",  // Green
-  unique: "#d4705c",  // Orange
+  rare: "#529269", // Green
+  unique: "#d4705c", // Orange
   legendary: "#743864", // Purple
 };
 
@@ -71,15 +71,15 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
     const unsubscribe = onSnapshot(seedsCollectionRef, (snapshot) => {
       try {
         const seedsList = snapshot.docs.map((doc) => {
-          console.log("Seed data:", doc.data());
+          //console.log("Seed data:", doc.data());
           const data = doc.data();
           return new Seed(
             data.type,
             data.rarity as Rarity,
             data.growthTime,
             data.maxWater,
-            data.numSeeds,
-            data.id
+            data.id,
+            data.numSeeds
           );
         });
         setInventoryItems(seedsList);
