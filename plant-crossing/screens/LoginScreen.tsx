@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Button, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { FIREBASE_AUTH } from '../FirebaseConfig';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { useNavigation } from '@react-navigation/native';
-import MainScreens from "./MainScreens"
 import { initializeUser } from '../managers/UserServices';
+import { CoinPopup } from '../components/coinPopup'; // Ensure CoinPopup is correctly imported
 import { globalStyles } from '../styles/globalStyles';
 import { GameButton } from '../components/GameButton';
 
@@ -12,22 +12,30 @@ const LoginScreen = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
-  const auth = FIREBASE_AUTH;
+  const [coinsProduced, setCoinsProduced] = useState<number>(0); // State to track coins
+  const [showPopup, setShowPopup] = useState<boolean>(false); // State to show/hide popup
   const navigation = useNavigation();
 
-  const handleLogin = async() => {
+  const handleLogin = async () => {
     setLoading(true);
     try {
-        const user = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
-        await initializeUser();
-        console.log("navigating to main screen")
-        navigation.navigate('MainScreens');
-        console.log("navigation successful")
+      const user = await signInWithEmailAndPassword(FIREBASE_AUTH, email, password);
+      const coins = await initializeUser(); // Call initializeUser and get coinsProduced
+      navigation.navigate('MainScreens'); // Navigate immediately if no coins were produced
+      if (coins > 0) {
+        setCoinsProduced(coins);
+        setShowPopup(true); // Show popup if coins were produced
+      }
     } catch (error) {
-        alert('Login failed: ' + error);
-        console.log(error);
+      alert('Login failed: ' + error);
+      console.log(error);
     }
     setLoading(false);
+  };
+
+  const handleClosePopup = () => {
+    setShowPopup(false); // Hide the popup
+    navigation.navigate('MainScreens'); // Navigate after closing popup
   };
 
   return (
@@ -60,6 +68,15 @@ const LoginScreen = () => {
       <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
         <Text style={[styles.link, globalStyles.textSmall]}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
+
+      {/* Render CoinPopup */}
+      {showPopup && (
+        <CoinPopup
+          visible={showPopup}
+          onClose={handleClosePopup}
+          coinsProduced={coinsProduced}
+        />
+      )}
     </View>
   );
 };

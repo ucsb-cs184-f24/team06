@@ -29,8 +29,8 @@ const seedSprites = new Map<string, ImageSourcePropType>([
 const rarityColorMap: { [key: string]: string } = {
   common: "#3f3f49", // Gray
   uncommon: "#4d352c", // Brown
-  rare: "#529269",  // Green
-  unique: "#d4705c",  // Orange
+  rare: "#529269", // Green
+  unique: "#d4705c", // Orange
   legendary: "#743864", // Purple
 };
 
@@ -71,15 +71,15 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
     const unsubscribe = onSnapshot(seedsCollectionRef, (snapshot) => {
       try {
         const seedsList = snapshot.docs.map((doc) => {
-          console.log("Seed data:", doc.data());
+          //console.log("Seed data:", doc.data());
           const data = doc.data();
           return new Seed(
             data.type,
             data.rarity as Rarity,
             data.growthTime,
             data.maxWater,
-            data.numSeeds,
-            data.id
+            data.id,
+            data.numSeeds
           );
         });
         setInventoryItems(seedsList);
@@ -142,6 +142,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
                     <Text
                       style={[
                         globalStyles.text,
+                        styles.cornerText,
                         { color: "black", fontSize: 8, textAlign: "right" },
                       ]}
                     >
@@ -156,6 +157,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
                     <Text
                       style={[
                         globalStyles.text,
+                        styles.labelText,
                         { color: rarityColorMap[item.rarity] || "#000000" },
                       ]}
                     >
@@ -175,7 +177,7 @@ export const PlayerInventory = ({ onItemSelected }: PlayerInventoryProps) => {
 const inventoryWidthMultiplier = 0.75; // inventory takes up 75% of screen
 const windowWidth = Dimensions.get("window").width * inventoryWidthMultiplier;
 const padding = 8;
-const itemSpacing = 8;
+const itemSpacing = 6;
 const availableWidth = windowWidth - padding * 2;
 const itemWidth = (availableWidth - itemSpacing * 3) / 4; // 3 gaps for 4 columns
 
@@ -203,16 +205,25 @@ const styles = StyleSheet.create({
   inventoryItem: {
     backgroundColor: "#d1dbcd",
     width: itemWidth,
-    height: itemWidth * 1.2,
-    justifyContent: "center",
+    height: itemWidth * 1.5,
+    justifyContent: "flex-start",
     alignItems: "center",
-    padding: 4,
+    padding: 2,
   },
   inventoryItemImage: {
     width: itemWidth * 0.65,
     aspectRatio: 1,
-    alignSelf: "flex-start",
+    alignSelf: "center",
     padding: 4,
+  },
+  cornerText: {
+    position: "relative",
+    top: 1,
+    right: 1,
+    textAlign: "right",
+  },
+  labelText: {
+    lineHeight: 14,
   },
   emptyItem: {
     backgroundColor: "#e8e8e8",
