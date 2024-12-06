@@ -203,7 +203,7 @@ export class PlantService {
     
             await updateDoc(userRef, { coins: newCoins });
     
-            console.log(`Plant ${plant.nickname} produced ${coinsProduced} coins while you were gone. You now have ${newCoins} coins!`);
+            console.log(`Plant ${plant.nickname} produced ${coinsProduced} coins while you were gone.`);
             return coinsProduced; // Return the coins produced
         } catch (error) {
             console.error(`Error producing coins for plant ${plantId}:`, error);

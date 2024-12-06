@@ -107,8 +107,10 @@ export const initializeUser = async () => {
 
           await Promise.all(produceCoinsPromises);
 
-          // Update user's last login
-          await updateDoc(userRef, { lastLogin: Date.now() });
+          // Update the user's total coins in Firestore
+          const userCoins = userSnapshot.data()?.coins || 0;
+          const updatedCoins = userCoins + totalCoinsProduced;
+          await updateDoc(userRef, { coins: updatedCoins, lastLogin: Date.now() });
 
           console.log(`Coins produced for planted plants and user last login updated. Total coins produced: ${totalCoinsProduced}`);
           return totalCoinsProduced; // Return the total coins produced
