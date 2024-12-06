@@ -74,7 +74,7 @@ export default function FriendsScreen() {
     const emails: string[] = [];
     querySnapshot.forEach((doc) => {
       const email = doc.data().email;
-      if (email != userEmail) {
+      if (email && email != userEmail) {
         emails.push(email);
       }
     });
