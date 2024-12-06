@@ -4,7 +4,6 @@ export class Plot {
     public location: number;
     public unlocked: boolean;
     public plant: Plant | null;
-    public watered: boolean = false;
 
     public constructor(
       unlocked: boolean,

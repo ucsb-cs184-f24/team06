@@ -261,7 +261,7 @@ export const GardenGrid = ({
           if (plantID && userId) {
             startAnimation("watering", plot.location); //start watering animation
             setWateredPlots((prev) => new Set(prev.add(plot.location))); //add plot to the set of watered plots (to change sprite)
-            await PlantService.boostPlant(plantID, plot.plant.rarity, userId, plot.location);
+            await PlantService.boostPlant(plantID, plot.plant.rarity, userId);
             await PlantService.resetBoost(plantID);
 
             setWateredPlots((prev) => {

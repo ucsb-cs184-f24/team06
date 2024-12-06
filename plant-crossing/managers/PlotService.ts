@@ -1,5 +1,5 @@
 import { collection, doc, getDoc, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { FIRESTORE_DB, FIREBASE_AUTH } from '../FirebaseConfig';
+import { FIRESTORE_DB } from '../FirebaseConfig';
 import { Plot } from "../types/Plot";
 import { Plant } from "../types/Plant";
 import { SeedService } from "./SeedService";
