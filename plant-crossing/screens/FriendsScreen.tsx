@@ -383,7 +383,7 @@ export default function FriendsScreen() {
                             {item.friendEmail} offers:
                           </Text>
                           <Text style={[globalStyles.text, {color: '#27962c'}]}>
-                            {`${item.userSeed} for ${item.friendSeed}`}
+                            {`${item.friendSeed} for ${item.userSeed}`}
                           </Text>
                         </View>
                       </TouchableOpacity>
