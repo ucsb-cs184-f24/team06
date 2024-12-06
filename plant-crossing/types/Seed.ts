@@ -51,12 +51,7 @@ export class Seed {
 }
   
 export const startingSeeds = [
-    new Seed("Rose", Rarity.common, 3, 5),
-    new Seed("Cactus", Rarity.common, 7, 9),
-    new Seed("Sunflower", Rarity.common, 2, 3),
-    new Seed("Fern", Rarity.common, 4, 7),
-    new Seed("Daisy", Rarity.common, 1, 3),
-    new Seed("Lavender", Rarity.common, 4, 5),
-    new Seed("Marigold", Rarity.common, 5, 5),
-    new Seed("Carnation", Rarity.common, 6, 6),
+    new Seed("rose", Rarity.common, 5, 4),
+    new Seed("shrub", Rarity.common, 4, 5),
+    new Seed("yellow_cactus", Rarity.uncommon, 6, 6),
 ];
