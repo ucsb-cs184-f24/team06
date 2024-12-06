@@ -47,8 +47,7 @@ export class SeedService {
   
           // Explicitly assign the generated Firestore ID to the seed
           newSeed.id = newSeedRef.id;
-  
-          console.log(`Adding new seed with ID: ${newSeed.id}`);
+
           await setDoc(newSeedRef, newSeed.toFirestore());
           return newSeed;
       } else {
@@ -135,7 +134,6 @@ export class SeedService {
 
   
     static async plantSeed(seedId: string, location: number) {
-      console.log(`plantSeed called with seedId: ${seedId} and location: ${location}`);
       const seed = await this.getSeedById(seedId);
       if (!seed) {
           console.error('Seed not found');
@@ -159,12 +157,9 @@ export class SeedService {
       newPlant.id = newPlantRef.id; // Assign the Firestore document ID to the Plant
       newPlant.createdAt = Date.now(); // Ensure createdAt is set here
   
-      console.log('New plant created:', newPlant);
-  
       await this.deleteSeed(seedId);
       await setDoc(newPlantRef, newPlant.toFirestore());
       
-      console.log(`Plant saved to Firestore with ID: ${newPlant.id}`);
       return newPlant;
     }
   
@@ -189,7 +184,6 @@ export class SeedService {
         const friendDocSnap = await getDoc(friendDocRef);
 
         if (friendDocSnap.exists()) {
-          console.log("FRIEND DOC SNAP:", friendDocSnap);
           //create trade that friend will see
           const trade = {
             friendEmail: userEmail,
@@ -200,7 +194,6 @@ export class SeedService {
           if (!friendDocSnap.get('pendingTrades')) {
               //add "pendingTrades" field to users without it
               await updateDoc(friendDocRef, { pendingTrades: {trade} });
-              console.log("'pendingTrades' field created with default value.");
           } else{
             //"pendingTrades" field exists, add new trade to pendingTrades
             await updateDoc(friendDocRef, {
@@ -242,7 +235,6 @@ export class SeedService {
 
           if (updatedTrades.length !== pendingTrades.length) {
             await updateDoc(userDocRef, { pendingTrades: updatedTrades });
-            console.log(`Trade from ${friendEmail}: trading ${friendSeed} for ${userSeed} successfully deleted`);
           }
         }
       } catch (error) {
@@ -331,7 +323,6 @@ export class SeedService {
         // Commit the batch
         await batch.commit();
         await this.deleteSeed(userSeedId);
-        console.log('Seed trade completed successfully');
       } catch (error) {
         console.error('Error trading seeds:', error);
         throw error;
@@ -344,7 +335,6 @@ export class SeedService {
         const newNumSeeds = seed.numSeeds - 1;
         this.updateSeed(seedId, { numSeeds: newNumSeeds}); // decrease number of seeds by 1
       } else {
-        console.log()
         const seedRef = doc(this.getSeedsCollectionRef(), seedId);
         await deleteDoc(seedRef);
       }

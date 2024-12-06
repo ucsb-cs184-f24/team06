@@ -87,7 +87,6 @@ export default function ShopScreen() {
   }, []);
 
   const handleItemPress = (item: ShopItemData) => {
-    console.log("Item pressed:", item);
     setSelectedItem(item);
     setModalVisible(true);
   };

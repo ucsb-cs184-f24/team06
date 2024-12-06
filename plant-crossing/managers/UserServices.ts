@@ -64,24 +64,19 @@ export const initializeUser = async () => {
 
     try {
       await batch.commit();
-      console.log('User initialized with starting seeds');
     } catch (error) {
       console.error('Error initializing user:', error);
     }
     return 0; // Return 0 coins for a new user
   } else {
-    console.log('Existing user branch executed');
     try {
       const lastLogin = userSnapshot.data()?.lastLogin || Date.now();
       const timeSinceLastLogin = Date.now() - lastLogin;
-
-      console.log(`Time since last login: ${timeSinceLastLogin} ms`);
 
       const plotsCollectionRef = collection(userRef, 'plots');
       const plotsSnapshot = await getDocs(plotsCollectionRef);
 
       if (plotsSnapshot.empty) {
-        console.log('No plots found.');
         return 0;
       }
 
@@ -94,7 +89,6 @@ export const initializeUser = async () => {
         const plotData = plotDoc.data();
         if (plotData.plant && plotData.plant.id) {
           const plantId = plotData.plant.id;
-          console.log(`Calling produceCoins for planted plant ID: ${plantId}`);
           produceCoinsPromises.push(
             PlantService.produceCoins(plantId, timeSinceLastLogin).then(
               (coinsProduced) => {
@@ -114,7 +108,6 @@ export const initializeUser = async () => {
 
       const updatePromises = plantsSnapshot.docs.map(async (plantDoc) => {
         const plantId = plantDoc.id;
-        console.log(`Calling updateGrowthProgress for plant ID: ${plantId}`);
         await PlantService.updateGrowthProgress(plantId);
       });
 
@@ -124,9 +117,6 @@ export const initializeUser = async () => {
       const updatedCoins = userCoins + totalCoinsProduced;
       await updateDoc(userRef, { coins: updatedCoins, lastLogin: Date.now() });
 
-      console.log(
-        `Coins produced for planted plants and user last login updated. Total coins produced: ${totalCoinsProduced}`
-      );
       return totalCoinsProduced; // Return the total coins produced
     } catch (error) {
       console.error('Error processing plants on user relog:', error);
