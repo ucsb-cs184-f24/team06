@@ -10,7 +10,7 @@ export const availableSeeds = [
   new Seed("reed", Rarity.common, 5, 5),
 
   // uncommon
-  new Seed("aloe vera", Rarity.uncommon, 6, 6),
+  new Seed("aloe_vera", Rarity.uncommon, 6, 6),
   new Seed("poppy", Rarity.uncommon, 6, 6),
   new Seed("pink_cactus", Rarity.uncommon, 6, 10),
   new Seed("wildflower", Rarity.uncommon, 6, 6),
