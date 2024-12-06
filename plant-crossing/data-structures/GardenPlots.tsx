@@ -120,32 +120,36 @@ export const GardenGrid = ({
   const [wateredPlots, setWateredPlots] = useState<Set<number>>(new Set());
   const userId = FIREBASE_AUTH.currentUser?.uid;
   const [isUnlockModalVisible, setIsUnlockModalVisible] = useState(false);
-  const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(
-    null
-  );
+  const [selectedPlotIndex, setSelectedPlotIndex] = useState<number | null>(null);
+  const [growthBoostActive, setGrowthBoostActive] = useState(false);
 
   const fetchPlots = async () => {
     console.log("Fetching plots for user:", userId);
     const plotsRef = collection(FIRESTORE_DB, "users", userId!, "plots");
-
+  
     // Listen to real-time updates
     const unsubscribe = onSnapshot(plotsRef, (snapshot) => {
       const updatedPlots = snapshot.docs.map((doc) => {
         const data = doc.data();
-        console.log("Updated doc data:", JSON.stringify(data)); // Verify growthBoost here
         const growthBoost = data?.plant?.growthBoost;
+  
+        // Log or handle the growthBoost status change
+        if (growthBoost) {
+          setWateredPlots((prev) => new Set(prev.add(data.location))); //add plot to the set of watered plots (to change sprite)
+        } 
+  
         return {
           ...data,
           location: data.location,
           plant: {
             ...data.plant,
-            growthBoost: growthBoost,
           },
         };
       }) as Plot[];
+  
       setPlots([...updatedPlots]);
     });
-
+  
     return unsubscribe; // Clean up the listener on unmount
   };
 
@@ -258,7 +262,6 @@ export const GardenGrid = ({
           if (plantID) {
             startAnimation("watering", plot.location); //start watering animation
             setWateredPlots((prev) => new Set(prev.add(plot.location))); //add plot to the set of watered plots (to change sprite)
-            await PlantService.waterPlant(plantID, 1);
             await PlantService.boostPlant(plantID, plot.plant.rarity);
             await PlantService.resetBoost(plantID, plot.plant.rarity);
             setWateredPlots((prev) => {

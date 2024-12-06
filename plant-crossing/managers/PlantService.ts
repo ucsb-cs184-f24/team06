@@ -66,45 +66,36 @@ export class PlantService {
     }
 
     static async boostPlant(plantId: string, rarity: Rarity){
-        const boostValue = 1 + (rarityValue[rarity] * .25); // power of growth boost increases with rarity
-        
-        await this.updatePlant(plantId, {growthBoost: boostValue});
-        console.log("plant", plantId, "boosted, boostvalue:", boostValue);
-        return boostValue;
-    }
-
-    static async resetBoost(plantId: string, rarity: Rarity){
-        const boostValue = 1 + (rarityValue[rarity] * .25); // power of growth boost increases with rarity
-        // let duration = 60000 * boostValue; // 1 minute * boostValue
-        let duration = 10000 * boostValue;
-        
-        await new Promise(resolve => setTimeout(resolve, duration));
-        await this.updatePlant(plantId, {growthBoost: 69});
-        console.log("plant", plantId, "boost removed.");
-        return boostValue;
-    }
-
-    static async waterPlant(plantId: string, amount: number) {
-        try {
-            // Fetch plant data
+        try{
+            const timeReduction = 900000; // plant growth time reduced by 15 minutes per watering
             const plant = await this.getPlantById(plantId);
-            if (!plant) throw new Error('Plant not found');
-            
-            // Calculate the new water level
-            const newWaterLevel = Math.min(plant.currWater + amount, plant.maxWater);
-            
-            // Update only the water level of the plant
-            await this.updatePlant(plantId, { currWater: newWaterLevel });
-            
-            console.log("Plant", plantId, "watered, waterLevel:", newWaterLevel);
-            return newWaterLevel;
-        } catch (error) {
-            console.error(`Error watering plant ${plantId}:`, error);
-            throw error;
+            const newTimeCreated = plant?.createdAt ? plant?.createdAt - timeReduction : Date.now() - timeReduction;
+            await this.updatePlant(plantId, {createdAt: newTimeCreated, growthBoost: true});
+        } catch{
+            console.error("Plant", plantId, "could not be boosted.");
+        }
+    }
+
+    //calculate boost duration and delete boost after delay
+    static async resetBoost(plantId: string, rarity: Rarity){
+        try{
+            let duration = 45000 + (rarityValue[rarity] * 15000); // 1 minute, extra 15 seconds per level of rarity
+            await new Promise(resolve => setTimeout(resolve, duration));
+            await this.deleteBoost(plantId);
+        } catch {
+            console.error("Plant", plantId, "boost removal timer was not set.");
+        }
+    }
+
+    //immediately delete boost
+    static async deleteBoost(plantId: string){
+        try{
+            await this.updatePlant(plantId, {growthBoost: false});
+        } catch{
+            console.error("Plant", plantId, "boost could not be removed");
         }
     }
     
-
     static async updateGrowthProgress(plantId: string) {
         try {
             const plant = await this.getPlantById(plantId);
