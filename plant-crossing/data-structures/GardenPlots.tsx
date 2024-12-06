@@ -1,6 +1,6 @@
 import { Plot } from "../types/Plot";
 import { Plant } from "../types/Plant";
-import { Seed, Rarity } from "../types/Seed";
+import { Seed } from "../types/Seed";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { PlantService } from "../managers/PlantService";
