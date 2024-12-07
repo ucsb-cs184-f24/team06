@@ -12,7 +12,7 @@ Created the inventory bar design and placement, with sample items as placeholder
 
 ## Grace Feng
 
-Words.
+Designed and implemented a player registry to manage player data, including functions for adding friends, managing accounts, and preparing for Firebase integration. Developed the free seed feature, allowing players to shake their device for a random seed every 5 hours. Implemented idle coin generation to ensure coins are produced based on plant growth, rarity, and player activity. Also created the popup component to display idle coins generated upon each login. Also improved the UI/UX by styling the Free Seed page, adding sprites, and refining user interactions. To ensure the project's functionality and scalability, I wrote unit tests for the GardenScreen component, mocked child components for isolated testing, and optimized the codebase by restructuring files and updating dependencies.
 
 ## Richard Fang
 
