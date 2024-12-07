@@ -49,3 +49,6 @@ To provide a fun and interactive game for people to play with their friends.
 - Start the development server with Expo Go.
 ``` npx expo start --tunnel ```
 - Scan the QR code to access Plant Crossing.
+
+# Deployment
+[Release V.0.1.1](https://github.com/ucsb-cs184-f24/team06/releases/tag/v.0.1.1)
