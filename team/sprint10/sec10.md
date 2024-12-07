@@ -15,6 +15,12 @@ Complete:
 - Updated how much seeds cost in the shop (based on rarity)
 - Fixed bug with plant stacking where plant stacking UI element would show plant ID instead of numSeeds (how many seeds were stacked).
 
+# Grace
+Complete: 
+- Implemented idle coin generation based on plant's growth level and rarity.
+- Created a popup that displays idle coins every time a user logs in.
+- Finished styling the free seed page with sprites and background.
+
 # Elijah
 Complete: 
 - Reformatted inventory bar UI so that plant name, seed packet sprite and number of plants in the stack are contained within a single UI element
