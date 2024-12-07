@@ -5,7 +5,7 @@ Worked on setting up the template screen for the Shop view. Implemented a design
 Words.
 
 ## Sophia Tran
-Words.
+Created the inventory bar design and placement, with sample items as placeholders. Implemented functionality for the Friends page, including displaying friends in a neat list on the screen and allowing users to search and filter through a list of registered players and click to add them as friends. Added styling to the Friends page, by importing a pixel flower background, adding a white container to hold the text, and updating the fonts used throughout the page to match the global styles for the app. Additionally, updated the styling for the user & coins header which shows on every page.
 
 ## Grace Feng
 Words.
