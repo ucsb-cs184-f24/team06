@@ -38,10 +38,12 @@ Using the bottom navigating menu, select the middle icon to go to the shop page.
 ### Plant Your Seed
 Once you've purchased a seed, use the navigation menu's left button to see your garden page. Here you can select your new seed from your inventory and tap an open garden plot to plant it. As you collect coins you can unlock more and more space for your plants. 
 
-<img src="PlantCrossingGardenPic.png" width="300"/> <img src="PlantCrossingGardenWatered.png" width="300"/>
+<img src="PCEmptyGarden.PNG" width="300"/> <img src="PCPlantedGarden.PNG" width="300"/>
 
 ### Tending To Your Plants
-All that's left to do now is water your plant. If your plant's soil is dry, you can select the watering can then tap on a plant to water it. If plants are watered, they will grow even faster. If you need to remove a plant, use the shovel next to the watering can to dig up your plant to add the seed (and some coins) to your inventory.
+All that's left to do now is water your plant. If your plant's soil is dry, you can select the watering can then tap on a plant to water it. If plants are watered, they will grow even faster. If you need to remove a plant, use the shovel next to the watering can to dig up your plant and add it back to your inventory. Careful: you'll lose all your growth progress once you dig up your plant!
+
+<img src="PCWatering.PNG" width="300"/> <img src="PCDiggingPlant.PNG" width="300"/><img src="PCDiggingFinished.PNG" width="300"/>
 
 ### Making Friends
 If you'd like to connect with a friend, navigate to the friends page with the right button in the navigation panel. Here you can see a list of the friends you've connected with so far. To add a friend to your list, type in their email and select them. To remove them, tap their email in the friends list and select "delete friend".
