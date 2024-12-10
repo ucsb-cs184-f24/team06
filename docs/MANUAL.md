@@ -38,7 +38,7 @@ Using the bottom navigating menu, select the middle icon to go to the shop page.
 ### Plant Your Seed
 Once you've purchased a seed, use the navigation menu's left button to see your garden page. Here you can select your new seed from your inventory and tap an open garden plot to plant it. As you collect coins you can unlock more and more space for your plants. 
 
-<img src="PlantCrossingGardenPic.png" width="300"/>
+<img src="PlantCrossingGardenPic.png" width="300"/> <img src="PlantCrossingGardenWatered.png" width="300"/>
 
 ### Tending To Your Plants
 All that's left to do now is watering your plant- select the watering can then tap on a plant to water it. If plants are watered, they will grow even faster. If you need to remove a plant, use the shovel next to the watering can and you'll get some coins back.
@@ -52,3 +52,8 @@ If you'd like to connect with a friend, navigate to the friends page with the ri
 At the bottom of the friends screen you'll see a list of pending trades, which you can tap on to either accept or reject. You can propose a trade by selecting a friend from your friend list, selecting "trade", and choosing the plants involved in the trade.
 
 <img src="PlantCrossingMakeTradePic.png" width="300"/>
+
+## Build Your Garden
+When you return after some time away, your plants will have grown and earned coins for you! Use these coins to buy more exciting and rare seeds and enjoy the comfort of your cozy pixel garden.
+
+<img src="PlantCrossingCoinsPic.png" width="300"/>
