@@ -13,10 +13,14 @@ When users first launch the app, they're presented with a login screen where the
 We wanted our game to be accessible to casual gamers, not targeted towards intense players that wanted to maximize their plant growth or number of coins. Thus, we made our interface very straightforward, with only a small number of screens: the player’s garden, shop and list of friends. We pushed the inventory on the garden page towards the bottom of the screen so that players could use one hand to plant new seeds, harvest seeds and dig up unwanted plants. This way, users could play our app one-handed in bed, on a crowded bus, or whenever they had a few moments to spare between busy activities. We also added animation feedback when a user interacted with a garden plot to encourage them to customize their garden. Because we were developing an idle game, we added long growth times for our plants that would take days to properly develop, and added lofi music to encourage users to slow down when playing them app. However, we still wanted users to check the app to see the development of their plants, so we added the growth boost and free seed features to encourage checking the app on an occasional basis.
 
 # Stages of Design
-We started our design with a simple sketch of our Garden Page, and implemented features from there. (insert image). 
+We started our design process with simple sketches of the three pages that we wnated for our app: the garden, shop and friends page.
+![alt text](./GardenPageSketch.jpg)
+![alt text](./ShopPageSketch.jpg)
+![alt text](./FriendsPageSketch.jpeg)
 
 # Difficulties Encountered
 One difficulty we encountered was adding Firebase functionality to the data structures we used to store our plots, plants, seeds and inventory. Rather than adding this functionality to the data structures that we had already written, we decided to create new data structures that updated directly to Firebase without storing changes locally. This caused some difficulty when adding new features to the game, as certain functionalities were still based on data structures that were not connected to Firebase. After meeting to discuss which data structures to use in future pull requests, we updated all game screens to use the new data structures, and deleted the old code in a future commit. 
+
 Another difficulty we encountered was displaying graphics. (Discuss anti-aliasing and image preloading here?)
 
 # External Resources Used
