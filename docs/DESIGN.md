@@ -14,6 +14,7 @@ We wanted our game to be accessible to casual gamers, not targeted towards inten
 
 # Stages of Design
 We started our design process with simple sketches of the three pages that we wnated for our app: the garden, shop and friends page.
+<img src="./GardenPageSketch.jpg" alt="GardenPageSketch" style="width:30%; height:auto;">
 ![alt text](./GardenPageSketch.jpg)
 ![alt text](./ShopPageSketch.jpg)
 ![alt text](./FriendsPageSketch.jpeg)
