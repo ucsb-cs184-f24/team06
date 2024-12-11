@@ -37,3 +37,29 @@ Another difficulty we encountered was displaying graphics. Our images were getti
 - lodash
 
 # Evaluation/Testing Results (optional)
+
+#### **GardenScreen Testing**
+The testing for `GardenScreen` focused on verifying user interactions within the garden interface. Tests included:
+
+1. **Component Rendering**
+   - Verified that the components such as `GardenGrid`, `PlayerInventory`, and `GardenTools` render correctly.
+   - Confirmed the presence of interactive elements like buttons for planting, harvesting, selecting seeds, and tools.
+
+2. **State Management**
+   - Ensured that selecting a seed from the inventory correctly updates the `selectedItem` state.
+   - Confirmed that planting a seed triggers the appropriate updates, such as removing the seed from inventory.
+   - Tested the harvesting process to validate that the harvested seed is added back to the inventory.
+
+#### **ShopScreen Testing**
+The testing for `ShopScreen` evaluated the functionality of the in-game shop system. Tests included:
+
+1. **Modal Behavior**
+   - Verified that pressing a shop item opens the modal with the correct information.
+
+2. **Purchase Flow**
+   - Tested the "Buy Now" button to ensure it triggers an alert on successful purchase.
+   - Verified that the alert displays the correct item name and purchase confirmation message.
+
+3. **Shop Items**
+   - Mocked the `Shop` module to simulate available shop items and their prices.
+   - Ensured that items display their names and prices correctly on the screen.
