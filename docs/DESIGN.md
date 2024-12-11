@@ -3,7 +3,11 @@ The app will use Firebase Auth. The login and sign up screens will handle the us
 ![alt text](./sys_arch.png)
 
 # Team Decisions
-The first major team decision we had made was to use React-Native coupled with Expo. This allowed us to work on different operating systems and deploy to iOS devices. The next decision we had made was to figure out how we wanted to build the game and what features were important to us. We wanted to make a satisfying idle game that allowed users to buy plants and trade them with other users. This would create a fun, chill, and social game that users will love to come back to play every often. Another major decision my team made was to decide on using Firebase to store all user data (plants, seeds, friends) and to handle authentication.
+The first major team decision we had made was to use React-Native coupled with Expo instead of Unity to develop our game (occurred after [Standup 3](https://github.com/ucsb-cs184-f24/team06/blob/main/team/sprint01/sec02.md)). This allowed us to work on different operating systems and deploy to iOS devices. 
+The next decision we had made was what our app layout should look like, and what data structures to create for our application. Since we wanted to make a satisfying idle game that allowed users to buy plants and trade them with other users, we decided to divide the app into three pages, with a plot, seed, and plant data structure to work on ([Standup 6](https://github.com/ucsb-cs184-f24/team06/blob/main/team/sprint03/lec06.md). 
+Another major decision our team made was to decide on using Firebase to store all user data (plants, seeds, friends) and to handle authentication ([Standup 9](https://github.com/ucsb-cs184-f24/team06/blob/main/team/sprint04/lec07.md)). We made this decision because we found Firebase easy to work with during Homework 2, and we could reuse the login functionality we wrote for Homework 2 for our app. 
+After our code freeze, we made the team decision to use a pixel graphics art style for our application ([Lecture 13](https://github.com/ucsb-cs184-f24/team06/blob/main/team/sprint07/lecture13.md)). We chose to use a pixel art style after experimenting with 3D models for Homework 3, and deciding that they were too computationally expensive to use and did not suit the cozy feeling we wanted our game to give the user. 
+Our final major team decision was choosing how to implement trade functionality ([Lecture 17](https://github.com/ucsb-cs184-f24/team06/blob/main/team/sprint10/lec17.md)). At the time of our standup, users could exchange plants with their friends, but their friends did not have an option to veto the trade. Given the time we had remaining for the course, we initially made the hard decision to scrap the trading feature and replace it with a plant gifting feature. However, we were able to add functionality where users could accept or reject incoming trades before the deadline, so we changed the language in the trade modals to "trade request" instead of "trade" to indicate that the other user needed to approve the request to trade plants. 
 
 # User Experience and Task Flow
 ![alt text](./userflow.png)
@@ -15,8 +19,7 @@ We wanted our game to be accessible to casual gamers, not targeted towards inten
 # Stages of Design
 We started our design process with simple sketches of the three pages that we wnated for our app: the garden, shop and friends page.
 
-<img src="./GardenPageSketch.jpg" alt="GardenPageSketch" style="width:50%; height:auto;"> <img src="./ShopPageSketch.jpg" alt="ShopPageSketch.jpg" style="width:50%; height:auto;">
-<img src="./FriendsPageSketch.jpeg" alt="FriendsPageSketch.jpeg" style="width:50%; height:auto;">
+<img src="./GardenPageSketch.jpg" alt="GardenPageSketch" style="width:300; height:auto;"> <img src="./ShopPageSketch.jpg" alt="ShopPageSketch.jpg" style="width:300; height:auto;"> <img src="./FriendsPageSketch.jpeg" alt="FriendsPageSketch.jpeg" style="width:300; height:auto;">
 
 # Difficulties Encountered
 One difficulty we encountered was adding Firebase functionality to the data structures we used to store our plots, plants, seeds and inventory. Rather than adding this functionality to the data structures that we had already written, we decided to create new data structures that updated directly to Firebase without storing changes locally. This caused some difficulty when adding new features to the game, as certain functionalities were still based on data structures that were not connected to Firebase. After meeting to discuss which data structures to use in future pull requests, we updated all game screens to use the new data structures, and deleted the old code in a future commit. 
@@ -28,7 +31,6 @@ Another difficulty we encountered was displaying graphics. Our images were getti
 - expo
   - expo-router
   - expo-sensors
-  - expo-image
   - expo-image
 - react-native-async-storage 
 - react-native-sound
