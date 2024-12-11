@@ -21,8 +21,19 @@ We started our design process with simple sketches of the three pages that we wn
 # Difficulties Encountered
 One difficulty we encountered was adding Firebase functionality to the data structures we used to store our plots, plants, seeds and inventory. Rather than adding this functionality to the data structures that we had already written, we decided to create new data structures that updated directly to Firebase without storing changes locally. This caused some difficulty when adding new features to the game, as certain functionalities were still based on data structures that were not connected to Firebase. After meeting to discuss which data structures to use in future pull requests, we updated all game screens to use the new data structures, and deleted the old code in a future commit. 
 
-Another difficulty we encountered was displaying graphics. (Discuss anti-aliasing and image preloading here?)
+Another difficulty we encountered was displaying graphics. Our images were getting pixelated when scaling them up to a size that we found appropriate. The issue is that react-native's Image component has a feature that applys anti-aliasing to images so that they appear less blurry. However, since our images are pixelated art we didn't want them to be blurry but maintain the sharp edges that give the pixel art its feel. Thus, we used a library called **react-native-svg** that converts images to SVG file objects that do not anti-alias when scaled because they use points and lines to render images. 
 
 # External Resources Used
+- react-native-svg
+- expo
+  - expo-router
+  - expo-sensors
+  - expo-image
+  - expo-image
+- react-native-async-storage 
+- react-native-sound
+- firebase
+- react-native-gesture-handler
+- lodash
 
 # Evaluation/Testing Results (optional)
