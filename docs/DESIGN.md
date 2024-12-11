@@ -25,7 +25,7 @@ We wanted our game to be accessible to casual gamers, not targeted towards inten
 # Stages of Design
 We started our design process with simple sketches of the three pages that we wnated for our app: the garden, shop and friends page.
 
-<img src="./GardenPageSketch.jpg" alt="GardenPageSketch" style="width:100; height:auto;"> <img src="./ShopPageSketch.jpg" alt="ShopPageSketch.jpg" style="width:100; height:auto;"> <img src="./FriendsPageSketch.jpeg" alt="FriendsPageSketch.jpeg" style="width:100; height:auto;">
+<img src="./GardenPageSketch.jpg" alt="GardenPageSketch" style="width:30%; height:auto;"> <img src="./ShopPageSketch.jpg" alt="ShopPageSketch.jpg" style="width:30%; height:auto;"> <img src="./FriendsPageSketch.jpeg" alt="FriendsPageSketch.jpeg" style="width:30%; height:auto;">
 
 # Difficulties Encountered
 One difficulty we encountered was adding Firebase functionality to the data structures we used to store our plots, plants, seeds and inventory. Rather than adding this functionality to the data structures that we had already written, we decided to create new data structures that updated directly to Firebase without storing changes locally. This caused some difficulty when adding new features to the game, as certain functionalities were still based on data structures that were not connected to Firebase. After meeting to discuss which data structures to use in future pull requests, we updated all game screens to use the new data structures, and deleted the old code in a future commit. 
